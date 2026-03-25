@@ -1,0 +1,282 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { sociosApi, unidadesApi, planesApi } from '@/services/api'
+import type { CreateSocioRequest } from '@/types'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import { UserPlus, ArrowLeft, Shield } from 'lucide-react'
+
+export default function NuevoSocioPage() {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const [form, setForm] = useState<CreateSocioRequest>({
+    nombre: '', apellido: '', correo: '',
+    telefono: null, documentoIdentidad: null, fechaNacimiento: null,
+    planId: null, unidadIds: [], consentimientoInformado: false,
+  })
+  const [error, setError] = useState<string | null>(null)
+
+  const { data: unidades } = useQuery({
+    queryKey: ['unidades'],
+    queryFn: unidadesApi.getAll,
+  })
+
+  const { data: planes } = useQuery({
+    queryKey: ['planes'],
+    queryFn: () => planesApi.getAll(),
+  })
+
+  const createMutation = useMutation({
+    mutationFn: sociosApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['socios'] })
+      navigate('/admin/socios')
+    },
+    onError: (err: unknown) => {
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string } } }
+        setError(axiosErr.response?.data?.error || 'Error al crear el socio.')
+      } else {
+        setError('Error al crear el socio.')
+      }
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (!form.nombre.trim() || !form.apellido.trim() || !form.correo.trim()) {
+      setError('Nombre, apellido y correo son obligatorios.')
+      return
+    }
+    if (form.unidadIds.length === 0) {
+      setError('Debe seleccionar al menos una unidad.')
+      return
+    }
+    if (!form.consentimientoInformado) {
+      setError('El consentimiento informado es obligatorio (Ley 18.331).')
+      return
+    }
+    createMutation.mutate(form)
+  }
+
+  const toggleUnidad = (unidadId: string) => {
+    setForm((prev) => ({
+      ...prev,
+      unidadIds: prev.unidadIds.includes(unidadId)
+        ? prev.unidadIds.filter((id) => id !== unidadId)
+        : [...prev.unidadIds, unidadId],
+    }))
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => navigate('/admin/socios')}
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <UserPlus className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Nuevo Socio</h1>
+            <p className="text-sm text-muted-foreground">
+              Los campos marcados con * son obligatorios
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Información Personal */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Información Personal
+          </h2>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Nombre *</Label>
+              <Input
+                value={form.nombre}
+                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                placeholder="Nombre"
+                className="bg-muted/30 border-border"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Apellido *</Label>
+              <Input
+                value={form.apellido}
+                onChange={(e) => setForm({ ...form, apellido: e.target.value })}
+                placeholder="Apellido"
+                className="bg-muted/30 border-border"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Correo electrónico *</Label>
+            <Input
+              type="email"
+              value={form.correo}
+              onChange={(e) => setForm({ ...form, correo: e.target.value })}
+              placeholder="correo@ejemplo.com"
+              className="bg-muted/30 border-border"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Teléfono</Label>
+              <Input
+                value={form.telefono || ''}
+                onChange={(e) => setForm({ ...form, telefono: e.target.value || null })}
+                placeholder="099 123 456"
+                className="bg-muted/30 border-border"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Doc. Identidad (CI)</Label>
+              <Input
+                value={form.documentoIdentidad || ''}
+                onChange={(e) => setForm({ ...form, documentoIdentidad: e.target.value || null })}
+                placeholder="1.234.567-8"
+                className="bg-muted/30 border-border"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Fecha de nacimiento</Label>
+            <Input
+              type="date"
+              value={form.fechaNacimiento || ''}
+              onChange={(e) => setForm({ ...form, fechaNacimiento: e.target.value || null })}
+              className="bg-muted/30 border-border"
+            />
+          </div>
+        </div>
+
+        {/* Plan y Acceso */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Plan y Acceso
+          </h2>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Espacio asignado *</Label>
+            <div className="flex gap-4">
+              {unidades?.map((u) => (
+                <label
+                  key={u.id}
+                  className={`flex items-center gap-2.5 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
+                    form.unidadIds.includes(u.id)
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border text-muted-foreground hover:border-primary/50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.unidadIds.includes(u.id)}
+                    onChange={() => toggleUnidad(u.id)}
+                    className="sr-only"
+                  />
+                  <span className="text-sm font-medium">{u.nombre}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Plan</Label>
+            <Select
+              value={form.planId || 'none'}
+              onValueChange={(val) => setForm({ ...form, planId: !val || val === 'none' ? null : val })}
+            >
+              <SelectTrigger className="bg-muted/30 border-border">
+                <SelectValue placeholder="Seleccionar plan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sin plan</SelectItem>
+                {planes?.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.nombre} — ${p.precio}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Consentimiento */}
+        <div className="rounded-xl border border-border bg-card p-6">
+          <label className="flex items-start gap-4 cursor-pointer">
+            <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
+              form.consentimientoInformado
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border'
+            }`}>
+              {form.consentimientoInformado && (
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <input
+              type="checkbox"
+              checked={form.consentimientoInformado}
+              onChange={(e) => setForm({ ...form, consentimientoInformado: e.target.checked })}
+              className="sr-only"
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Consentimiento informado *</span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                El socio ha sido informado y acepta el tratamiento de sus datos personales
+                de acuerdo con la Ley 18.331 de Protección de Datos Personales de Uruguay.
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <Button type="submit" disabled={createMutation.isPending} className="cursor-pointer gap-2">
+            <UserPlus className="h-4 w-4" />
+            {createMutation.isPending ? 'Registrando...' : 'Guardar Socio'}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/admin/socios')}
+            className="cursor-pointer"
+          >
+            Cancelar
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
