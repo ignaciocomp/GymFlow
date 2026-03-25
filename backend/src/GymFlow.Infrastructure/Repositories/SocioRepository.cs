@@ -1,0 +1,84 @@
+using GymFlow.Application.Interfaces;
+using GymFlow.Domain.Entities;
+using GymFlow.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace GymFlow.Infrastructure.Repositories;
+
+public class SocioRepository : ISocioRepository
+{
+    private readonly GymFlowDbContext _context;
+
+    public SocioRepository(GymFlowDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<Socio>> GetAllAsync(bool includeInactive = false)
+    {
+        var query = _context.Socios
+            .Include(s => s.Plan)
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Unidad)
+            .AsQueryable();
+
+        if (!includeInactive)
+            query = query.Where(s => s.EstaActivo);
+
+        return await query.OrderBy(s => s.Apellido).ThenBy(s => s.Nombre).ToListAsync();
+    }
+
+    public async Task<Socio?> GetByIdAsync(Guid id)
+    {
+        return await _context.Socios
+            .Include(s => s.Plan)
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Unidad)
+            .FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    public async Task<bool> ExisteCorreoAsync(string correo)
+    {
+        return await _context.Usuarios.AnyAsync(u => u.Correo.ToLower() == correo.ToLower());
+    }
+
+    public async Task<IEnumerable<Socio>> SearchAsync(
+        string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo)
+    {
+        var query = _context.Socios
+            .Include(s => s.Plan)
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Unidad)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(nombre))
+        {
+            var term = nombre.ToLower();
+            query = query.Where(s =>
+                s.Nombre.ToLower().Contains(term) ||
+                s.Apellido.ToLower().Contains(term) ||
+                s.Correo.ToLower().Contains(term));
+        }
+
+        if (unidadId.HasValue)
+            query = query.Where(s => s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId.Value));
+
+        if (planId.HasValue)
+            query = query.Where(s => s.PlanId == planId.Value);
+
+        if (estaActivo.HasValue)
+            query = query.Where(s => s.EstaActivo == estaActivo.Value);
+
+        return await query.OrderBy(s => s.Apellido).ThenBy(s => s.Nombre).ToListAsync();
+    }
+
+    public async Task AddAsync(Socio socio)
+    {
+        await _context.Socios.AddAsync(socio);
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+}
