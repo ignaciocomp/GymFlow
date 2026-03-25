@@ -1,0 +1,13 @@
+using GymFlow.Domain.Entities;
+
+namespace GymFlow.Application.Interfaces;
+
+public interface ISocioRepository
+{
+    Task<IEnumerable<Socio>> GetAllAsync(bool includeInactive = false);
+    Task<Socio?> GetByIdAsync(Guid id);
+    Task<bool> ExisteCorreoAsync(string correo);
+    Task<IEnumerable<Socio>> SearchAsync(string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo);
+    Task AddAsync(Socio socio);
+    Task SaveChangesAsync();
+}
