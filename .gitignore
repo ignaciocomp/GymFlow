@@ -1,0 +1,92 @@
+# =========================
+# .NET / C#
+# =========================
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.nupkg
+*.snupkg
+
+# Entity Framework
+*.mdf
+*.ldf
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+
+# NuGet
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+# =========================
+# Node.js / Frontend
+# =========================
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+appsettings.Development.json
+appsettings.Local.json
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+npm-debug.log*
+
+# =========================
+# Testing
+# =========================
+coverage/
+TestResults/
+*.trx
+
+# =========================
+# Docker
+# =========================
+docker-compose.override.yml
