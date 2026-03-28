@@ -33,6 +33,7 @@ public class ReactivateSocioCommand
             Apellido: socio.Apellido,
             Correo: socio.Correo,
             Telefono: socio.Telefono,
+            TipoDocumento: socio.TipoDocumento,
             DocumentoIdentidad: socio.DocumentoIdentidad,
             FechaNacimiento: socio.FechaNacimiento,
             FechaAlta: socio.FechaAlta,

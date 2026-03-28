@@ -1,3 +1,5 @@
+using GymFlow.Domain.Enums;
+
 namespace GymFlow.Application.DTOs;
 
 public record CreateSocioRequest(
@@ -5,6 +7,7 @@ public record CreateSocioRequest(
     string Apellido,
     string Correo,
     string? Telefono,
+    TipoDocumento TipoDocumento,
     string? DocumentoIdentidad,
     DateTime? FechaNacimiento,
     Guid? PlanId,

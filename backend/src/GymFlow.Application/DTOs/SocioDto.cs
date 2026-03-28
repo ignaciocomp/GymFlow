@@ -1,3 +1,5 @@
+using GymFlow.Domain.Enums;
+
 namespace GymFlow.Application.DTOs;
 
 public record SocioDto(
@@ -6,6 +8,7 @@ public record SocioDto(
     string Apellido,
     string Correo,
     string? Telefono,
+    TipoDocumento TipoDocumento,
     string? DocumentoIdentidad,
     DateTime? FechaNacimiento,
     DateTime FechaAlta,

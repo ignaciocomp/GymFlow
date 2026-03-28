@@ -55,6 +55,7 @@ public class UpdateSocioCommand
             apellido: request.Apellido,
             correo: request.Correo,
             planId: request.PlanId,
+            tipoDocumento: request.TipoDocumento,
             telefono: request.Telefono,
             documentoIdentidad: request.DocumentoIdentidad,
             fechaNacimiento: request.FechaNacimiento.HasValue
@@ -83,6 +84,7 @@ public class UpdateSocioCommand
             Apellido: socio.Apellido,
             Correo: socio.Correo,
             Telefono: socio.Telefono,
+            TipoDocumento: socio.TipoDocumento,
             DocumentoIdentidad: socio.DocumentoIdentidad,
             FechaNacimiento: socio.FechaNacimiento,
             FechaAlta: socio.FechaAlta,

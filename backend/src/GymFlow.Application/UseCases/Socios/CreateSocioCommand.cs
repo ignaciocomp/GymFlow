@@ -51,10 +51,11 @@ public class CreateSocioCommand
             nombre: request.Nombre,
             apellido: request.Apellido,
             correo: request.Correo,
-            passwordHash: "PENDING_OAUTH", // Socios use Google OAuth (RN-19)
+            passwordHash: "PENDING_OAUTH",
             planId: request.PlanId,
             fechaAlta: DateTime.UtcNow,
             consentimientoInformado: request.ConsentimientoInformado,
+            tipoDocumento: request.TipoDocumento,
             telefono: request.Telefono,
             documentoIdentidad: request.DocumentoIdentidad,
             fechaNacimiento: request.FechaNacimiento.HasValue
@@ -83,6 +84,7 @@ public class CreateSocioCommand
             Apellido: socio.Apellido,
             Correo: socio.Correo,
             Telefono: socio.Telefono,
+            TipoDocumento: socio.TipoDocumento,
             DocumentoIdentidad: socio.DocumentoIdentidad,
             FechaNacimiento: socio.FechaNacimiento,
             FechaAlta: socio.FechaAlta,
