@@ -138,7 +138,7 @@ La migración se aplica automáticamente en el próximo `docker compose up`.
 ```
 Usuario (abstract base)
 ├── Profesor — ClasesAsignadas[]
-└── Socio — PlanActivo, Cuotas[], Inscripciones[], Asistencias[], Rutinas[]
+└── Socio — PlanActivo, Cuotas[], Inscripciones[], Asistencias[], Rutinas[], TipoDocumento (CI/Pasaporte/Otro, requerido)
 ```
 
 **Admin no es subclase** — es un valor del enum `Rol` en `Usuario`. No tiene atributos propios.
@@ -281,6 +281,10 @@ Cada merge a main se etiqueta con un tag de versión. Esto permite trazar:
 8. **Tests** — Backend con xUnit, frontend con Vitest.
 9. **Multi-espacio** — Toda query administrativa debe soportar filtrado por UnidadId.
 10. **No agregues features fuera del alcance** — No hay pagos online, no hay app móvil nativa, no hay QR/molinete.
+
+> **Validación de cédula uruguaya (en `Socio.EsCedulaUruguayaValida`):**
+> Normalizar eliminando puntos y guiones. Paddear a 8 dígitos con cero a la izquierda. Pesos: `[2,9,8,7,6,3,4]`.
+> Válida si `(suma_ponderada + dígito_verificador) % 10 == 0`.
 
 ---
 

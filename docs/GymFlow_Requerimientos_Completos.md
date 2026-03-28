@@ -235,6 +235,11 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - CA-03: Socios dados de baja no aparecen en listado activo pero sí en vista de inactivos.
 - CA-04: Consentimiento informado es visible y obligatorio durante el alta.
 
+**Mejoras implementadas (iteración 1):**
+- `TipoDocumento` (enum requerido): CI | Pasaporte | Otro
+  - Si `TipoDocumento == CI`: `DocumentoIdentidad` es obligatorio y debe ser una cédula uruguaya válida (algoritmo de dígito verificador).
+  - Si `TipoDocumento == Pasaporte` u `Otro`: `DocumentoIdentidad` es opcional, sin validación de formato.
+
 ---
 
 ### CU-02 — Inscripción a Clase
