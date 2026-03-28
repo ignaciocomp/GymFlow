@@ -26,6 +26,7 @@ public class GetSociosQuery
             Apellido: s.Apellido,
             Correo: s.Correo,
             Telefono: s.Telefono,
+            TipoDocumento: s.TipoDocumento,
             DocumentoIdentidad: s.DocumentoIdentidad,
             FechaNacimiento: s.FechaNacimiento,
             FechaAlta: s.FechaAlta,
