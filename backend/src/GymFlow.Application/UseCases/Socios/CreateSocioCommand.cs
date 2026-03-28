@@ -27,11 +27,12 @@ public class CreateSocioCommand
             throw new InvalidOperationException("El correo ingresado ya está registrado.");
 
         // Validate at least one unidad
-        if (request.UnidadIds == null || request.UnidadIds.Count == 0)
+        var uniqueUnidadIds = request.UnidadIds?.Distinct().ToList() ?? [];
+        if (uniqueUnidadIds.Count == 0)
             throw new ArgumentException("Debe asignar al menos una unidad.");
 
         // Validate unidades exist
-        foreach (var unidadId in request.UnidadIds)
+        foreach (var unidadId in uniqueUnidadIds)
         {
             var unidad = await _unidadRepository.GetByIdAsync(unidadId);
             if (unidad == null)
@@ -63,7 +64,7 @@ public class CreateSocioCommand
                 : null);
 
         // Assign unidades (RN-01: socio puede pertenecer a uno o ambos espacios)
-        foreach (var unidadId in request.UnidadIds)
+        foreach (var unidadId in uniqueUnidadIds)
         {
             socio.UnidadesAsignadas.Add(new UsuarioUnidad(socio.Id, unidadId));
         }
