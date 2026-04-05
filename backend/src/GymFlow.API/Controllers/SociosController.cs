@@ -81,6 +81,11 @@ public class SociosController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
+
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno: {ex.Message}");  /// exception generica 
+        }
     }
 
     /// <summary>

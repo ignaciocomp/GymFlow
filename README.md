@@ -89,6 +89,49 @@ docker compose logs -f api    # Ver logs del backend
 docker compose down -v        # Parar y borrar volumen de DB (reset completo)
 ```
 
+## Debugging del Backend
+
+El modo debug te permite poner **breakpoints** en el código C# y pausar la ejecución para inspeccionar variables, el call stack y el estado de la aplicación en tiempo real. Es útil para entender qué está pasando dentro de un endpoint, rastrear bugs, o verificar que los datos llegan correctamente a cada capa.
+
+### Prerequisitos
+
+- [VS Code](https://code.visualstudio.com/) con la extensión **C# Dev Kit** instalada
+- Docker Desktop corriendo
+- Tener abierta la carpeta **`GymFlow`** como workspace en VS Code (File → Open Folder)
+
+### Pasos
+
+**1. Levantar en modo debug** (en lugar del `docker compose up` normal):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.debug.yml up --build -d
+```
+
+Esto levanta el contenedor usando `Dockerfile.debug`, que compila en modo Debug (incluye los archivos `.pdb` necesarios para los breakpoints) e instala `vsdbg` (el debugger remoto de .NET).
+
+**2. Poner breakpoints** en cualquier archivo `.cs` — hacé click en el margen izquierdo de la línea que te interesa.
+
+**3. Adjuntar el debugger:**
+- Abrí el panel **Run and Debug** (`Ctrl+Shift+D`)
+- En el dropdown de arriba seleccioná **"Docker: Attach to .NET (gymflow-api)"**
+- Presioná **F5**
+
+VS Code se conecta al proceso `dotnet` dentro del contenedor. Cuando una request llegue a tu breakpoint, la ejecución se pausa y podés inspeccionar variables en el panel izquierdo.
+
+**4. Volver al modo normal** (sin debugger, más liviano):
+
+```bash
+docker compose up -d
+```
+
+### Tips
+
+- El panel **DEBUG CONSOLE** muestra la salida del debugger
+- Usá `F10` para avanzar línea a línea, `F11` para entrar a un método, `F5` para continuar hasta el próximo breakpoint
+- Si modificás código C#, necesitás reconstruir el contenedor: `docker compose -f docker-compose.yml -f docker-compose.debug.yml up --build -d`
+
+---
+
 ## Getting Started (sin Docker)
 
 Necesitás PostgreSQL 16 instalado localmente.
