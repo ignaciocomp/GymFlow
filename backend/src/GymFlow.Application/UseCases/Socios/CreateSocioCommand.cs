@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 using GymFlow.Domain.Entities;
@@ -22,6 +23,11 @@ public class CreateSocioCommand
 
     public async Task<SocioDto> ExecuteAsync(CreateSocioRequest request)
     {
+
+        // Validate número de cédula único
+        if(request.DocumentoIdentidad != null && await _socioRepository.ExisteCedulaAsync(request.DocumentoIdentidad))
+            throw new InvalidOperationException("El número de cédula ya está registrado");
+
         // Validate unique email (RN-05, RN-29)
         if (await _socioRepository.ExisteCorreoAsync(request.Correo))
             throw new InvalidOperationException("El correo ingresado ya está registrado.");

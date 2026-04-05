@@ -42,6 +42,11 @@ public class SocioRepository : ISocioRepository
         return await _context.Usuarios.AnyAsync(u => u.Correo.ToLower() == correo.ToLower());
     }
 
+    public async Task<bool> ExisteCedulaAsync(string cedula)
+    {
+        return await _context.Socios.AnyAsync(s => s.DocumentoIdentidad == cedula);
+    }
+
     public async Task<IEnumerable<Socio>> SearchAsync(
         string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo)
     {

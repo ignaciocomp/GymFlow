@@ -4,3 +4,5 @@
 
 2. **Agregrar validación:** En caso de que en el enum anterior se use CI se debe validar que sea una cédula (uruguaya) válida
 
+3. **Agregar validación:** No pueden existir socios con cédulas repetidas
+
