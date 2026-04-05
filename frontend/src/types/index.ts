@@ -12,12 +12,15 @@ export interface Plan {
   unidadId: string
 }
 
+export type TipoDocumento = 'CI' | 'Pasaporte' | 'Otro'
+
 export interface Socio {
   id: string
   nombre: string
   apellido: string
   correo: string
   telefono: string | null
+  tipoDocumento: TipoDocumento | null
   documentoIdentidad: string | null
   fechaNacimiento: string | null
   fechaAlta: string
@@ -32,6 +35,7 @@ export interface CreateSocioRequest {
   apellido: string
   correo: string
   telefono: string | null
+  tipoDocumento: TipoDocumento | null
   documentoIdentidad: string | null
   fechaNacimiento: string | null
   planId: string | null
@@ -44,6 +48,7 @@ export interface UpdateSocioRequest {
   apellido: string
   correo: string
   telefono: string | null
+  tipoDocumento: TipoDocumento | null
   documentoIdentidad: string | null
   fechaNacimiento: string | null
   planId: string | null
