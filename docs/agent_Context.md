@@ -138,12 +138,12 @@ La migración se aplica automáticamente en el próximo `docker compose up`.
 ```
 Usuario (abstract base)
 ├── Profesor — ClasesAsignadas[]
-└── Socio — PlanActivo, Cuotas[], Inscripciones[], Asistencias[], Rutinas[], TipoDocumento (CI/Pasaporte/Otro, requerido)
+└── Socio — Cuotas[], Inscripciones[], Asistencias[], Rutinas[], TipoDocumento (CI/Pasaporte/Otro, requerido)
 ```
 
 **Admin no es subclase** — es un valor del enum `Rol` en `Usuario`. No tiene atributos propios.
 
-**Relación Usuario-Unidad es N:M** — un socio o profesor puede pertenecer a ambas unidades (tabla intermedia `UsuarioUnidad`).
+**Relación Usuario-Unidad es N:M** — un socio o profesor puede pertenecer a ambas unidades (tabla intermedia `UsuarioUnidad`). La tabla `UsuarioUnidad` incluye `PlanId` (nullable, FK a `Planes`): cada socio puede tener un Plan distinto por Unidad. Un socio ya no tiene un Plan global único.
 
 ### Entidades del negocio
 
@@ -154,7 +154,7 @@ Usuario (abstract base)
 | **Horario** | Día + hora inicio/fin | Pertenece a Clase. El cupo se controla por Horario. |
 | **Inscripcion** | Socio inscrito a un Horario específico | Tiene HorarioId (no ClaseId). Estado: Activa/Cancelada. |
 | **Asistencia** | Registro de presencia | SocioId, ClaseId, HorarioId, Fecha. Registrada por profesor. |
-| **Plan** | Tipo de membresía con precio | Pertenece a Unidad. Soft delete (`EstaActivo`). |
+| **Plan** | Tipo de membresía con precio | Pertenece a Unidad. Soft delete (`EstaActivo`). CRUD completo vía UI (RF_22). Eliminación bloqueada si hay socios asignados. |
 | **Cuota** | Pago periódico del socio | FechaVencimiento, FechaPago (nullable), MontoPagado (nullable). **Estado se calcula en Application**, no se persiste. |
 | **Rutina** | Rutina de ejercicios personalizada | Pertenece a Socio, tiene Ejercicios[] |
 | **Ejercicio** | Series, repeticiones, peso | Pertenece a Rutina |
@@ -303,5 +303,6 @@ Cada merge a main se etiqueta con un tag de versión. Esto permite trazar:
 ## Links y Referencias
 
 - **Spec completo:** `docs/superpowers/specs/2026-03-25-gymflow-design.md`
+- **RF_22 — Gestión de Planes y Plan por Unidad:** `docs/superpowers/specs/2026-04-06-rf22-planes-plan-por-unidad-design.md`
 - **Documento académico:** Archivo .docx del anteproyecto ORT
 - **Metodología:** MCS-OpenUP de AGESIC

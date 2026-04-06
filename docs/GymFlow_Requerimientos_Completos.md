@@ -69,7 +69,7 @@ El negocio opera dos unidades bajo un mismo espacio físico:
 
 **Usuario** (base): id, nombre, apellido, correo, contraseña, rol, estado, espacioAsignado (FK Unidad), fechaCreacion.
 
-**Socio** (extiende Usuario): plan activo, fechaAlta, consentimientoInformado (bool + timestamp). Relaciones: Cuota (1:N), Inscripcion (1:N), Rutina (1:N).
+**Socio** (extiende Usuario): fechaAlta, consentimientoInformado (bool + timestamp), tipoDocumento, documentoIdentidad, telefono, fechaNacimiento. Relaciones: Cuota (1:N), Inscripcion (1:N), Rutina (1:N). **El plan ya no es un atributo directo del Socio** — cada Socio puede tener un Plan distinto por Unidad, almacenado en la tabla intermedia `UsuarioUnidad.PlanId` (ver RF-22).
 
 **Administrador** (extiende Usuario): acceso completo a ambas unidades.
 
@@ -124,6 +124,8 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 | **RF-18** | Dashboard en tiempo real: panel con socios activos, cuotas pendientes, clases del día, inscripciones recientes, filtros por unidad. | N-01, N-04 | Dashboard |
 | **RF-19** | Sitio web público: página con info de Espacio Mora, fotos, horarios, planes, ubicación y formulario de contacto. | N-07 | Página Web Pública |
 | **RF-20** | Gestión unificada multi-espacio: administrar ambas unidades desde una plataforma con separación y filtrado por unidad. | N-01 | Multi-Espacio |
+| **RF-21** | Gestionar planes: CRUD de planes de membresía desde el panel de administración. Baja lógica bloqueada si el plan tiene socios asignados. | N-01, N-02 | Gestión de Planes |
+| **RF-22** | Plan por unidad de negocio: al registrar o modificar un socio, asignar un plan independiente por cada unidad seleccionada. Un socio con dos unidades puede tener planes distintos en cada una. | N-01, N-02 | Gestión de Socios |
 
 ---
 
@@ -239,6 +241,11 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - `TipoDocumento` (enum requerido): CI | Pasaporte | Otro
   - Si `TipoDocumento == CI`: `DocumentoIdentidad` es obligatorio y debe ser una cédula uruguaya válida (algoritmo de dígito verificador).
   - Si `TipoDocumento == Pasaporte` u `Otro`: `DocumentoIdentidad` es opcional, sin validación de formato.
+
+**Mejoras implementadas (RF-22 — iteración 1):**
+- El formulario de alta y modificación de socio permite seleccionar un Plan por cada Unidad asignada.
+- Los planes disponibles en cada dropdown se filtran a los planes activos de esa Unidad.
+- El Plan ya no es un campo global del Socio; se almacena en `UsuarioUnidad.PlanId`.
 
 ---
 
