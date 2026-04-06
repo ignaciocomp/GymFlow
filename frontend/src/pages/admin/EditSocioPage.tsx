@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { sociosApi, unidadesApi, planesApi } from '@/services/api'
-import type { UpdateSocioRequest } from '@/types'
+import type { UpdateSocioRequest, TipoDocumento } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,7 +18,7 @@ export default function EditSocioPage() {
 
   const [form, setForm] = useState<UpdateSocioRequest>({
     nombre: '', apellido: '', correo: '',
-    telefono: null, documentoIdentidad: null, fechaNacimiento: null,
+    telefono: null, tipoDocumento: null, documentoIdentidad: null, fechaNacimiento: null,
     planId: null, unidadIds: [],
   })
   const [error, setError] = useState<string | null>(null)
@@ -46,6 +46,7 @@ export default function EditSocioPage() {
         apellido: socio.apellido,
         correo: socio.correo,
         telefono: socio.telefono,
+        tipoDocumento: socio.tipoDocumento,
         documentoIdentidad: socio.documentoIdentidad,
         fechaNacimiento: socio.fechaNacimiento ? socio.fechaNacimiento.split('T')[0] : null,
         planId: socio.planId,
@@ -71,6 +72,13 @@ export default function EditSocioPage() {
     },
   })
 
+  const buildPayload = (): UpdateSocioRequest => ({
+    ...form,
+    documentoIdentidad: form.tipoDocumento === 'CI' && form.documentoIdentidad
+      ? form.documentoIdentidad.replace(/[.\-]/g, '')
+      : form.documentoIdentidad,
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -78,11 +86,15 @@ export default function EditSocioPage() {
       setError('Nombre, apellido y correo son obligatorios.')
       return
     }
+    if (!form.tipoDocumento) {
+      setError('El tipo de documento es obligatorio.')
+      return
+    }
     if (form.unidadIds.length === 0) {
       setError('Debe seleccionar al menos una unidad.')
       return
     }
-    updateMutation.mutate(form)
+    updateMutation.mutate(buildPayload())
   }
 
   const toggleUnidad = (unidadId: string) => {
@@ -217,15 +229,40 @@ export default function EditSocioPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Doc. Identidad (CI)</Label>
+              <Label className="text-muted-foreground">Tipo de Documento *</Label>
+              <Select
+                value={form.tipoDocumento || ''}
+                onValueChange={(val) => setForm({
+                  ...form,
+                  tipoDocumento: val as TipoDocumento,
+                  documentoIdentidad: null,
+                })}
+              >
+                <SelectTrigger className="bg-muted/30 border-border">
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CI">Cédula de Identidad</SelectItem>
+                  <SelectItem value="Pasaporte">Pasaporte</SelectItem>
+                  <SelectItem value="Otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {form.tipoDocumento && (
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">
+                {form.tipoDocumento === 'CI' ? 'Número de cédula' : 'Número de documento'}
+              </Label>
               <Input
                 value={form.documentoIdentidad || ''}
                 onChange={(e) => setForm({ ...form, documentoIdentidad: e.target.value || null })}
-                placeholder="1.234.567-8"
+                placeholder={form.tipoDocumento === 'CI' ? '12345678' : ''}
                 className="bg-muted/30 border-border"
               />
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">Fecha de nacimiento</Label>
