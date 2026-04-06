@@ -183,7 +183,7 @@ export default function EditSocioPage() {
         {/* Informacion Personal */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Informacion Personal
+            Información Personal
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
