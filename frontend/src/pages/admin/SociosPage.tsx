@@ -210,7 +210,9 @@ export default function SociosPage() {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {socio.documentoIdentidad || '-'}
+                  {socio.tipoDocumento && socio.documentoIdentidad
+                    ? `${socio.tipoDocumento}: ${socio.documentoIdentidad}`
+                    : socio.documentoIdentidad || '-'}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{socio.correo}</TableCell>
                 <TableCell className="text-muted-foreground">{socio.telefono || '-'}</TableCell>
