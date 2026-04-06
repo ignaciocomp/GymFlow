@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { sociosApi, unidadesApi, planesApi } from '@/services/api'
-import type { CreateSocioRequest } from '@/types'
+import type { CreateSocioRequest, TipoDocumento } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,7 +17,7 @@ export default function NuevoSocioPage() {
 
   const [form, setForm] = useState<CreateSocioRequest>({
     nombre: '', apellido: '', correo: '',
-    telefono: null, documentoIdentidad: null, fechaNacimiento: null,
+    telefono: null, tipoDocumento: null, documentoIdentidad: null, fechaNacimiento: null,
     planId: null, unidadIds: [], consentimientoInformado: false,
   })
   const [error, setError] = useState<string | null>(null)
@@ -48,11 +48,22 @@ export default function NuevoSocioPage() {
     },
   })
 
+  const buildPayload = (): CreateSocioRequest => ({
+    ...form,
+    documentoIdentidad: form.tipoDocumento === 'CI' && form.documentoIdentidad
+      ? form.documentoIdentidad.replace(/[.\-]/g, '')
+      : form.documentoIdentidad,
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     if (!form.nombre.trim() || !form.apellido.trim() || !form.correo.trim()) {
       setError('Nombre, apellido y correo son obligatorios.')
+      return
+    }
+    if (!form.tipoDocumento) {
+      setError('El tipo de documento es obligatorio.')
       return
     }
     if (form.unidadIds.length === 0) {
@@ -63,7 +74,7 @@ export default function NuevoSocioPage() {
       setError('El consentimiento informado es obligatorio (Ley 18.331).')
       return
     }
-    createMutation.mutate(form)
+    createMutation.mutate(buildPayload())
   }
 
   const toggleUnidad = (unidadId: string) => {
@@ -149,15 +160,40 @@ export default function NuevoSocioPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Doc. Identidad (CI)</Label>
+              <Label className="text-muted-foreground">Tipo de Documento *</Label>
+              <Select
+                value={form.tipoDocumento || ''}
+                onValueChange={(val) => setForm({
+                  ...form,
+                  tipoDocumento: val as TipoDocumento,
+                  documentoIdentidad: null,
+                })}
+              >
+                <SelectTrigger className="bg-muted/30 border-border">
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CI">Cédula de Identidad</SelectItem>
+                  <SelectItem value="Pasaporte">Pasaporte</SelectItem>
+                  <SelectItem value="Otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {form.tipoDocumento && (
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">
+                {form.tipoDocumento === 'CI' ? 'Número de cédula' : 'Número de documento'}
+              </Label>
               <Input
                 value={form.documentoIdentidad || ''}
                 onChange={(e) => setForm({ ...form, documentoIdentidad: e.target.value || null })}
-                placeholder="1.234.567-8"
+                placeholder={form.tipoDocumento === 'CI' ? '12345678' : ''}
                 className="bg-muted/30 border-border"
               />
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">Fecha de nacimiento</Label>
