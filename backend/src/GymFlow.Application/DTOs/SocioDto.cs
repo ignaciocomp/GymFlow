@@ -13,6 +13,4 @@ public record SocioDto(
     DateTime? FechaNacimiento,
     DateTime FechaAlta,
     bool EstaActivo,
-    Guid? PlanId,
-    string? PlanNombre,
     List<UnidadDto> Unidades);

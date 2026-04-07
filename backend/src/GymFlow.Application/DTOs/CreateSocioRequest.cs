@@ -10,6 +10,5 @@ public record CreateSocioRequest(
     TipoDocumento TipoDocumento,
     string? DocumentoIdentidad,
     DateTime? FechaNacimiento,
-    Guid? PlanId,
-    List<Guid> UnidadIds,
+    List<UnidadAsignacionDto> Unidades,
     bool ConsentimientoInformado);

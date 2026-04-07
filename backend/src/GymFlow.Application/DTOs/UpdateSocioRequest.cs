@@ -10,5 +10,4 @@ public record UpdateSocioRequest(
     TipoDocumento TipoDocumento,
     string? DocumentoIdentidad,
     DateTime? FechaNacimiento,
-    Guid? PlanId,
-    List<Guid> UnidadIds);
+    List<UnidadAsignacionDto> Unidades);
