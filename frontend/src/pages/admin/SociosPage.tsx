@@ -133,7 +133,11 @@ export default function SociosPage() {
 
         <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? 'all')}>
           <SelectTrigger className="w-[200px] bg-card border-border">
-            <SelectValue placeholder="Unidad" />
+            <SelectValue>
+              {unidadFilter === 'all'
+                ? 'Todas las unidades'
+                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Unidad'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las unidades</SelectItem>
@@ -145,12 +149,16 @@ export default function SociosPage() {
 
         <Select value={planFilter} onValueChange={(val) => setPlanFilter(val ?? 'all')}>
           <SelectTrigger className="w-[200px] bg-card border-border">
-            <SelectValue placeholder="Plan" />
+            <SelectValue>
+              {planFilter === 'all'
+                ? 'Todos los planes'
+                : planes?.find(p => p.id === planFilter)?.nombre || 'Plan'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos los planes</SelectItem>
             {planes?.map((p) => (
-              <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
+              <SelectItem key={p.id} value={p.id}>{p.nombre} — {p.unidadNombre}</SelectItem>
             ))}
           </SelectContent>
         </Select>

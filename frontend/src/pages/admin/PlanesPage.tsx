@@ -81,7 +81,11 @@ export default function PlanesPage() {
       <div className="flex flex-wrap items-center gap-3">
         <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? 'all')}>
           <SelectTrigger className="w-[200px] bg-card border-border">
-            <SelectValue placeholder="Unidad" />
+            <SelectValue>
+              {unidadFilter === 'all'
+                ? 'Todas las unidades'
+                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Unidad'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las unidades</SelectItem>
