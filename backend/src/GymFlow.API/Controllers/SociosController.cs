@@ -160,6 +160,7 @@ public class SociosController : ControllerBase
         var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
         var nombre = User.FindFirst("nombre")?.Value ?? "";
         var apellido = User.FindFirst("apellido")?.Value ?? "";
-        return (userId, $"{nombre} {apellido}".Trim());
+        var fullName = $"{nombre} {apellido}".Trim();
+        return (userId, string.IsNullOrWhiteSpace(fullName) ? "Sistema" : fullName);
     }
 }
