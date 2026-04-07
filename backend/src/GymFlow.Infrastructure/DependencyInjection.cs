@@ -1,6 +1,7 @@
 using GymFlow.Application.Interfaces;
 using GymFlow.Infrastructure.Persistence;
 using GymFlow.Infrastructure.Repositories;
+using GymFlow.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,8 @@ public static class DependencyInjection
         services.AddScoped<IUnidadRepository, UnidadRepository>();
         services.AddScoped<ISocioRepository, SocioRepository>();
         services.AddScoped<IPlanRepository, PlanRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IAuditLogger, AuditLogger>();
 
         return services;
     }

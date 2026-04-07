@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -65,6 +65,18 @@ export const planesApi = {
     const { data } = await api.get<Plan[]>('/planes', {
       params: unidadId ? { unidadId } : undefined,
     })
+    return data
+  },
+}
+
+export const auditoriaApi = {
+  getAll: async (params?: {
+    desde?: string
+    hasta?: string
+    tipoAccion?: string
+    entidadId?: string
+  }): Promise<AuditoriaEntry[]> => {
+    const { data } = await api.get<AuditoriaEntry[]>('/auditoria', { params })
     return data
   },
 }

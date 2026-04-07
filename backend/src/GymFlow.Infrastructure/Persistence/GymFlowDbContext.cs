@@ -12,6 +12,7 @@ public class GymFlowDbContext : DbContext
     public DbSet<Socio> Socios => Set<Socio>();
     public DbSet<Plan> Planes => Set<Plan>();
     public DbSet<UsuarioUnidad> UsuarioUnidades => Set<UsuarioUnidad>();
+    public DbSet<RegistroAuditoria> RegistrosAuditoria => Set<RegistroAuditoria>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
