@@ -12,9 +12,10 @@ public class CreateSocioCommandTests
     private readonly Mock<ISocioRepository> _socioRepo = new();
     private readonly Mock<IUnidadRepository> _unidadRepo = new();
     private readonly Mock<IPlanRepository> _planRepo = new();
+    private readonly Mock<IAuditLogger> _auditLogger = new();
 
     private CreateSocioCommand CrearCommand() =>
-        new(_socioRepo.Object, _unidadRepo.Object, _planRepo.Object);
+        new(_socioRepo.Object, _unidadRepo.Object, _planRepo.Object, _auditLogger.Object);
 
     private static Socio SocioFake(TipoDocumento tipo, string? doc) =>
         new("Juan", "García", "juan@test.com", "PENDING_OAUTH",
@@ -49,7 +50,7 @@ public class CreateSocioCommandTests
             UnidadIds: [unidadId],
             ConsentimientoInformado: true);
 
-        var result = await CrearCommand().ExecuteAsync(request);
+        var result = await CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Test Admin");
 
         Assert.Equal(TipoDocumento.CI, result.TipoDocumento);
         Assert.Equal("54321163", result.DocumentoIdentidad);
@@ -77,7 +78,7 @@ public class CreateSocioCommandTests
             ConsentimientoInformado: true);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            CrearCommand().ExecuteAsync(request));
+            CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Test Admin"));
     }
 
     [Fact]
@@ -98,7 +99,7 @@ public class CreateSocioCommandTests
             UnidadIds: [unidadId],
             ConsentimientoInformado: true);
 
-        var result = await CrearCommand().ExecuteAsync(request);
+        var result = await CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Test Admin");
 
         Assert.Equal(TipoDocumento.Pasaporte, result.TipoDocumento);
     }
@@ -121,7 +122,7 @@ public class CreateSocioCommandTests
             UnidadIds: [unidadId],
             ConsentimientoInformado: true);
 
-        var result = await CrearCommand().ExecuteAsync(request);
+        var result = await CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Test Admin");
 
         Assert.Equal(TipoDocumento.Otro, result.TipoDocumento);
         Assert.Null(result.DocumentoIdentidad);
