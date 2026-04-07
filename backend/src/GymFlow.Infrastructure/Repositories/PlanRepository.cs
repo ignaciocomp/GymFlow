@@ -14,24 +14,46 @@ public class PlanRepository : IPlanRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Plan>> GetAllAsync()
+    public async Task<IEnumerable<Plan>> GetAllAsync(bool includeInactive = false)
     {
-        return await _context.Planes
-            .Where(p => p.EstaActivo)
-            .OrderBy(p => p.Nombre)
-            .ToListAsync();
+        var query = _context.Planes
+            .Include(p => p.Unidad)
+            .AsQueryable();
+
+        if (!includeInactive)
+            query = query.Where(p => p.EstaActivo);
+
+        return await query.OrderBy(p => p.Nombre).ToListAsync();
     }
 
     public async Task<Plan?> GetByIdAsync(Guid id)
     {
-        return await _context.Planes.FindAsync(id);
+        return await _context.Planes
+            .Include(p => p.Unidad)
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task<IEnumerable<Plan>> GetByUnidadIdAsync(Guid unidadId)
     {
         return await _context.Planes
+            .Include(p => p.Unidad)
             .Where(p => p.UnidadId == unidadId && p.EstaActivo)
             .OrderBy(p => p.Nombre)
             .ToListAsync();
+    }
+
+    public async Task<bool> ExisteSocioConPlanAsync(Guid planId)
+    {
+        return await _context.UsuarioUnidades.AnyAsync(uu => uu.PlanId == planId);
+    }
+
+    public async Task AddAsync(Plan plan)
+    {
+        await _context.Planes.AddAsync(plan);
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
     }
 }
