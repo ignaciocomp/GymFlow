@@ -70,7 +70,8 @@ public class SociosController : ControllerBase
     {
         try
         {
-            var socio = await _createSocioCommand.ExecuteAsync(request);
+            var (userId, userName) = GetCurrentUser();
+            var socio = await _createSocioCommand.ExecuteAsync(request, userId, userName);
             return CreatedAtAction(nameof(GetById), new { id = socio.Id }, socio);
         }
         catch (InvalidOperationException ex)
@@ -96,7 +97,8 @@ public class SociosController : ControllerBase
     {
         try
         {
-            var socio = await _updateSocioCommand.ExecuteAsync(id, request);
+            var (userId, userName) = GetCurrentUser();
+            var socio = await _updateSocioCommand.ExecuteAsync(id, request, userId, userName);
             return Ok(socio);
         }
         catch (KeyNotFoundException ex)
@@ -121,7 +123,8 @@ public class SociosController : ControllerBase
     {
         try
         {
-            var socio = await _reactivateSocioCommand.ExecuteAsync(id);
+            var (userId, userName) = GetCurrentUser();
+            var socio = await _reactivateSocioCommand.ExecuteAsync(id, userId, userName);
             return Ok(socio);
         }
         catch (KeyNotFoundException ex)
@@ -138,7 +141,8 @@ public class SociosController : ControllerBase
     {
         try
         {
-            await _deleteSocioCommand.ExecuteAsync(id, request?.Motivo);
+            var (userId, userName) = GetCurrentUser();
+            await _deleteSocioCommand.ExecuteAsync(id, request?.Motivo, userId, userName);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
@@ -149,5 +153,13 @@ public class SociosController : ControllerBase
         {
             return Conflict(new { error = ex.Message });
         }
+    }
+
+    private (Guid Id, string Nombre) GetCurrentUser()
+    {
+        var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var nombre = User.FindFirst("nombre")?.Value ?? "";
+        var apellido = User.FindFirst("apellido")?.Value ?? "";
+        return (userId, $"{nombre} {apellido}".Trim());
     }
 }

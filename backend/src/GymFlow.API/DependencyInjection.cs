@@ -1,3 +1,4 @@
+using GymFlow.Application.UseCases.Auditoria;
 using GymFlow.Application.UseCases.Planes;
 using GymFlow.Application.UseCases.Socios;
 using GymFlow.Application.UseCases.Unidades;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<GetSocioByIdQuery>();
         services.AddScoped<UpdateSocioCommand>();
         services.AddScoped<ReactivateSocioCommand>();
+        services.AddScoped<GetAuditoriaQuery>();
         return services;
     }
 }
