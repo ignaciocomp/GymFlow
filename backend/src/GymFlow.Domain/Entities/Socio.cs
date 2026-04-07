@@ -4,8 +4,6 @@ namespace GymFlow.Domain.Entities;
 
 public class Socio : Usuario
 {
-    public Guid? PlanId { get; private set; }
-    public Plan? Plan { get; private set; }
     public DateTime FechaAlta { get; private set; }
     public bool ConsentimientoInformado { get; private set; }
     public DateTime? ConsentimientoTimestamp { get; private set; }
@@ -22,7 +20,6 @@ public class Socio : Usuario
         string apellido,
         string correo,
         string passwordHash,
-        Guid? planId,
         DateTime fechaAlta,
         bool consentimientoInformado,
         TipoDocumento tipoDocumento,
@@ -31,7 +28,6 @@ public class Socio : Usuario
         DateTime? fechaNacimiento = null)
         : base(nombre, apellido, correo, passwordHash, Rol.Socio)
     {
-        PlanId = planId;
         FechaAlta = fechaAlta;
         Telefono = telefono;
         FechaNacimiento = fechaNacimiento;
@@ -63,14 +59,12 @@ public class Socio : Usuario
         string nombre,
         string apellido,
         string correo,
-        Guid? planId,
         TipoDocumento tipoDocumento,
         string? telefono,
         string? documentoIdentidad,
         DateTime? fechaNacimiento)
     {
         ActualizarDatosBase(nombre, apellido, correo);
-        PlanId = planId;
         Telefono = telefono;
         FechaNacimiento = fechaNacimiento;
 

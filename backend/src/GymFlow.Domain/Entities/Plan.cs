@@ -26,4 +26,11 @@ public class Plan
     {
         EstaActivo = false;
     }
+
+    public void Actualizar(string nombre, decimal precio, string descripcion)
+    {
+        Nombre = !string.IsNullOrWhiteSpace(nombre) ? nombre : throw new ArgumentException("Nombre is required.", nameof(nombre));
+        Precio = precio >= 0 ? precio : throw new ArgumentException("Precio must be non-negative.", nameof(precio));
+        Descripcion = descripcion ?? string.Empty;
+    }
 }
