@@ -4,6 +4,7 @@ import AdminLayout from '@/components/layout/AdminLayout'
 import SociosPage from '@/pages/admin/SociosPage'
 import NuevoSocioPage from '@/pages/admin/NuevoSocioPage'
 import EditSocioPage from '@/pages/admin/EditSocioPage'
+import AuditoriaPage from '@/pages/admin/AuditoriaPage'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="socios/nuevo" element={<NuevoSocioPage />} />
         <Route path="socios/:id/editar" element={<EditSocioPage />} />
         <Route path="socios/inactivos" element={<Navigate to="/admin/socios?tab=inactivos" replace />} />
+        <Route path="auditoria" element={<AuditoriaPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />

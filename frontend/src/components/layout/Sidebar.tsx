@@ -8,6 +8,7 @@ import {
   Dumbbell,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
 } from 'lucide-react'
 
 interface NavGroup {
@@ -24,6 +25,13 @@ const navigation: NavGroup[] = [
       { label: 'Nuevo Socio', path: '/admin/socios/nuevo', icon: <UserPlus className="h-4 w-4" /> },
       { label: 'Socios Activos', path: '/admin/socios', icon: <Users className="h-4 w-4" /> },
       { label: 'Socios Inactivos', path: '/admin/socios?tab=inactivos', icon: <UserX className="h-4 w-4" /> },
+    ],
+  },
+  {
+    label: 'Sistema',
+    icon: <ClipboardList className="h-5 w-5" />,
+    items: [
+      { label: 'Auditoría', path: '/admin/auditoria', icon: <ClipboardList className="h-4 w-4" /> },
     ],
   },
 ]
