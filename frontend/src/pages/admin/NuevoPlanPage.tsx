@@ -107,7 +107,7 @@ export default function NuevoPlanPage() {
             <Label className="text-muted-foreground">Unidad *</Label>
             <Select
               value={form.unidadId || ''}
-              onValueChange={(val) => setForm({ ...form, unidadId: val })}
+              onValueChange={(val) => setForm({ ...form, unidadId: val || '' })}
             >
               <SelectTrigger className="bg-muted/30 border-border">
                 <SelectValue placeholder="Seleccionar unidad" />

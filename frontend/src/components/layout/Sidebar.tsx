@@ -5,6 +5,7 @@ import {
   Users,
   UserPlus,
   UserX,
+  CreditCard,
   Dumbbell,
   ChevronDown,
   ChevronRight,
@@ -25,6 +26,14 @@ const navigation: NavGroup[] = [
       { label: 'Nuevo Socio', path: '/admin/socios/nuevo', icon: <UserPlus className="h-4 w-4" /> },
       { label: 'Socios Activos', path: '/admin/socios', icon: <Users className="h-4 w-4" /> },
       { label: 'Socios Inactivos', path: '/admin/socios?tab=inactivos', icon: <UserX className="h-4 w-4" /> },
+    ],
+  },
+  {
+    label: 'Planes',
+    icon: <CreditCard className="h-5 w-5" />,
+    items: [
+      { label: 'Nuevo Plan', path: '/admin/planes/nuevo', icon: <CreditCard className="h-4 w-4" /> },
+      { label: 'Lista de Planes', path: '/admin/planes', icon: <CreditCard className="h-4 w-4" /> },
     ],
   },
   {
@@ -55,6 +64,10 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
     }
     if (path === '/admin/socios?tab=inactivos') {
       return location.pathname === '/admin/socios' && searchParams.get('tab') === 'inactivos'
+    }
+    if (path === '/admin/planes') {
+      return location.pathname.startsWith('/admin/planes') &&
+        location.pathname !== '/admin/planes/nuevo'
     }
     return location.pathname === path
   }
