@@ -165,8 +165,7 @@ export default function SociosPage() {
               <TableHead className="text-muted-foreground">Doc. Identidad</TableHead>
               <TableHead className="text-muted-foreground">Correo</TableHead>
               <TableHead className="text-muted-foreground">Cel.</TableHead>
-              <TableHead className="text-muted-foreground">Plan</TableHead>
-              <TableHead className="text-muted-foreground">Unidades</TableHead>
+              <TableHead className="text-muted-foreground">Unidades / Plan</TableHead>
               <TableHead className="text-muted-foreground">Fecha Alta</TableHead>
               <TableHead className="text-muted-foreground text-right">Acciones</TableHead>
             </TableRow>
@@ -174,14 +173,14 @@ export default function SociosPage() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   Cargando...
                 </TableCell>
               </TableRow>
             )}
             {socios && socios.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center">
+                <TableCell colSpan={7} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <Users className="h-8 w-8 text-muted-foreground/50" />
                     <p className="text-muted-foreground">No se encontraron socios.</p>
@@ -217,21 +216,20 @@ export default function SociosPage() {
                 <TableCell className="text-muted-foreground">{socio.correo}</TableCell>
                 <TableCell className="text-muted-foreground">{socio.telefono || '-'}</TableCell>
                 <TableCell>
-                  {socio.planNombre ? (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
-                      {socio.planNombre}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
+                  <div className="flex flex-col gap-1">
                     {socio.unidades.map((u) => (
-                      <Badge key={u.id} variant="outline" className="border-border text-muted-foreground text-xs">
-                        {u.nombre}
-                      </Badge>
+                      <div key={u.id} className="flex items-center gap-1.5">
+                        <Badge variant="outline" className="border-border text-muted-foreground text-xs">
+                          {u.nombre}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {u.planNombre || 'Sin plan'}
+                        </span>
+                      </div>
                     ))}
+                    {socio.unidades.length === 0 && (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">

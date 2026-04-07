@@ -11,6 +11,45 @@ import {
 } from '@/components/ui/select'
 import { UserPlus, ArrowLeft, Shield } from 'lucide-react'
 
+function UnitPlanDropdown({
+  unidadId,
+  unidadNombre,
+  selectedPlanId,
+  onPlanChange,
+}: {
+  unidadId: string
+  unidadNombre: string
+  selectedPlanId: string | null
+  onPlanChange: (planId: string | null) => void
+}) {
+  const { data: planes } = useQuery({
+    queryKey: ['planes', unidadId],
+    queryFn: () => planesApi.getAll(unidadId),
+  })
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-muted-foreground">{unidadNombre} — Plan</Label>
+      <Select
+        value={selectedPlanId || 'none'}
+        onValueChange={(val) => onPlanChange(!val || val === 'none' ? null : val)}
+      >
+        <SelectTrigger className="bg-muted/30 border-border">
+          <SelectValue placeholder="Seleccionar plan" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Sin plan</SelectItem>
+          {planes?.map((p) => (
+            <SelectItem key={p.id} value={p.id}>
+              {p.nombre} — ${p.precio}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
 export default function NuevoSocioPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -18,18 +57,13 @@ export default function NuevoSocioPage() {
   const [form, setForm] = useState<CreateSocioRequest>({
     nombre: '', apellido: '', correo: '',
     telefono: null, tipoDocumento: null, documentoIdentidad: null, fechaNacimiento: null,
-    planId: null, unidadIds: [], consentimientoInformado: false,
+    unidades: [], consentimientoInformado: false,
   })
   const [error, setError] = useState<string | null>(null)
 
   const { data: unidades } = useQuery({
     queryKey: ['unidades'],
     queryFn: unidadesApi.getAll,
-  })
-
-  const { data: planes } = useQuery({
-    queryKey: ['planes'],
-    queryFn: () => planesApi.getAll(),
   })
 
   const createMutation = useMutation({
@@ -66,7 +100,7 @@ export default function NuevoSocioPage() {
       setError('El tipo de documento es obligatorio.')
       return
     }
-    if (form.unidadIds.length === 0) {
+    if (form.unidades.length === 0) {
       setError('Debe seleccionar al menos una unidad.')
       return
     }
@@ -78,11 +112,23 @@ export default function NuevoSocioPage() {
   }
 
   const toggleUnidad = (unidadId: string) => {
+    setForm((prev) => {
+      const exists = prev.unidades.some(u => u.unidadId === unidadId)
+      return {
+        ...prev,
+        unidades: exists
+          ? prev.unidades.filter(u => u.unidadId !== unidadId)
+          : [...prev.unidades, { unidadId, planId: null }],
+      }
+    })
+  }
+
+  const updateUnitPlan = (unidadId: string, planId: string | null) => {
     setForm((prev) => ({
       ...prev,
-      unidadIds: prev.unidadIds.includes(unidadId)
-        ? prev.unidadIds.filter((id) => id !== unidadId)
-        : [...prev.unidadIds, unidadId],
+      unidades: prev.unidades.map(u =>
+        u.unidadId === unidadId ? { ...u, planId } : u
+      ),
     }))
   }
 
@@ -219,14 +265,14 @@ export default function NuevoSocioPage() {
                 <label
                   key={u.id}
                   className={`flex items-center gap-2.5 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
-                    form.unidadIds.includes(u.id)
+                    form.unidades.some(su => su.unidadId === u.id)
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/50'
                   }`}
                 >
                   <input
                     type="checkbox"
-                    checked={form.unidadIds.includes(u.id)}
+                    checked={form.unidades.some(su => su.unidadId === u.id)}
                     onChange={() => toggleUnidad(u.id)}
                     className="sr-only"
                   />
@@ -236,25 +282,22 @@ export default function NuevoSocioPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-muted-foreground">Plan</Label>
-            <Select
-              value={form.planId || 'none'}
-              onValueChange={(val) => setForm({ ...form, planId: !val || val === 'none' ? null : val })}
-            >
-              <SelectTrigger className="bg-muted/30 border-border">
-                <SelectValue placeholder="Seleccionar plan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sin plan</SelectItem>
-                {planes?.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.nombre} — ${p.precio}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {form.unidades.length > 0 && (
+            <div className="space-y-4">
+              {form.unidades.map((su) => {
+                const unidad = unidades?.find(u => u.id === su.unidadId)
+                return (
+                  <UnitPlanDropdown
+                    key={su.unidadId}
+                    unidadId={su.unidadId}
+                    unidadNombre={unidad?.nombre || ''}
+                    selectedPlanId={su.planId}
+                    onPlanChange={(planId) => updateUnitPlan(su.unidadId, planId)}
+                  />
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Consentimiento */}
