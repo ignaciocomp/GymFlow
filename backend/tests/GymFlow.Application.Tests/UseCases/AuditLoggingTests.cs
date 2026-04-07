@@ -19,7 +19,7 @@ public class AuditLoggingTests
 
     private static Socio SocioFake() =>
         new("Juan", "García", "juan@test.com", "PENDING_OAUTH",
-            null, DateTime.UtcNow, true, TipoDocumento.Otro);
+            DateTime.UtcNow, true, TipoDocumento.Otro);
 
     private void ConfigurarMocksBase(Guid unidadId)
     {
@@ -47,7 +47,7 @@ public class AuditLoggingTests
 
         var request = new CreateSocioRequest(
             "Juan", "García", "juan@test.com", null,
-            TipoDocumento.Otro, null, null, null, [unidadId], true);
+            TipoDocumento.Otro, null, null, [new UnidadAsignacionDto(unidadId, null)], true);
 
         await command.ExecuteAsync(request, TestUserId, TestUserName);
 
@@ -127,7 +127,7 @@ public class AuditLoggingTests
 
         var request = new CreateSocioRequest(
             "Juan", "García", "duplicado@test.com", null,
-            TipoDocumento.Otro, null, null, null, [Guid.NewGuid()], true);
+            TipoDocumento.Otro, null, null, [new UnidadAsignacionDto(Guid.NewGuid(), null)], true);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => command.ExecuteAsync(request, TestUserId, TestUserName));

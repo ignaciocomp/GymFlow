@@ -19,7 +19,7 @@ public class CreateSocioCommandTests
 
     private static Socio SocioFake(TipoDocumento tipo, string? doc) =>
         new("Juan", "García", "juan@test.com", "PENDING_OAUTH",
-            null, DateTime.UtcNow, true, tipo, null, doc, null);
+            DateTime.UtcNow, true, tipo, null, doc, null);
 
     private void ConfigurarMocksBase(Guid unidadId, TipoDocumento tipo, string? doc)
     {
@@ -46,8 +46,7 @@ public class CreateSocioCommandTests
             TipoDocumento: TipoDocumento.CI,
             DocumentoIdentidad: "54321163",
             FechaNacimiento: null,
-            PlanId: null,
-            UnidadIds: [unidadId],
+            Unidades: [new UnidadAsignacionDto(unidadId, null)],
             ConsentimientoInformado: true);
 
         var result = await CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Test Admin");
@@ -73,8 +72,7 @@ public class CreateSocioCommandTests
             TipoDocumento: TipoDocumento.CI,
             DocumentoIdentidad: "12345678",  // inválida: suma=148, verificador esperado=2
             FechaNacimiento: null,
-            PlanId: null,
-            UnidadIds: [unidadId],
+            Unidades: [new UnidadAsignacionDto(unidadId, null)],
             ConsentimientoInformado: true);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
@@ -95,8 +93,7 @@ public class CreateSocioCommandTests
             TipoDocumento: TipoDocumento.Pasaporte,
             DocumentoIdentidad: "XY123456",
             FechaNacimiento: null,
-            PlanId: null,
-            UnidadIds: [unidadId],
+            Unidades: [new UnidadAsignacionDto(unidadId, null)],
             ConsentimientoInformado: true);
 
         var result = await CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Test Admin");
@@ -118,8 +115,7 @@ public class CreateSocioCommandTests
             TipoDocumento: TipoDocumento.Otro,
             DocumentoIdentidad: null,
             FechaNacimiento: null,
-            PlanId: null,
-            UnidadIds: [unidadId],
+            Unidades: [new UnidadAsignacionDto(unidadId, null)],
             ConsentimientoInformado: true);
 
         var result = await CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Test Admin");
