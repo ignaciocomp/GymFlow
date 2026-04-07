@@ -27,6 +27,8 @@ function UnitPlanDropdown({
     queryFn: () => planesApi.getAll(unidadId),
   })
 
+  const selectedPlan = planes?.find(p => p.id === selectedPlanId)
+
   return (
     <div className="space-y-2">
       <Label className="text-muted-foreground">{unidadNombre} — Plan</Label>
@@ -35,7 +37,9 @@ function UnitPlanDropdown({
         onValueChange={(val) => onPlanChange(!val || val === 'none' ? null : val)}
       >
         <SelectTrigger className="bg-muted/30 border-border">
-          <SelectValue placeholder="Seleccionar plan" />
+          <SelectValue>
+            {selectedPlan ? `${selectedPlan.nombre} — $${selectedPlan.precio}` : 'Sin plan'}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">Sin plan</SelectItem>
