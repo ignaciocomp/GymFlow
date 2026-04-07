@@ -4,12 +4,35 @@ export interface Unidad {
   direccion: string
 }
 
+export interface UnidadConPlan {
+  id: string
+  nombre: string
+  direccion: string
+  planId: string | null
+  planNombre: string | null
+}
+
 export interface Plan {
   id: string
   nombre: string
   precio: number
   descripcion: string
   unidadId: string
+  unidadNombre: string
+  estaActivo: boolean
+}
+
+export interface CreatePlanRequest {
+  nombre: string
+  unidadId: string
+  precio: number
+  descripcion: string | null
+}
+
+export interface UpdatePlanRequest {
+  nombre: string
+  precio: number
+  descripcion: string | null
 }
 
 export type TipoDocumento = 'CI' | 'Pasaporte' | 'Otro'
@@ -25,9 +48,7 @@ export interface Socio {
   fechaNacimiento: string | null
   fechaAlta: string
   estaActivo: boolean
-  planId: string | null
-  planNombre: string | null
-  unidades: Unidad[]
+  unidades: UnidadConPlan[]
 }
 
 export interface CreateSocioRequest {
@@ -38,8 +59,7 @@ export interface CreateSocioRequest {
   tipoDocumento: TipoDocumento | null
   documentoIdentidad: string | null
   fechaNacimiento: string | null
-  planId: string | null
-  unidadIds: string[]
+  unidades: { unidadId: string; planId: string | null }[]
   consentimientoInformado: boolean
 }
 
@@ -51,8 +71,7 @@ export interface UpdateSocioRequest {
   tipoDocumento: TipoDocumento | null
   documentoIdentidad: string | null
   fechaNacimiento: string | null
-  planId: string | null
-  unidadIds: string[]
+  unidades: { unidadId: string; planId: string | null }[]
 }
 
 export interface DeleteSocioRequest {

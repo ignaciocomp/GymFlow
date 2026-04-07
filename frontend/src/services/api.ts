@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -61,11 +61,31 @@ export const sociosApi = {
 }
 
 export const planesApi = {
-  getAll: async (unidadId?: string): Promise<Plan[]> => {
-    const { data } = await api.get<Plan[]>('/planes', {
-      params: unidadId ? { unidadId } : undefined,
-    })
+  getAll: async (unidadId?: string, includeInactive?: boolean): Promise<Plan[]> => {
+    const params: Record<string, string> = {}
+    if (unidadId) params.unidadId = unidadId
+    if (includeInactive) params.includeInactive = 'true'
+    const { data } = await api.get<Plan[]>('/planes', { params })
     return data
+  },
+
+  getById: async (id: string): Promise<Plan> => {
+    const { data } = await api.get<Plan>(`/planes/${id}`)
+    return data
+  },
+
+  create: async (request: CreatePlanRequest): Promise<Plan> => {
+    const { data } = await api.post<Plan>('/planes', request)
+    return data
+  },
+
+  update: async (id: string, request: UpdatePlanRequest): Promise<Plan> => {
+    const { data } = await api.put<Plan>(`/planes/${id}`, request)
+    return data
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/planes/${id}`)
   },
 }
 
