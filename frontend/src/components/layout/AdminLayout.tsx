@@ -8,7 +8,6 @@ import Topbar from './Topbar'
 export default function AdminLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [selectedUnidad, setSelectedUnidad] = useState('all')
 
   if (isLoading) {
     return (
@@ -59,11 +58,9 @@ export default function AdminLayout() {
       >
         <Topbar
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-          selectedUnidad={selectedUnidad}
-          onUnidadChange={setSelectedUnidad}
         />
         <main className="p-6">
-          <Outlet context={{ selectedUnidad }} />
+          <Outlet />
         </main>
       </div>
     </div>

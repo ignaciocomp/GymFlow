@@ -1,28 +1,12 @@
 import { useAuth } from '@/context/AuthContext'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useQuery } from '@tanstack/react-query'
-import { unidadesApi } from '@/services/api'
 import { Menu, LogOut, User } from 'lucide-react'
 
 interface TopbarProps {
   onToggleSidebar: () => void
-  selectedUnidad: string
-  onUnidadChange: (value: string) => void
 }
 
-export default function Topbar({ onToggleSidebar, selectedUnidad, onUnidadChange }: TopbarProps) {
+export default function Topbar({ onToggleSidebar }: TopbarProps) {
   const { user, logout } = useAuth()
-
-  const { data: unidades } = useQuery({
-    queryKey: ['unidades'],
-    queryFn: unidadesApi.getAll,
-  })
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card/80 backdrop-blur-sm px-6">
@@ -36,21 +20,6 @@ export default function Topbar({ onToggleSidebar, selectedUnidad, onUnidadChange
 
       {/* Spacer */}
       <div className="flex-1" />
-
-      {/* Unit Toggle */}
-      <Select value={selectedUnidad} onValueChange={(val) => onUnidadChange(val ?? 'all')}>
-        <SelectTrigger className="w-[220px] bg-muted/50 border-border text-foreground">
-          <SelectValue placeholder="Seleccionar unidad" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Ambas Unidades</SelectItem>
-          {unidades?.map((u) => (
-            <SelectItem key={u.id} value={u.id}>
-              {u.nombre}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
 
       {/* User menu */}
       <div className="flex items-center gap-3">
