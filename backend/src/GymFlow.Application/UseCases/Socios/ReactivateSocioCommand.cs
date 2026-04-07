@@ -36,23 +36,5 @@ public class ReactivateSocioCommand
         return MapToDto(socio);
     }
 
-    private static SocioDto MapToDto(Socio socio)
-    {
-        return new SocioDto(
-            Id: socio.Id,
-            Nombre: socio.Nombre,
-            Apellido: socio.Apellido,
-            Correo: socio.Correo,
-            Telefono: socio.Telefono,
-            TipoDocumento: socio.TipoDocumento,
-            DocumentoIdentidad: socio.DocumentoIdentidad,
-            FechaNacimiento: socio.FechaNacimiento,
-            FechaAlta: socio.FechaAlta,
-            EstaActivo: socio.EstaActivo,
-            PlanId: socio.PlanId,
-            PlanNombre: socio.Plan?.Nombre,
-            Unidades: socio.UnidadesAsignadas
-                .Select(uu => new UnidadDto(uu.UnidadId, uu.Unidad?.Nombre ?? "", uu.Unidad?.Direccion ?? ""))
-                .ToList());
-    }
+    private static SocioDto MapToDto(Socio socio) => CreateSocioCommand.MapToDto(socio);
 }
