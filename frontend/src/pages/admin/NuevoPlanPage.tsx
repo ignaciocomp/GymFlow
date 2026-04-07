@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { planesApi, unidadesApi } from '@/services/api'
-import type { CreatePlanRequest } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,11 +15,11 @@ export default function NuevoPlanPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [form, setForm] = useState<CreatePlanRequest>({
+  const [form, setForm] = useState({
     nombre: '',
     unidadId: '',
-    precio: 0,
-    descripcion: null,
+    precio: '',
+    descripcion: null as string | null,
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -56,11 +55,12 @@ export default function NuevoPlanPage() {
       setError('Debe seleccionar una unidad.')
       return
     }
-    if (form.precio < 0) {
-      setError('El precio no puede ser negativo.')
+    const precio = parseFloat(form.precio)
+    if (isNaN(precio) || precio < 0) {
+      setError('El precio debe ser un número válido no negativo.')
       return
     }
-    createMutation.mutate(form)
+    createMutation.mutate({ ...form, precio, descripcion: form.descripcion || null })
   }
 
   return (
@@ -127,7 +127,7 @@ export default function NuevoPlanPage() {
               min={0}
               step="0.01"
               value={form.precio}
-              onChange={(e) => setForm({ ...form, precio: parseFloat(e.target.value) || 0 })}
+              onChange={(e) => setForm({ ...form, precio: e.target.value })}
               placeholder="0.00"
               className="bg-muted/30 border-border"
             />
