@@ -172,7 +172,7 @@ export default function SociosPage() {
               <TableHead className="text-muted-foreground">Nombre y Apellido</TableHead>
               <TableHead className="text-muted-foreground">Doc. Identidad</TableHead>
               <TableHead className="text-muted-foreground">Correo</TableHead>
-              <TableHead className="text-muted-foreground">Cel.</TableHead>
+              <TableHead className="text-muted-foreground">Celular</TableHead>
               <TableHead className="text-muted-foreground">Unidades / Plan</TableHead>
               <TableHead className="text-muted-foreground">Fecha Alta</TableHead>
               <TableHead className="text-muted-foreground text-right">Acciones</TableHead>
