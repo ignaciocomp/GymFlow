@@ -58,3 +58,17 @@ export interface UpdateSocioRequest {
 export interface DeleteSocioRequest {
   motivo: string | null
 }
+
+export type TipoAccionAuditoria = 'Creacion' | 'Modificacion' | 'Baja' | 'Reactivacion' | 'InicioSesion'
+
+export interface AuditoriaEntry {
+  id: string
+  usuarioId: string
+  usuarioNombre: string
+  tipoAccion: TipoAccionAuditoria
+  entidadAfectada: string
+  entidadId: string | null
+  descripcion: string
+  detallesCambios: string | null
+  fechaHora: string
+}
