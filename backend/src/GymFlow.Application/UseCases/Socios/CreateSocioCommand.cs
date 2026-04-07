@@ -2,6 +2,7 @@ using System.ComponentModel;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 using GymFlow.Domain.Entities;
+using GymFlow.Domain.Enums;
 
 namespace GymFlow.Application.UseCases.Socios;
 
@@ -10,18 +11,21 @@ public class CreateSocioCommand
     private readonly ISocioRepository _socioRepository;
     private readonly IUnidadRepository _unidadRepository;
     private readonly IPlanRepository _planRepository;
+    private readonly IAuditLogger _auditLogger;
 
     public CreateSocioCommand(
         ISocioRepository socioRepository,
         IUnidadRepository unidadRepository,
-        IPlanRepository planRepository)
+        IPlanRepository planRepository,
+        IAuditLogger auditLogger)
     {
         _socioRepository = socioRepository;
         _unidadRepository = unidadRepository;
         _planRepository = planRepository;
+        _auditLogger = auditLogger;
     }
 
-    public async Task<SocioDto> ExecuteAsync(CreateSocioRequest request)
+    public async Task<SocioDto> ExecuteAsync(CreateSocioRequest request, Guid usuarioId, string usuarioNombre)
     {
 
         // Validate número de cédula único
@@ -77,6 +81,14 @@ public class CreateSocioCommand
 
         await _socioRepository.AddAsync(socio);
         await _socioRepository.SaveChangesAsync();
+
+        await _auditLogger.LogAsync(
+            usuarioId,
+            usuarioNombre,
+            TipoAccionAuditoria.Creacion,
+            "Socio",
+            socio.Id,
+            $"Se registró al socio {request.Nombre} {request.Apellido}");
 
         // Re-fetch to load navigation properties (Plan, Unidades)
         var saved = await _socioRepository.GetByIdAsync(socio.Id);

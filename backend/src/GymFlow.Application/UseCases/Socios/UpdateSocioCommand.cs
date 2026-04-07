@@ -1,6 +1,7 @@
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 using GymFlow.Domain.Entities;
+using GymFlow.Domain.Enums;
 
 namespace GymFlow.Application.UseCases.Socios;
 
@@ -9,18 +10,21 @@ public class UpdateSocioCommand
     private readonly ISocioRepository _socioRepository;
     private readonly IUnidadRepository _unidadRepository;
     private readonly IPlanRepository _planRepository;
+    private readonly IAuditLogger _auditLogger;
 
     public UpdateSocioCommand(
         ISocioRepository socioRepository,
         IUnidadRepository unidadRepository,
-        IPlanRepository planRepository)
+        IPlanRepository planRepository,
+        IAuditLogger auditLogger)
     {
         _socioRepository = socioRepository;
         _unidadRepository = unidadRepository;
         _planRepository = planRepository;
+        _auditLogger = auditLogger;
     }
 
-    public async Task<SocioDto> ExecuteAsync(Guid id, UpdateSocioRequest request)
+    public async Task<SocioDto> ExecuteAsync(Guid id, UpdateSocioRequest request, Guid usuarioId, string usuarioNombre)
     {
         var socio = await _socioRepository.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"No se encontró el socio con ID {id}.");
@@ -49,6 +53,16 @@ public class UpdateSocioCommand
                 throw new ArgumentException("El plan seleccionado no existe.");
         }
 
+        // Capture old values for audit log
+        var cambios = new Dictionary<string, object?>();
+        if (socio.Nombre != request.Nombre) cambios["Nombre"] = new { anterior = socio.Nombre, nuevo = request.Nombre };
+        if (socio.Apellido != request.Apellido) cambios["Apellido"] = new { anterior = socio.Apellido, nuevo = request.Apellido };
+        if (socio.Correo != request.Correo) cambios["Correo"] = new { anterior = socio.Correo, nuevo = request.Correo };
+        if (socio.Telefono != request.Telefono) cambios["Telefono"] = new { anterior = socio.Telefono, nuevo = request.Telefono };
+        if (socio.TipoDocumento != request.TipoDocumento) cambios["TipoDocumento"] = new { anterior = socio.TipoDocumento.ToString(), nuevo = request.TipoDocumento.ToString() };
+        if (socio.DocumentoIdentidad != request.DocumentoIdentidad) cambios["DocumentoIdentidad"] = new { anterior = socio.DocumentoIdentidad, nuevo = request.DocumentoIdentidad };
+        if (socio.PlanId != request.PlanId) cambios["PlanId"] = new { anterior = socio.PlanId, nuevo = request.PlanId };
+
         // Update socio data
         socio.ActualizarDatosSocio(
             nombre: request.Nombre,
@@ -70,6 +84,19 @@ public class UpdateSocioCommand
         }
 
         await _socioRepository.SaveChangesAsync();
+
+        string? detallesJson = cambios.Count > 0
+            ? System.Text.Json.JsonSerializer.Serialize(cambios)
+            : null;
+
+        await _auditLogger.LogAsync(
+            usuarioId,
+            usuarioNombre,
+            TipoAccionAuditoria.Modificacion,
+            "Socio",
+            id,
+            $"Se modificaron los datos del socio {request.Nombre} {request.Apellido}",
+            detallesJson);
 
         // Re-fetch to load navigation properties
         var updated = await _socioRepository.GetByIdAsync(id);
