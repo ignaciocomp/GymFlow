@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using GymFlow.Application.Interfaces;
+using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -11,22 +13,24 @@ namespace GymFlow.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
+    private readonly IAuditLogger _auditLogger;
 
     // Hardcoded users for development (Iteration 1)
     private static readonly List<HardcodedUser> Users =
     [
-        new("admin@gymflow.com", "admin123", "Maurice", "Admin", "Admin"),
-        new("profesor@gymflow.com", "profesor123", "Carlos", "García", "Profesor"),
-        new("socio@gymflow.com", "socio123", "María", "López", "Socio")
+        new(Guid.Parse("a1b2c3d4-0000-0000-0000-000000000001"), "admin@gymflow.com", "admin123", "Maurice", "Admin", "Admin"),
+        new(Guid.Parse("a1b2c3d4-0000-0000-0000-000000000002"), "profesor@gymflow.com", "profesor123", "Carlos", "García", "Profesor"),
+        new(Guid.Parse("a1b2c3d4-0000-0000-0000-000000000003"), "socio@gymflow.com", "socio123", "María", "López", "Socio")
     ];
 
-    public AuthController(IConfiguration configuration)
+    public AuthController(IConfiguration configuration, IAuditLogger auditLogger)
     {
         _configuration = configuration;
+        _auditLogger = auditLogger;
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var user = Users.FirstOrDefault(u =>
             u.Correo.Equals(request.Correo, StringComparison.OrdinalIgnoreCase) &&
@@ -36,6 +40,14 @@ public class AuthController : ControllerBase
             return Unauthorized(new { error = "Correo o contraseña incorrectos." });
 
         var token = GenerateJwt(user);
+
+        await _auditLogger.LogAsync(
+            user.Id,
+            $"{user.Nombre} {user.Apellido}",
+            TipoAccionAuditoria.InicioSesion,
+            "Sesion",
+            null,
+            $"Inicio de sesión del {user.Rol.ToLower()} {user.Nombre} {user.Apellido}");
 
         return Ok(new LoginResponse(
             Token: token,
@@ -85,6 +97,7 @@ public class AuthController : ControllerBase
         var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "GymFlowDevSecretKey2026!SuperSecure");
         var claims = new[]
         {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Correo),
             new Claim(ClaimTypes.Role, user.Rol),
             new Claim("nombre", user.Nombre),
@@ -101,7 +114,7 @@ public class AuthController : ControllerBase
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private record HardcodedUser(string Correo, string Password, string Nombre, string Apellido, string Rol);
+    private record HardcodedUser(Guid Id, string Correo, string Password, string Nombre, string Apellido, string Rol);
 }
 
 public record LoginRequest(string Correo, string Password);
