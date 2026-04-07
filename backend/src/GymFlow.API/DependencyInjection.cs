@@ -14,6 +14,10 @@ public static class DependencyInjection
         services.AddScoped<GetSociosQuery>();
         services.AddScoped<DeleteSocioCommand>();
         services.AddScoped<GetPlanesQuery>();
+        services.AddScoped<GetPlanByIdQuery>();
+        services.AddScoped<CreatePlanCommand>();
+        services.AddScoped<UpdatePlanCommand>();
+        services.AddScoped<DeletePlanCommand>();
         services.AddScoped<GetSocioByIdQuery>();
         services.AddScoped<UpdateSocioCommand>();
         services.AddScoped<ReactivateSocioCommand>();
