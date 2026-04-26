@@ -58,6 +58,22 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Middleware global de manejo de excepciones: captura cualquier excepción no manejada
+// en los controllers y devuelve un 500 con un mensaje genérico, evitando exponer
+// detalles internos (stack trace, tipos de excepción, etc.) al cliente.
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = "Ocurrió un error interno. Intente nuevamente."
+        });
+    });
+});
+
 app.UseCors("AllowFrontend");
 app.MapControllers();
 

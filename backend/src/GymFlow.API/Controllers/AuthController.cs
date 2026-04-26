@@ -32,6 +32,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Correo) || string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new { error = "El correo y la contraseña son obligatorios." });
+
         var user = Users.FirstOrDefault(u =>
             u.Correo.Equals(request.Correo, StringComparison.OrdinalIgnoreCase) &&
             u.Password == request.Password);
