@@ -1,8 +1,11 @@
+using System.Text;
 using GymFlow.API;
 using GymFlow.Domain.Entities;
 using GymFlow.Infrastructure;
 using GymFlow.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,22 @@ builder.Services.AddControllers()
     });
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+
+// JWT authentication
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "GymFlowDevSecretKey2026!SuperSecure";
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
@@ -75,6 +94,8 @@ app.UseExceptionHandler(errorApp =>
 });
 
 app.UseCors("AllowFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

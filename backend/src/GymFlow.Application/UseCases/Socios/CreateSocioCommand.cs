@@ -10,17 +10,20 @@ public class CreateSocioCommand
     private readonly ISocioRepository _socioRepository;
     private readonly IUnidadRepository _unidadRepository;
     private readonly IPlanRepository _planRepository;
+    private readonly IRolRepository _rolRepository;
     private readonly IAuditLogger _auditLogger;
 
     public CreateSocioCommand(
         ISocioRepository socioRepository,
         IUnidadRepository unidadRepository,
         IPlanRepository planRepository,
+        IRolRepository rolRepository,
         IAuditLogger auditLogger)
     {
         _socioRepository = socioRepository;
         _unidadRepository = unidadRepository;
         _planRepository = planRepository;
+        _rolRepository = rolRepository;
         _auditLogger = auditLogger;
     }
 
@@ -52,7 +55,11 @@ public class CreateSocioCommand
             }
         }
 
+        var rolSocio = await _rolRepository.GetByNombreAsync("Socio")
+            ?? throw new InvalidOperationException("Rol 'Socio' no encontrado en seed data.");
+
         var socio = new Socio(
+            rolSocioId: rolSocio.Id,
             nombre: request.Nombre,
             apellido: request.Apellido,
             correo: request.Correo,

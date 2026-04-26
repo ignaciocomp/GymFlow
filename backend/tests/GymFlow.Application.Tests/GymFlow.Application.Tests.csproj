@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\GymFlow.Application\GymFlow.Application.csproj" />
+    <ProjectReference Include="..\..\src\GymFlow.API\GymFlow.API.csproj" />
   </ItemGroup>
 
 </Project>

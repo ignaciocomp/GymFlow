@@ -282,6 +282,22 @@ Cada merge a main se etiqueta con un tag de versión. Esto permite trazar:
 9. **Multi-espacio** — Toda query administrativa debe soportar filtrado por UnidadId.
 10. **No agregues features fuera del alcance** — No hay pagos online, no hay app móvil nativa, no hay QR/molinete.
 
+### Al agregar un módulo nuevo (RF-23 — Roles y Permisos)
+
+Cuando se crea un módulo nuevo en el backend (ej. `Cuotas`, `Eventos`), **es obligatorio**:
+
+1. Agregar el valor al enum `GymFlow.Domain.Enums.Modulo` (en `backend/src/GymFlow.Domain/Enums/Modulo.cs`).
+2. Generar una migración EF Core que inserte las 4 filas correspondientes en la tabla `Permisos`:
+   - `(NuevoModulo, Lectura)`
+   - `(NuevoModulo, Escritura)`
+   - `(NuevoModulo, Modificacion)`
+   - `(NuevoModulo, Eliminacion)`
+3. Decidir si el rol `Administrador` debe tener esos 4 permisos automáticamente (lo más común: sí). Si sí, la misma migración inserta las 4 filas en `RolPermisos` apuntando al `RolSeed.AdminRolId`.
+4. Aplicar `[RequierePermiso(Modulo.NuevoModulo, Operacion.X)]` a los endpoints del controller.
+5. En el frontend, actualizar el tipo `Modulo` en `frontend/src/types/permisos.ts` y agregar el grupo correspondiente en `Sidebar.tsx` con la propiedad `modulo` para que se filtre por permiso.
+
+El sistema de permisos es de catálogo cerrado en código: no se inventan módulos en runtime. Ver spec: `docs/superpowers/specs/2026-04-26-rf-23-roles-y-permisos.md`.
+
 > **Validación de cédula uruguaya (en `Socio.EsCedulaUruguayaValida`):**
 > Normalizar eliminando puntos y guiones. Paddear a 8 dígitos con cero a la izquierda. Pesos: `[2,9,8,7,6,3,4]`.
 > Válida si `(suma_ponderada + dígito_verificador) % 10 == 0`.

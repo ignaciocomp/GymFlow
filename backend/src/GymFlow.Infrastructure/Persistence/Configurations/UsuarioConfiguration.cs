@@ -1,5 +1,4 @@
 using GymFlow.Domain.Entities;
-using GymFlow.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,11 +20,14 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.Property(u => u.Correo).IsRequired().HasMaxLength(200);
         builder.HasIndex(u => u.Correo).IsUnique();
         builder.Property(u => u.PasswordHash).IsRequired().HasMaxLength(500);
-        builder.Property(u => u.Rol).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(u => u.EstaActivo).IsRequired();
         builder.Property(u => u.FechaCreacion).IsRequired();
 
-        // N:M with Unidad via UsuarioUnidad
+        builder.HasOne(u => u.Rol)
+            .WithMany()
+            .HasForeignKey(u => u.RolId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(u => u.UnidadesAsignadas)
             .WithOne(uu => uu.Usuario)
             .HasForeignKey(uu => uu.UsuarioId);

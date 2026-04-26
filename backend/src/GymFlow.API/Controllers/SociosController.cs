@@ -1,5 +1,7 @@
+using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.UseCases.Socios;
+using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GymFlow.API.Controllers;
@@ -35,6 +37,7 @@ public class SociosController : ControllerBase
     /// RF-02: List socios with search and filters
     /// </summary>
     [HttpGet]
+    [RequierePermiso(Modulo.Socios, Operacion.Lectura)]
     public async Task<ActionResult<IEnumerable<SocioDto>>> GetAll(
         [FromQuery] string? nombre,
         [FromQuery] Guid? unidadId,
@@ -49,6 +52,7 @@ public class SociosController : ControllerBase
     /// Get a socio by ID
     /// </summary>
     [HttpGet("{id:guid}")]
+    [RequierePermiso(Modulo.Socios, Operacion.Lectura)]
     public async Task<ActionResult<SocioDto>> GetById(Guid id)
     {
         try
@@ -66,6 +70,7 @@ public class SociosController : ControllerBase
     /// RF-01: Register a new socio
     /// </summary>
     [HttpPost]
+    [RequierePermiso(Modulo.Socios, Operacion.Escritura)]
     public async Task<ActionResult<SocioDto>> Create([FromBody] CreateSocioRequest request)
     {
         try
@@ -93,6 +98,7 @@ public class SociosController : ControllerBase
     /// RF-03: Update socio data
     /// </summary>
     [HttpPut("{id:guid}")]
+    [RequierePermiso(Modulo.Socios, Operacion.Modificacion)]
     public async Task<ActionResult<SocioDto>> Update(Guid id, [FromBody] UpdateSocioRequest request)
     {
         try
@@ -119,6 +125,7 @@ public class SociosController : ControllerBase
     /// Reactivate a soft-deleted socio
     /// </summary>
     [HttpPatch("{id:guid}/reactivar")]
+    [RequierePermiso(Modulo.Socios, Operacion.Modificacion)]
     public async Task<ActionResult<SocioDto>> Reactivar(Guid id)
     {
         try
@@ -137,6 +144,7 @@ public class SociosController : ControllerBase
     /// RF-04: Soft delete (baja lógica) a socio
     /// </summary>
     [HttpDelete("{id:guid}")]
+    [RequierePermiso(Modulo.Socios, Operacion.Eliminacion)]
     public async Task<IActionResult> Delete(Guid id, [FromBody] DeleteSocioRequest? request)
     {
         try

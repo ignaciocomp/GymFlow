@@ -22,6 +22,128 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("GymFlow.Domain.Entities.Permiso", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Modulo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Operacion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Modulo", "Operacion")
+                        .IsUnique();
+
+                    b.ToTable("Permisos", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("c2700c7b-8aab-aff5-ad24-07f27b77f43b"),
+                            Modulo = "Socios",
+                            Operacion = "Lectura"
+                        },
+                        new
+                        {
+                            Id = new Guid("a31cd786-255b-16ac-e980-b899ee3e377b"),
+                            Modulo = "Socios",
+                            Operacion = "Escritura"
+                        },
+                        new
+                        {
+                            Id = new Guid("52c1feb8-98a7-3caa-35f5-df0f93d2a453"),
+                            Modulo = "Socios",
+                            Operacion = "Modificacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("85236a48-46f3-3411-c68b-48b7d0bde83e"),
+                            Modulo = "Socios",
+                            Operacion = "Eliminacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("0e3ccb52-631e-ab01-1b03-19eb3e0c166c"),
+                            Modulo = "Planes",
+                            Operacion = "Lectura"
+                        },
+                        new
+                        {
+                            Id = new Guid("46b1b86f-d5a2-efd5-a14b-f6e6cef155f1"),
+                            Modulo = "Planes",
+                            Operacion = "Escritura"
+                        },
+                        new
+                        {
+                            Id = new Guid("3db14f2d-e631-5d1f-998e-918eef77a623"),
+                            Modulo = "Planes",
+                            Operacion = "Modificacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("cbeec377-4e4e-a9ec-c7e1-992e1b5fc994"),
+                            Modulo = "Planes",
+                            Operacion = "Eliminacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("a84626b4-4e1f-d4df-62c1-bd5b66ed2da7"),
+                            Modulo = "Unidades",
+                            Operacion = "Lectura"
+                        },
+                        new
+                        {
+                            Id = new Guid("4cd6600e-0c61-1f71-600c-fb4de03dc59d"),
+                            Modulo = "Unidades",
+                            Operacion = "Escritura"
+                        },
+                        new
+                        {
+                            Id = new Guid("8e442f40-121a-eca9-23bc-54753ea7e6a7"),
+                            Modulo = "Unidades",
+                            Operacion = "Modificacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("e1906bb1-c65d-7ea9-5ddf-43679e4e4434"),
+                            Modulo = "Unidades",
+                            Operacion = "Eliminacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("7cf53e27-0f70-c8a4-5047-d7468049499c"),
+                            Modulo = "Auditoria",
+                            Operacion = "Lectura"
+                        },
+                        new
+                        {
+                            Id = new Guid("e0f92edd-c527-1b18-01a9-fec699383efb"),
+                            Modulo = "Auditoria",
+                            Operacion = "Escritura"
+                        },
+                        new
+                        {
+                            Id = new Guid("67bd9ddb-74f0-a5da-ce55-4147ce6f5e64"),
+                            Modulo = "Auditoria",
+                            Operacion = "Modificacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("a89d7550-6895-cb7c-c50c-2c3757eb0d7f"),
+                            Modulo = "Auditoria",
+                            Operacion = "Eliminacion"
+                        });
+                });
+
             modelBuilder.Entity("GymFlow.Domain.Entities.Plan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -105,6 +227,144 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("RegistrosAuditoria", (string)null);
                 });
 
+            modelBuilder.Entity("GymFlow.Domain.Entities.Rol", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("EsSistema")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            EsSistema = true,
+                            FechaCreacion = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Nombre = "Administrador"
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            EsSistema = true,
+                            FechaCreacion = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Nombre = "Socio"
+                        });
+                });
+
+            modelBuilder.Entity("GymFlow.Domain.Entities.RolPermiso", b =>
+                {
+                    b.Property<Guid>("RolId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PermisoId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("RolId", "PermisoId");
+
+                    b.HasIndex("PermisoId");
+
+                    b.ToTable("RolPermisos", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("c2700c7b-8aab-aff5-ad24-07f27b77f43b")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("a31cd786-255b-16ac-e980-b899ee3e377b")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("52c1feb8-98a7-3caa-35f5-df0f93d2a453")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("85236a48-46f3-3411-c68b-48b7d0bde83e")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("0e3ccb52-631e-ab01-1b03-19eb3e0c166c")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("46b1b86f-d5a2-efd5-a14b-f6e6cef155f1")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("3db14f2d-e631-5d1f-998e-918eef77a623")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("cbeec377-4e4e-a9ec-c7e1-992e1b5fc994")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("a84626b4-4e1f-d4df-62c1-bd5b66ed2da7")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("4cd6600e-0c61-1f71-600c-fb4de03dc59d")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("8e442f40-121a-eca9-23bc-54753ea7e6a7")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("e1906bb1-c65d-7ea9-5ddf-43679e4e4434")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("7cf53e27-0f70-c8a4-5047-d7468049499c")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("e0f92edd-c527-1b18-01a9-fec699383efb")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("67bd9ddb-74f0-a5da-ce55-4147ce6f5e64")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("a89d7550-6895-cb7c-c50c-2c3757eb0d7f")
+                        });
+                });
+
             modelBuilder.Entity("GymFlow.Domain.Entities.Unidad", b =>
                 {
                     b.Property<Guid>("Id")
@@ -158,10 +418,8 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<string>("Rol")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<Guid>("RolId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("TipoUsuario")
                         .IsRequired()
@@ -172,6 +430,8 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Correo")
                         .IsUnique();
+
+                    b.HasIndex("RolId");
 
                     b.ToTable("Usuarios", (string)null);
 
@@ -245,6 +505,36 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Unidad");
                 });
 
+            modelBuilder.Entity("GymFlow.Domain.Entities.RolPermiso", b =>
+                {
+                    b.HasOne("GymFlow.Domain.Entities.Permiso", "Permiso")
+                        .WithMany()
+                        .HasForeignKey("PermisoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GymFlow.Domain.Entities.Rol", "Rol")
+                        .WithMany("Permisos")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permiso");
+
+                    b.Navigation("Rol");
+                });
+
+            modelBuilder.Entity("GymFlow.Domain.Entities.Usuario", b =>
+                {
+                    b.HasOne("GymFlow.Domain.Entities.Rol", "Rol")
+                        .WithMany()
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Rol");
+                });
+
             modelBuilder.Entity("GymFlow.Domain.Entities.UsuarioUnidad", b =>
                 {
                     b.HasOne("GymFlow.Domain.Entities.Plan", "Plan")
@@ -269,6 +559,11 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Unidad");
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("GymFlow.Domain.Entities.Rol", b =>
+                {
+                    b.Navigation("Permisos");
                 });
 
             modelBuilder.Entity("GymFlow.Domain.Entities.Usuario", b =>

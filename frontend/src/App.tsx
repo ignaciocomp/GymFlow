@@ -8,6 +8,9 @@ import PlanesPage from '@/pages/admin/PlanesPage'
 import NuevoPlanPage from '@/pages/admin/NuevoPlanPage'
 import EditPlanPage from '@/pages/admin/EditPlanPage'
 import AuditoriaPage from '@/pages/admin/AuditoriaPage'
+import RolesPage from '@/pages/admin/RolesPage'
+import NuevoRolPage from '@/pages/admin/NuevoRolPage'
+import EditRolPage from '@/pages/admin/EditRolPage'
 
 export default function App() {
   return (
@@ -24,6 +27,9 @@ export default function App() {
         <Route path="planes/nuevo" element={<NuevoPlanPage />} />
         <Route path="planes/:id/editar" element={<EditPlanPage />} />
         <Route path="auditoria" element={<AuditoriaPage />} />
+        <Route path="roles" element={<RolesPage />} />
+        <Route path="roles/nuevo" element={<NuevoRolPage />} />
+        <Route path="roles/:id/editar" element={<EditRolPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />

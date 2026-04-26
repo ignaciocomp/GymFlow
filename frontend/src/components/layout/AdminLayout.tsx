@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { usePermisos } from '@/hooks/usePermisos'
 import { Users } from 'lucide-react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 
 export default function AdminLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
+  const { puedeLeer } = usePermisos()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  // Proxy: solo el admin tiene Lectura sobre Auditoria en el seed inicial.
+  const tieneAccesoAdmin = puedeLeer('Auditoria')
 
   if (isLoading) {
     return (
@@ -21,7 +25,7 @@ export default function AdminLayout() {
     return <Navigate to="/login" replace />
   }
 
-  if (user?.rol !== 'Admin') {
+  if (!tieneAccesoAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 text-center">
@@ -30,12 +34,10 @@ export default function AdminLayout() {
           </div>
           <h2 className="text-xl font-bold text-foreground">Acceso no disponible</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {user?.rol === 'Profesor'
-              ? 'El panel de profesores estará disponible próximamente.'
-              : 'El portal de socios estará disponible próximamente.'}
+            Tu rol actual no tiene acceso al panel administrativo.
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Sesión iniciada como <span className="text-primary">{user?.nombre} {user?.apellido}</span> ({user?.rol})
+            Sesión iniciada como <span className="text-primary">{user?.nombre} {user?.apellido}</span> ({user?.rolNombre})
           </p>
           <button
             onClick={logout}

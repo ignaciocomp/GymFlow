@@ -10,11 +10,15 @@ import {
   ChevronDown,
   ChevronRight,
   ClipboardList,
+  Shield,
 } from 'lucide-react'
+import { usePermisos } from '@/hooks/usePermisos'
+import type { Modulo } from '@/types/permisos'
 
 interface NavGroup {
   label: string
   icon: React.ReactNode
+  modulo: Modulo
   items: { label: string; path: string; icon: React.ReactNode }[]
 }
 
@@ -22,6 +26,7 @@ const navigation: NavGroup[] = [
   {
     label: 'Socios',
     icon: <Users className="h-5 w-5" />,
+    modulo: 'Socios',
     items: [
       { label: 'Nuevo Socio', path: '/admin/socios/nuevo', icon: <UserPlus className="h-4 w-4" /> },
       { label: 'Socios Activos', path: '/admin/socios', icon: <Users className="h-4 w-4" /> },
@@ -31,6 +36,7 @@ const navigation: NavGroup[] = [
   {
     label: 'Planes',
     icon: <CreditCard className="h-5 w-5" />,
+    modulo: 'Planes',
     items: [
       { label: 'Nuevo Plan', path: '/admin/planes/nuevo', icon: <CreditCard className="h-4 w-4" /> },
       { label: 'Lista de Planes', path: '/admin/planes', icon: <CreditCard className="h-4 w-4" /> },
@@ -39,8 +45,10 @@ const navigation: NavGroup[] = [
   {
     label: 'Sistema',
     icon: <ClipboardList className="h-5 w-5" />,
+    modulo: 'Auditoria',
     items: [
       { label: 'Auditoría', path: '/admin/auditoria', icon: <ClipboardList className="h-4 w-4" /> },
+      { label: 'Roles', path: '/admin/roles', icon: <Shield className="h-4 w-4" /> },
     ],
   },
 ]
@@ -49,6 +57,8 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const [openGroups, setOpenGroups] = useState<string[]>(['Socios'])
+  const { puedeLeer } = usePermisos()
+  const visibleGroups = navigation.filter(g => puedeLeer(g.modulo))
 
   const toggleGroup = (label: string) => {
     setOpenGroups((prev) =>
@@ -104,7 +114,7 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
         </Link>
 
         {/* Groups */}
-        {navigation.map((group) => {
+        {visibleGroups.map((group) => {
           const isOpen = openGroups.includes(group.label)
           return (
             <div key={group.label}>

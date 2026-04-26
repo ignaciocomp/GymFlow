@@ -20,6 +20,10 @@ public static class DependencyInjection
         services.AddScoped<IPlanRepository, PlanRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<IRolRepository, RolRepository>();
+        services.AddScoped<IPermisoRepository, PermisoRepository>();
+        services.AddScoped<IPermisoCache, PermisoCache>();
+        services.AddMemoryCache();
 
         return services;
     }
