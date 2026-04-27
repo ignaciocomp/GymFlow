@@ -13,7 +13,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import { Link, useNavigate } from 'react-router-dom'
-import { CreditCard, Plus, Eye, Trash2 } from 'lucide-react'
+import { CreditCard, Plus, Eye, Trash2, RotateCcw } from 'lucide-react'
 
 export default function PlanesPage() {
   const queryClient = useQueryClient()
@@ -22,6 +22,7 @@ export default function PlanesPage() {
   const [unidadFilter, setUnidadFilter] = useState<string>('all')
   const [deleteDialog, setDeleteDialog] = useState<{ id: string; nombre: string } | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [reactivateDialog, setReactivateDialog] = useState<{ id: string; nombre: string } | null>(null)
 
   const { data: planes, isLoading } = useQuery({
     queryKey: ['planes'],
@@ -46,6 +47,25 @@ export default function PlanesPage() {
         setDeleteError(axiosErr.response?.data?.error || 'Error al eliminar el plan.')
       } else {
         setDeleteError('Error al eliminar el plan.')
+      }
+    },
+  })
+
+  const [reactivateError, setReactivateError] = useState<string | null>(null)
+
+  const reactivateMutation = useMutation({
+    mutationFn: (id: string) => planesApi.reactivate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['planes'] })
+      setReactivateDialog(null)
+      setReactivateError(null)
+    },
+    onError: (err: unknown) => {
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string } } }
+        setReactivateError(axiosErr.response?.data?.error || 'Error al reactivar el plan.')
+      } else {
+        setReactivateError('Error al reactivar el plan.')
       }
     },
   })
@@ -156,23 +176,35 @@ export default function PlanesPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
-                    <button
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
-                      title="Editar"
-                      onClick={() => navigate(`/admin/planes/${plan.id}/editar`)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
-                      title="Eliminar"
-                      onClick={() => {
-                        setDeleteError(null)
-                        setDeleteDialog({ id: plan.id, nombre: plan.nombre })
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {plan.estaActivo ? (
+                      <>
+                        <button
+                          className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+                          title="Editar"
+                          onClick={() => navigate(`/admin/planes/${plan.id}/editar`)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                          title="Dar de baja"
+                          onClick={() => {
+                            setDeleteError(null)
+                            setDeleteDialog({ id: plan.id, nombre: plan.nombre })
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+                        title="Reactivar"
+                        onClick={() => setReactivateDialog({ id: plan.id, nombre: plan.nombre })}
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -194,10 +226,10 @@ export default function PlanesPage() {
       <Dialog open={!!deleteDialog} onOpenChange={() => { setDeleteDialog(null); setDeleteError(null) }}>
         <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Confirmar eliminacion de plan</DialogTitle>
+            <DialogTitle className="text-foreground">Confirmar baja de plan</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Estas por eliminar el plan <strong className="text-foreground">{deleteDialog?.nombre}</strong>.
-              Esta accion no se puede deshacer.
+              Estás por dar de baja el plan <strong className="text-foreground">{deleteDialog?.nombre}</strong>.
+              Podrás reactivarlo luego si es necesario.
             </DialogDescription>
           </DialogHeader>
           {deleteError && (
@@ -219,7 +251,41 @@ export default function PlanesPage() {
               disabled={deleteMutation.isPending}
               className="cursor-pointer"
             >
-              {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+              {deleteMutation.isPending ? 'Dando de baja...' : 'Dar de baja'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reactivate Dialog */}
+      <Dialog open={!!reactivateDialog} onOpenChange={() => { setReactivateDialog(null); setReactivateError(null) }}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Reactivar plan</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              ¿Querés reactivar el plan <strong className="text-foreground">{reactivateDialog?.nombre}</strong>?
+              Volverá a estar disponible para asignar a socios.
+            </DialogDescription>
+          </DialogHeader>
+          {reactivateError && (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+              <p className="text-sm text-destructive">{reactivateError}</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReactivateDialog(null)} className="cursor-pointer">
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (reactivateDialog) {
+                  reactivateMutation.mutate(reactivateDialog.id)
+                }
+              }}
+              disabled={reactivateMutation.isPending}
+              className="cursor-pointer"
+            >
+              {reactivateMutation.isPending ? 'Reactivando...' : 'Reactivar'}
             </Button>
           </DialogFooter>
         </DialogContent>

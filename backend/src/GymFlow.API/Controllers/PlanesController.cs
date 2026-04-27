@@ -15,19 +15,22 @@ public class PlanesController : ControllerBase
     private readonly CreatePlanCommand _createPlanCommand;
     private readonly UpdatePlanCommand _updatePlanCommand;
     private readonly DeletePlanCommand _deletePlanCommand;
+    private readonly ReactivatePlanCommand _reactivatePlanCommand;
 
     public PlanesController(
         GetPlanesQuery getPlanesQuery,
         GetPlanByIdQuery getPlanByIdQuery,
         CreatePlanCommand createPlanCommand,
         UpdatePlanCommand updatePlanCommand,
-        DeletePlanCommand deletePlanCommand)
+        DeletePlanCommand deletePlanCommand,
+        ReactivatePlanCommand reactivatePlanCommand)
     {
         _getPlanesQuery = getPlanesQuery;
         _getPlanByIdQuery = getPlanByIdQuery;
         _createPlanCommand = createPlanCommand;
         _updatePlanCommand = updatePlanCommand;
         _deletePlanCommand = deletePlanCommand;
+        _reactivatePlanCommand = reactivatePlanCommand;
     }
 
     [HttpGet]
@@ -80,6 +83,19 @@ public class PlanesController : ControllerBase
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    [HttpPatch("{id:guid}/reactivar")]
+    public async Task<ActionResult<PlanDto>> Reactivate(Guid id)
+    {
+        try
+        {
+            var (userId, userName) = GetCurrentUser();
+            var plan = await _reactivatePlanCommand.ExecuteAsync(id, userId, userName);
+            return Ok(plan);
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:guid}")]

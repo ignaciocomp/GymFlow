@@ -84,6 +84,11 @@ export const planesApi = {
     return data
   },
 
+  reactivate: async (id: string): Promise<Plan> => {
+    const { data } = await api.patch<Plan>(`/planes/${id}/reactivar`)
+    return data
+  },
+
   delete: async (id: string): Promise<void> => {
     await api.delete(`/planes/${id}`)
   },

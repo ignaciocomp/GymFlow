@@ -27,6 +27,11 @@ public class Plan
         EstaActivo = false;
     }
 
+    public void Reactivar()
+    {
+        EstaActivo = true;
+    }
+
     public void Actualizar(string nombre, decimal precio, string descripcion)
     {
         Nombre = !string.IsNullOrWhiteSpace(nombre) ? nombre : throw new ArgumentException("Nombre is required.", nameof(nombre));

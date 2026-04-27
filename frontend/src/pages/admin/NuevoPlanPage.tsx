@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger,
 } from '@/components/ui/select'
 import { CreditCard, ArrowLeft } from 'lucide-react'
 
@@ -110,7 +110,11 @@ export default function NuevoPlanPage() {
               onValueChange={(val) => setForm({ ...form, unidadId: val || '' })}
             >
               <SelectTrigger className="bg-muted/30 border-border">
-                <SelectValue placeholder="Seleccionar unidad" />
+                <span className={`flex flex-1 text-left ${!form.unidadId ? 'text-muted-foreground' : ''}`}>
+                  {form.unidadId
+                    ? unidades?.find(u => u.id === form.unidadId)?.nombre
+                    : 'Seleccionar unidad'}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {unidades?.map((u) => (

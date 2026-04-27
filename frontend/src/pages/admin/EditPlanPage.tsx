@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger,
 } from '@/components/ui/select'
 import { Pencil, ArrowLeft } from 'lucide-react'
 
@@ -171,7 +171,7 @@ export default function EditPlanPage() {
             <Label className="text-muted-foreground">Unidad</Label>
             <Select value={plan?.unidadId || ''} disabled>
               <SelectTrigger className="bg-muted/30 border-border opacity-60">
-                <SelectValue placeholder={unidadNombre} />
+                <span className="flex flex-1 text-left">{unidadNombre}</span>
               </SelectTrigger>
               <SelectContent>
                 {unidades?.map((u) => (
