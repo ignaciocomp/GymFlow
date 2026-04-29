@@ -33,4 +33,23 @@ public class EmpleadoTests
         Assert.Throws<ArgumentException>(() =>
             new Empleado("Juan", "Pérez", "juan@gymflow.com", null!, Guid.NewGuid()));
     }
+
+    [Fact]
+    public void CambiarRol_ConRolIdValido_ActualizaRolId()
+    {
+        var empleado = new Empleado("Juan", "Pérez", "juan@gymflow.com", "hash", Guid.NewGuid());
+        var nuevoRolId = Guid.NewGuid();
+
+        empleado.CambiarRol(nuevoRolId);
+
+        Assert.Equal(nuevoRolId, empleado.RolId);
+    }
+
+    [Fact]
+    public void CambiarRol_ConGuidEmpty_LanzaArgumentException()
+    {
+        var empleado = new Empleado("Juan", "Pérez", "juan@gymflow.com", "hash", Guid.NewGuid());
+
+        Assert.Throws<ArgumentException>(() => empleado.CambiarRol(Guid.Empty));
+    }
 }
