@@ -35,6 +35,13 @@ public abstract class Usuario
         PasswordHash = passwordHash;
     }
 
+    protected void CambiarRolInterno(Guid nuevoRolId)
+    {
+        if (nuevoRolId == Guid.Empty)
+            throw new ArgumentException("RolId is required.", nameof(nuevoRolId));
+        RolId = nuevoRolId;
+    }
+
     public void Desactivar() => EstaActivo = false;
     public void Activar() => EstaActivo = true;
 
