@@ -26,7 +26,7 @@ public class AuditLoggingTests
     private const string TestUserName = "Maurice Admin";
 
     private static Socio SocioFake() =>
-        new(Guid.NewGuid(), "Juan", "García", "juan@test.com", "PENDING_OAUTH",
+        new(Guid.NewGuid(), "Juan", "García", "juan@test.com", null,
             DateTime.UtcNow, true, TipoDocumento.Otro);
 
     private void ConfigurarMocksBase(Guid unidadId)

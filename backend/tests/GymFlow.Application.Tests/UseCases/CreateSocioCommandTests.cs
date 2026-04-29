@@ -23,7 +23,7 @@ public class CreateSocioCommandTests
     }
 
     private static Socio SocioFake(TipoDocumento tipo, string? doc) =>
-        new(Guid.NewGuid(), "Juan", "García", "juan@test.com", "PENDING_OAUTH",
+        new(Guid.NewGuid(), "Juan", "García", "juan@test.com", null,
             DateTime.UtcNow, true, tipo, null, doc, null);
 
     private void ConfigurarMocksBase(Guid unidadId, TipoDocumento tipo, string? doc)
