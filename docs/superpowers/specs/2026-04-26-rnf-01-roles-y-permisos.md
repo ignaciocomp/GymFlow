@@ -1,9 +1,11 @@
-# RF-23 — Gestión de Roles y Grupos de Seguridad por Menú
+# RNF-01 (parte 1) — Roles dinámicos y autorización por permisos
 
 **Fecha:** 2026-04-26
-**Iteración:** 1
-**Branch:** `feature/RF_23`
-**Estado:** Spec — pendiente de aprobación para generar plan
+**Iteración:** 2
+**Branch:** `feature/RNF_01`
+**Estado:** Implementado y mergeado a `develop`.
+
+> **Nota sobre la reclasificación:** Este trabajo originalmente se documentó como "RF-23". Tras revisar el documento académico actualizado (ATI-268502-243233-309167), quedó claro que **no es un requerimiento funcional nuevo** sino la implementación técnica del **RNF-01** ("Autenticación y autorización basada en roles"). El documento académico explicita que RNF-01 se entrega en dos partes: **It.2** (admin, profesor y otros roles internos) y **It.5** (socios con OAuth). Este spec corresponde a la **parte 1 de It.2** (catálogo de roles + permisos + atributo de autorización). La **parte 2 de It.2** (gestión de usuarios empleados) está en un spec aparte: `2026-04-28-rnf-01-gestion-usuarios.md`.
 
 ---
 
@@ -13,7 +15,7 @@ El sistema actualmente tiene tres roles fijos definidos como un enum en el códi
 
 Antes que dejar bloqueada la implementación de autenticación esperando esa definición, se decide reemplazar el modelo de roles fijos por un esquema flexible donde el administrador pueda crear roles personalizados combinando permisos por módulo y operación CRUD.
 
-Esta decisión se toma **ahora, en Iteración 1**, porque aún no existe un sistema de autenticación productivo: los usuarios están hardcodeados en `AuthController` y la única referencia al enum `Rol` en datos persistidos es el campo `Rol` de la entidad `Usuario`, que todavía no tiene registros en la base de datos. Implementarlo después implicaría rehacer el sistema de autenticación.
+Esta decisión se toma **en Iteración 2**, en paralelo a la migración de los usuarios hardcodeados a base de datos (parte 2). Hacerlo en este momento, antes de implementar el resto del sistema de autenticación productivo, evita rehacer trabajo después.
 
 ## Objetivo
 
@@ -150,18 +152,27 @@ Usuario
 
 ## Criterios de aceptación
 
-- [ ] El enum `Rol` no existe en el código.
-- [ ] Existe la tabla `Roles`, `Permisos`, `RolPermisos` en la base de datos con seed data.
-- [ ] Un usuario sin el permiso requerido recibe 403 al llamar a un endpoint protegido.
-- [ ] El admin puede crear un rol nuevo desde la UI con cualquier combinación de permisos.
-- [ ] El admin no puede eliminar ni editar los roles `EsSistema = true`.
-- [ ] El frontend esconde menús e ítems para los que el usuario no tiene permiso.
-- [ ] Login devuelve permisos del usuario y el frontend los usa para los checks.
-- [ ] Tests de Domain, Application y autorización pasan.
+- [x] El enum `Rol` no existe en el código.
+- [x] Existe la tabla `Roles`, `Permisos`, `RolPermisos` en la base de datos con seed data.
+- [x] Un usuario sin el permiso requerido recibe 403 al llamar a un endpoint protegido.
+- [x] El admin puede crear un rol nuevo desde la UI con cualquier combinación de permisos.
+- [x] El admin no puede eliminar ni editar los roles `EsSistema = true`.
+- [x] El frontend esconde menús e ítems para los que el usuario no tiene permiso.
+- [x] Login devuelve permisos del usuario y el frontend los usa para los checks.
+- [x] Tests de Domain, Application y autorización pasan.
 
-## Trabajo futuro (fuera de alcance)
+## Trabajo futuro (fuera de alcance de esta parte)
 
+**Parte 2 de It.2 — Gestión de usuarios empleados** (spec separado: `2026-04-28-rnf-01-gestion-usuarios.md`):
+- Migrar usuarios hardcodeados a base de datos.
+- CRUD de empleados (admin, profesor, roles custom) desde la UI.
+- BCrypt para hasheo de contraseñas.
+- `PasswordHash` nullable en `Usuario` para soportar futuro flujo OAuth de socios.
+
+**It.5 — Autenticación productiva completa:**
 - Definir e implementar el rol "Profesor" cuando el cliente especifique responsabilidades.
-- Migrar usuarios hardcodeados a base de datos cuando se implemente el módulo de Empleados.
+- MFA (TOTP) para roles internos (admin, profesor, custom).
+- OAuth 2.0 con Google para login de socios.
+- Flujo de credenciales temporales por mail (CU-07).
 - Auditoría específica de cambios en roles/permisos.
 - Permisos a nivel de acción específica (más allá de CRUD por módulo).
