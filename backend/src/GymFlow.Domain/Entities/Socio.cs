@@ -20,7 +20,7 @@ public class Socio : Usuario
         string nombre,
         string apellido,
         string correo,
-        string passwordHash,
+        string? passwordHash,        // changed to nullable
         DateTime fechaAlta,
         bool consentimientoInformado,
         TipoDocumento tipoDocumento,

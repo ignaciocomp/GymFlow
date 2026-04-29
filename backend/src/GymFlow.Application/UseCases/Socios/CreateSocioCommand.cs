@@ -63,7 +63,7 @@ public class CreateSocioCommand
             nombre: request.Nombre,
             apellido: request.Apellido,
             correo: request.Correo,
-            passwordHash: "PENDING_OAUTH",
+            passwordHash: null, // Socio se autentica por Google OAuth (It.5)
             fechaAlta: DateTime.UtcNow,
             consentimientoInformado: request.ConsentimientoInformado,
             tipoDocumento: request.TipoDocumento,
