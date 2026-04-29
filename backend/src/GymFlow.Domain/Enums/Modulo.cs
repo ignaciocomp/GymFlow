@@ -5,5 +5,6 @@ public enum Modulo
     Socios,
     Planes,
     Unidades,
-    Auditoria
+    Auditoria,
+    Empleados
 }
