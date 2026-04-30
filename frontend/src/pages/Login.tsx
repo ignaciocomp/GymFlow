@@ -42,7 +42,7 @@ export default function Login() {
             <Dumbbell className="h-8 w-8" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">GymFlow</h1>
-          <p className="text-sm text-muted-foreground">Sistema de Gestión para Gimnasios</p>
+          <p className="text-sm text-muted-foreground">Sistema de gestión para gimnasios</p>
         </div>
 
         {/* Login Card */}

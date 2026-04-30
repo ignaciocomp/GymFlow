@@ -23,17 +23,17 @@ const navigation: NavGroup[] = [
     label: 'Socios',
     icon: <Users className="h-5 w-5" />,
     items: [
-      { label: 'Nuevo Socio', path: '/admin/socios/nuevo', icon: <UserPlus className="h-4 w-4" /> },
-      { label: 'Socios Activos', path: '/admin/socios', icon: <Users className="h-4 w-4" /> },
-      { label: 'Socios Inactivos', path: '/admin/socios?tab=inactivos', icon: <UserX className="h-4 w-4" /> },
+      { label: 'Nuevo socio', path: '/admin/socios/nuevo', icon: <UserPlus className="h-4 w-4" /> },
+      { label: 'Socios activos', path: '/admin/socios', icon: <Users className="h-4 w-4" /> },
+      { label: 'Socios inactivos', path: '/admin/socios?tab=inactivos', icon: <UserX className="h-4 w-4" /> },
     ],
   },
   {
     label: 'Planes',
     icon: <CreditCard className="h-5 w-5" />,
     items: [
-      { label: 'Nuevo Plan', path: '/admin/planes/nuevo', icon: <CreditCard className="h-4 w-4" /> },
-      { label: 'Lista de Planes', path: '/admin/planes', icon: <CreditCard className="h-4 w-4" /> },
+      { label: 'Nuevo plan', path: '/admin/planes/nuevo', icon: <CreditCard className="h-4 w-4" /> },
+      { label: 'Lista de planes', path: '/admin/planes', icon: <CreditCard className="h-4 w-4" /> },
     ],
   },
   {

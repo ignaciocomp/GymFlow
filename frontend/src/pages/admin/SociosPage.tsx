@@ -78,7 +78,7 @@ export default function SociosPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {isActiveTab ? 'Socios Activos' : 'Socios Inactivos'}
+              {isActiveTab ? 'Socios activos' : 'Socios inactivos'}
             </h1>
             <p className="text-sm text-muted-foreground">
               Gestiona los socios {isActiveTab ? 'activos' : 'inactivos'} del gimnasio
@@ -88,7 +88,7 @@ export default function SociosPage() {
         <Link to="/admin/socios/nuevo">
           <Button className="cursor-pointer gap-2">
             <UserPlus className="h-4 w-4" />
-            Nuevo Socio
+            Nuevo socio
           </Button>
         </Link>
       </div>
@@ -104,7 +104,7 @@ export default function SociosPage() {
           }`}
         >
           <Users className="h-4 w-4" />
-          Socios Activos
+          Socios activos
         </button>
         <button
           onClick={() => setSearchParams({ tab: 'inactivos' })}
@@ -115,7 +115,7 @@ export default function SociosPage() {
           }`}
         >
           <UserX className="h-4 w-4" />
-          Socios Inactivos
+          Socios inactivos
         </button>
       </div>
 
@@ -169,12 +169,12 @@ export default function SociosPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="text-muted-foreground">Nombre y Apellido</TableHead>
-              <TableHead className="text-muted-foreground">Doc. Identidad</TableHead>
+              <TableHead className="text-muted-foreground">Nombre y apellido</TableHead>
+              <TableHead className="text-muted-foreground">Doc. identidad</TableHead>
               <TableHead className="text-muted-foreground">Correo</TableHead>
               <TableHead className="text-muted-foreground">Celular</TableHead>
-              <TableHead className="text-muted-foreground">Unidades / Plan</TableHead>
-              <TableHead className="text-muted-foreground">Fecha Alta</TableHead>
+              <TableHead className="text-muted-foreground">Unidades / plan</TableHead>
+              <TableHead className="text-muted-foreground">Fecha alta</TableHead>
               <TableHead className="text-muted-foreground text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -196,7 +196,7 @@ export default function SociosPage() {
                       <Link to="/admin/socios/nuevo">
                         <Button variant="outline" size="sm" className="mt-2 cursor-pointer gap-2">
                           <UserPlus className="h-4 w-4" />
-                          Agregar Socio
+                          Agregar socio
                         </Button>
                       </Link>
                     )}

@@ -91,7 +91,7 @@ export default function EditPlanPage() {
               <Pencil className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">Editar Plan</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Editar plan</h1>
               <p className="text-sm text-muted-foreground">Cargando datos del plan...</p>
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function EditPlanPage() {
         <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6">
           <p className="text-sm text-destructive">No se pudo cargar el plan. Es posible que haya sido eliminado.</p>
           <Button variant="outline" className="mt-4 cursor-pointer" onClick={() => navigate('/admin/planes')}>
-            Volver a Planes
+            Volver a planes
           </Button>
         </div>
       </div>
@@ -154,7 +154,7 @@ export default function EditPlanPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Datos del Plan
+            Datos del plan
           </h2>
 
           <div className="space-y-2">
@@ -196,11 +196,11 @@ export default function EditPlanPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-muted-foreground">Descripcion</Label>
+            <Label className="text-muted-foreground">Descripción</Label>
             <Textarea
               value={form.descripcion || ''}
               onChange={(e) => setForm({ ...form, descripcion: e.target.value || null })}
-              placeholder="Descripcion del plan (opcional)"
+              placeholder="Descripción del plan (opcional)"
               className="bg-muted/30 border-border"
               rows={3}
             />
@@ -218,7 +218,7 @@ export default function EditPlanPage() {
         <div className="flex gap-3">
           <Button type="submit" disabled={updateMutation.isPending} className="cursor-pointer gap-2">
             <Pencil className="h-4 w-4" />
-            {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
+            {updateMutation.isPending ? 'Guardando...' : 'Guardar cambios'}
           </Button>
           <Button
             type="button"

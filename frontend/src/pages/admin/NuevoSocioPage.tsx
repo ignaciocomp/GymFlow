@@ -151,7 +151,7 @@ export default function NuevoSocioPage() {
             <UserPlus className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Nuevo Socio</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Nuevo socio</h1>
             <p className="text-sm text-muted-foreground">
               Los campos marcados con * son obligatorios
             </p>
@@ -164,7 +164,7 @@ export default function NuevoSocioPage() {
         {/* Información Personal */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Información Personal
+            Información personal
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
@@ -210,7 +210,7 @@ export default function NuevoSocioPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Tipo de Documento *</Label>
+              <Label className="text-muted-foreground">Tipo de documento *</Label>
               <Select
                 value={form.tipoDocumento || ''}
                 onValueChange={(val) => setForm({
@@ -223,7 +223,7 @@ export default function NuevoSocioPage() {
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CI">Cédula de Identidad</SelectItem>
+                  <SelectItem value="CI">Cédula de identidad</SelectItem>
                   <SelectItem value="Pasaporte">Pasaporte</SelectItem>
                   <SelectItem value="Otro">Otro</SelectItem>
                 </SelectContent>
@@ -259,7 +259,7 @@ export default function NuevoSocioPage() {
         {/* Plan y Acceso */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Plan y Acceso
+            Plan y acceso
           </h2>
 
           <div className="space-y-2">
@@ -348,7 +348,7 @@ export default function NuevoSocioPage() {
         <div className="flex gap-3">
           <Button type="submit" disabled={createMutation.isPending} className="cursor-pointer gap-2">
             <UserPlus className="h-4 w-4" />
-            {createMutation.isPending ? 'Registrando...' : 'Guardar Socio'}
+            {createMutation.isPending ? 'Registrando...' : 'Guardar socio'}
           </Button>
           <Button
             type="button"

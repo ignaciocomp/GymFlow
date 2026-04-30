@@ -92,7 +92,7 @@ export default function PlanesPage() {
         <Link to="/admin/planes/nuevo">
           <Button className="cursor-pointer gap-2">
             <Plus className="h-4 w-4" />
-            Nuevo Plan
+            Nuevo plan
           </Button>
         </Link>
       </div>
@@ -145,7 +145,7 @@ export default function PlanesPage() {
                     <Link to="/admin/planes/nuevo">
                       <Button variant="outline" size="sm" className="mt-2 cursor-pointer gap-2">
                         <Plus className="h-4 w-4" />
-                        Agregar Plan
+                        Agregar plan
                       </Button>
                     </Link>
                   </div>

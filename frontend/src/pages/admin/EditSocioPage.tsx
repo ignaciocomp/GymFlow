@@ -170,7 +170,7 @@ export default function EditSocioPage() {
               <Pencil className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">Editar Socio</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Editar socio</h1>
               <p className="text-sm text-muted-foreground">Cargando datos del socio...</p>
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function EditSocioPage() {
         <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6">
           <p className="text-sm text-destructive">No se pudo cargar el socio. Es posible que haya sido eliminado.</p>
           <Button variant="outline" className="mt-4 cursor-pointer" onClick={() => navigate('/admin/socios')}>
-            Volver a Socios
+            Volver a socios
           </Button>
         </div>
       </div>
@@ -232,7 +232,7 @@ export default function EditSocioPage() {
         {/* Informacion Personal */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Información Personal
+            Información personal
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
@@ -257,7 +257,7 @@ export default function EditSocioPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-muted-foreground">Correo electronico *</Label>
+            <Label className="text-muted-foreground">Correo electrónico *</Label>
             <Input
               type="email"
               value={form.correo}
@@ -269,7 +269,7 @@ export default function EditSocioPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Telefono</Label>
+              <Label className="text-muted-foreground">Teléfono</Label>
               <Input
                 value={form.telefono || ''}
                 onChange={(e) => setForm({ ...form, telefono: e.target.value || null })}
@@ -278,7 +278,7 @@ export default function EditSocioPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Tipo de Documento *</Label>
+              <Label className="text-muted-foreground">Tipo de documento *</Label>
               <Select
                 value={form.tipoDocumento || ''}
                 onValueChange={(val) => setForm({
@@ -291,7 +291,7 @@ export default function EditSocioPage() {
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CI">Cédula de Identidad</SelectItem>
+                  <SelectItem value="CI">Cédula de identidad</SelectItem>
                   <SelectItem value="Pasaporte">Pasaporte</SelectItem>
                   <SelectItem value="Otro">Otro</SelectItem>
                 </SelectContent>
@@ -327,7 +327,7 @@ export default function EditSocioPage() {
         {/* Plan y Acceso */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Plan y Acceso
+            Plan y acceso
           </h2>
 
           <div className="space-y-2">
@@ -383,7 +383,7 @@ export default function EditSocioPage() {
         <div className="flex gap-3">
           <Button type="submit" disabled={updateMutation.isPending} className="cursor-pointer gap-2">
             <Pencil className="h-4 w-4" />
-            {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
+            {updateMutation.isPending ? 'Guardando...' : 'Guardar cambios'}
           </Button>
           <Button
             type="button"

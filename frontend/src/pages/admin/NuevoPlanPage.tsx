@@ -78,7 +78,7 @@ export default function NuevoPlanPage() {
             <CreditCard className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Nuevo Plan</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Nuevo plan</h1>
             <p className="text-sm text-muted-foreground">
               Los campos marcados con * son obligatorios
             </p>
@@ -90,7 +90,7 @@ export default function NuevoPlanPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Datos del Plan
+            Datos del plan
           </h2>
 
           <div className="space-y-2">
@@ -138,11 +138,11 @@ export default function NuevoPlanPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-muted-foreground">Descripcion</Label>
+            <Label className="text-muted-foreground">Descripción</Label>
             <Textarea
               value={form.descripcion || ''}
               onChange={(e) => setForm({ ...form, descripcion: e.target.value || null })}
-              placeholder="Descripcion del plan (opcional)"
+              placeholder="Descripción del plan (opcional)"
               className="bg-muted/30 border-border"
               rows={3}
             />
@@ -160,7 +160,7 @@ export default function NuevoPlanPage() {
         <div className="flex gap-3">
           <Button type="submit" disabled={createMutation.isPending} className="cursor-pointer gap-2">
             <CreditCard className="h-4 w-4" />
-            {createMutation.isPending ? 'Creando...' : 'Guardar Plan'}
+            {createMutation.isPending ? 'Creando...' : 'Guardar plan'}
           </Button>
           <Button
             type="button"

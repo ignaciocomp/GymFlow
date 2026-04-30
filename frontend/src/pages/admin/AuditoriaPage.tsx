@@ -8,7 +8,7 @@ const TIPO_ACCIONES: { value: TipoAccionAuditoria; label: string }[] = [
   { value: 'Modificacion', label: 'Modificación' },
   { value: 'Baja', label: 'Baja' },
   { value: 'Reactivacion', label: 'Reactivación' },
-  { value: 'InicioSesion', label: 'Inicio de Sesión' },
+  { value: 'InicioSesion', label: 'Inicio de sesión' },
 ]
 
 const accionBadgeColor: Record<TipoAccionAuditoria, string> = {
@@ -86,7 +86,7 @@ export default function AuditoriaPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">Tipo de Acción</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Tipo de acción</label>
           <select
             value={tipoAccionFilter}
             onChange={(e) => setTipoAccionFilter(e.target.value)}
@@ -123,12 +123,12 @@ export default function AuditoriaPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase w-8"></th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Fecha/Hora</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Usuario</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Acción</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Entidad</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Descripción</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground w-8"></th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Fecha/hora</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Usuario</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Acción</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Entidad</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Descripción</th>
             </tr>
           </thead>
           <tbody>
