@@ -152,7 +152,7 @@ chore: tareas técnicas
 | Franco Notte | 243233 |
 | Sebastián Acuña | 309167 |
 
-**Tutor:** Sebastián Pombo
+**Tutor:** Luis Dentone Michelena
 
 ## Licencia
 
