@@ -1,17 +1,14 @@
 import { useState } from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
-import { usePermisos } from '@/hooks/usePermisos'
 import { Users } from 'lucide-react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 
 export default function AdminLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
-  const { puedeLeer } = usePermisos()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  // Proxy: solo el admin tiene Lectura sobre Auditoria en el seed inicial.
-  const tieneAccesoAdmin = puedeLeer('Auditoria')
+  const tieneAccesoAdmin = (user?.permisos?.length ?? 0) > 0
 
   if (isLoading) {
     return (
