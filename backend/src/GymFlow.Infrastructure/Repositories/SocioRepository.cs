@@ -39,6 +39,16 @@ public class SocioRepository : ISocioRepository
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
+    public async Task<Socio?> GetByCorreoAsync(string correo)
+    {
+        return await _context.Socios
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Unidad)
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Plan)
+            .FirstOrDefaultAsync(s => s.Correo.ToLower() == correo.ToLower());
+    }
+
     public async Task<bool> ExisteCorreoAsync(string correo)
     {
         return await _context.Usuarios.AnyAsync(u => u.Correo.ToLower() == correo.ToLower());

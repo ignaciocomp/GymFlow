@@ -22,6 +22,10 @@ export default function AdminLayout() {
     return <Navigate to="/login" replace />
   }
 
+  if (!tieneAccesoAdmin && user?.rolNombre === 'Socio') {
+    return <Navigate to="/portal" replace />
+  }
+
   if (!tieneAccesoAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">

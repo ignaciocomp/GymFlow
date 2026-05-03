@@ -9,6 +9,8 @@ const TIPO_ACCIONES: { value: TipoAccionAuditoria; label: string }[] = [
   { value: 'Baja', label: 'Baja' },
   { value: 'Reactivacion', label: 'Reactivación' },
   { value: 'InicioSesion', label: 'Inicio de sesión' },
+  { value: 'SolicitudModificacion', label: 'Solicitud de modificación' },
+  { value: 'SolicitudBaja', label: 'Solicitud de baja' },
 ]
 
 const accionBadgeColor: Record<TipoAccionAuditoria, string> = {
@@ -17,6 +19,8 @@ const accionBadgeColor: Record<TipoAccionAuditoria, string> = {
   Baja: 'bg-red-100 text-red-800',
   Reactivacion: 'bg-amber-100 text-amber-800',
   InicioSesion: 'bg-purple-100 text-purple-800',
+  SolicitudModificacion: 'bg-sky-100 text-sky-800',
+  SolicitudBaja: 'bg-orange-100 text-orange-800',
 }
 
 export default function AuditoriaPage() {
