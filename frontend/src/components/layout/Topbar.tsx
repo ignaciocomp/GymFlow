@@ -30,7 +30,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
           <p className="text-sm font-medium text-foreground">
             {user?.nombre} {user?.apellido}
           </p>
-          <p className="text-xs text-muted-foreground">{user?.rol}</p>
+          <p className="text-xs text-muted-foreground">{user?.rolNombre}</p>
         </div>
         <button
           onClick={logout}

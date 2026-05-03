@@ -16,17 +16,18 @@ public class Socio : Usuario
     private Socio() { } // EF Core
 
     public Socio(
+        Guid rolSocioId,
         string nombre,
         string apellido,
         string correo,
-        string passwordHash,
+        string? passwordHash,        // changed to nullable
         DateTime fechaAlta,
         bool consentimientoInformado,
         TipoDocumento tipoDocumento,
         string? telefono = null,
         string? documentoIdentidad = null,
         DateTime? fechaNacimiento = null)
-        : base(nombre, apellido, correo, passwordHash, Rol.Socio)
+        : base(nombre, apellido, correo, passwordHash, rolSocioId)
     {
         FechaAlta = fechaAlta;
         Telefono = telefono;

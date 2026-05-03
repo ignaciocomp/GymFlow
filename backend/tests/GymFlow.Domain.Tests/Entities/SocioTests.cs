@@ -10,6 +10,7 @@ public class SocioTests
         TipoDocumento tipoDocumento,
         string? documentoIdentidad) =>
         new Socio(
+            rolSocioId: Guid.NewGuid(),
             nombre: "Juan",
             apellido: "García",
             correo: "juan@test.com",

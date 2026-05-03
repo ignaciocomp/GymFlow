@@ -5,16 +5,21 @@ import {
   Users,
   UserPlus,
   UserX,
+  UserCog,
   CreditCard,
   Dumbbell,
   ChevronDown,
   ChevronRight,
   ClipboardList,
+  Shield,
 } from 'lucide-react'
+import { usePermisos } from '@/hooks/usePermisos'
+import type { Modulo } from '@/types/permisos'
 
 interface NavGroup {
   label: string
   icon: React.ReactNode
+  modulo: Modulo
   items: { label: string; path: string; icon: React.ReactNode }[]
 }
 
@@ -22,6 +27,7 @@ const navigation: NavGroup[] = [
   {
     label: 'Socios',
     icon: <Users className="h-5 w-5" />,
+    modulo: 'Socios',
     items: [
       { label: 'Nuevo socio', path: '/admin/socios/nuevo', icon: <UserPlus className="h-4 w-4" /> },
       { label: 'Socios activos', path: '/admin/socios', icon: <Users className="h-4 w-4" /> },
@@ -31,6 +37,7 @@ const navigation: NavGroup[] = [
   {
     label: 'Planes',
     icon: <CreditCard className="h-5 w-5" />,
+    modulo: 'Planes',
     items: [
       { label: 'Nuevo plan', path: '/admin/planes/nuevo', icon: <CreditCard className="h-4 w-4" /> },
       { label: 'Lista de planes', path: '/admin/planes', icon: <CreditCard className="h-4 w-4" /> },
@@ -39,8 +46,11 @@ const navigation: NavGroup[] = [
   {
     label: 'Sistema',
     icon: <ClipboardList className="h-5 w-5" />,
+    modulo: 'Empleados',
     items: [
+      { label: 'Usuarios', path: '/admin/usuarios', icon: <UserCog className="h-4 w-4" /> },
       { label: 'Auditoría', path: '/admin/auditoria', icon: <ClipboardList className="h-4 w-4" /> },
+      { label: 'Roles', path: '/admin/roles', icon: <Shield className="h-4 w-4" /> },
     ],
   },
 ]
@@ -49,6 +59,8 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const [openGroups, setOpenGroups] = useState<string[]>(['Socios'])
+  const { puedeLeer } = usePermisos()
+  const visibleGroups = navigation.filter(g => puedeLeer(g.modulo))
 
   const toggleGroup = (label: string) => {
     setOpenGroups((prev) =>
@@ -69,6 +81,10 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
       return location.pathname.startsWith('/admin/planes') &&
         location.pathname !== '/admin/planes/nuevo'
     }
+    if (path === '/admin/usuarios') {
+      return location.pathname.startsWith('/admin/usuarios') &&
+        location.pathname !== '/admin/usuarios/nuevo'
+    }
     return location.pathname === path
   }
 
@@ -78,7 +94,6 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
-      {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <Dumbbell className="h-5 w-5" />
@@ -88,9 +103,7 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="mt-4 flex flex-col gap-1 px-3">
-        {/* Dashboard */}
         <Link
           to="/admin/dashboard"
           className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
@@ -103,8 +116,7 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
           {!collapsed && <span>Inicio</span>}
         </Link>
 
-        {/* Groups */}
-        {navigation.map((group) => {
+        {visibleGroups.map((group) => {
           const isOpen = openGroups.includes(group.label)
           return (
             <div key={group.label}>

@@ -1,5 +1,3 @@
-using GymFlow.Domain.Enums;
-
 namespace GymFlow.Domain.Entities;
 
 public abstract class Usuario
@@ -8,37 +6,44 @@ public abstract class Usuario
     public string Nombre { get; private set; } = string.Empty;
     public string Apellido { get; private set; } = string.Empty;
     public string Correo { get; private set; } = string.Empty;
-    public string PasswordHash { get; private set; } = string.Empty;
-    public Rol Rol { get; private set; }
+    public string? PasswordHash { get; private set; }
+    public Guid RolId { get; private set; }
+    public Rol Rol { get; private set; } = null!;
     public bool EstaActivo { get; private set; } = true;
     public DateTime FechaCreacion { get; private set; }
 
-    // N:M with Unidad
     public ICollection<UsuarioUnidad> UnidadesAsignadas { get; private set; } = new List<UsuarioUnidad>();
 
     protected Usuario() { } // EF Core
 
-    protected Usuario(string nombre, string apellido, string correo, string passwordHash, Rol rol)
+    protected Usuario(string nombre, string apellido, string correo, string? passwordHash, Guid rolId)
     {
         Id = Guid.NewGuid();
         Nombre = !string.IsNullOrWhiteSpace(nombre) ? nombre : throw new ArgumentException("Nombre is required.", nameof(nombre));
         Apellido = !string.IsNullOrWhiteSpace(apellido) ? apellido : throw new ArgumentException("Apellido is required.", nameof(apellido));
         Correo = !string.IsNullOrWhiteSpace(correo) ? correo : throw new ArgumentException("Correo is required.", nameof(correo));
-        PasswordHash = !string.IsNullOrWhiteSpace(passwordHash) ? passwordHash : throw new ArgumentException("PasswordHash is required.", nameof(passwordHash));
-        Rol = rol;
+        PasswordHash = passwordHash; // nullable: Empleado lo setea, Socio lo deja null hasta OAuth (It.5)
+        RolId = rolId != Guid.Empty ? rolId : throw new ArgumentException("RolId is required.", nameof(rolId));
         EstaActivo = true;
         FechaCreacion = DateTime.UtcNow;
     }
 
-    public void Desactivar()
+    public void EstablecerPasswordHash(string passwordHash)
     {
-        EstaActivo = false;
+        if (string.IsNullOrWhiteSpace(passwordHash))
+            throw new ArgumentException("PasswordHash is required.", nameof(passwordHash));
+        PasswordHash = passwordHash;
     }
 
-    public void Activar()
+    protected void CambiarRolInterno(Guid nuevoRolId)
     {
-        EstaActivo = true;
+        if (nuevoRolId == Guid.Empty)
+            throw new ArgumentException("RolId is required.", nameof(nuevoRolId));
+        RolId = nuevoRolId;
     }
+
+    public void Desactivar() => EstaActivo = false;
+    public void Activar() => EstaActivo = true;
 
     public void ActualizarDatosBase(string nombre, string apellido, string correo)
     {

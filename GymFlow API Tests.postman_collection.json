@@ -1,0 +1,2581 @@
+{
+  "info": {
+    "_postman_id": "e7995d47-4beb-466a-a83d-ef280ae8d08f",
+    "name": "GymFlow API Tests",
+    "description": "**Nombre de la prueba**: Validación de endpoints API GymFlow\n\n**Tipo de prueba**:\n\n- Prueba funcional (caja negra)\n- Prueba de integración (nivel API)\n- Prueba de seguridad (RNF-01: control de acceso por roles)\n\n**Objetivo**:  \nVerificar que los endpoints de la API de GymFlow exponen los datos correctamente según los contratos definidos en los DTOs, y que el sistema de permisos por roles funciona correctamente.\n\n**Módulos cubiertos**:\n\n- Auth (login, perfil)\n- Socios (CRUD completo + reactivación)\n- Planes (CRUD completo)\n- Unidades (lectura)\n- Auditoría (consulta con filtros)\n- Roles y Permisos (RNF-01)\n- Empleados (RNF-01)\n\n**Criterios de éxito generales**:\n\n- Códigos HTTP correctos según operación\n- Estructura JSON conforme a DTOs\n- Tipos de datos correctos\n- Tiempo de respuesta < 500ms\n- Validaciones de negocio funcionando\n- Permisos denegados devuelven 403\n\n**Herramienta**: Postman  \n**Proyecto**: GymFlow — Sistema Integrado de Gestión para Gimnasios  \n**Equipo**: Ignacio Compan, Franco Notte, Sebastián Acuña",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32928777",
+    "_collection_link": "https://go.postman.co/collection/32928777-e7995d47-4beb-466a-a83d-ef280ae8d08f?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "item": [
+            {
+              "name": "200 - Login exitoso (Admin)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta contiene un token JWT válido\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"token\");",
+                      "    pm.expect(jsonData.token).to.be.a(\"string\");",
+                      "    pm.expect(jsonData.token.length).to.be.greaterThan(0);",
+                      "",
+                      "    const parts = jsonData.token.split(\".\");",
+                      "    pm.expect(parts.length).to.eql(3);",
+                      "});",
+                      "",
+                      "const data = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", data.token);",
+                      "console.log(\"Token guardado exitosamente\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "401 - Login con credenciales inválidas",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"noexiste@gymflow.com\",\n  \"password\": \"PasswordIncorrecta123\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "400 - Login sin campos requeridos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"\",\n  \"password\": \"\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "item": [
+            {
+              "name": "200 - Obtener perfil autenticado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta tiene la estructura de usuario esperada\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.be.an(\"object\");",
+                      "    pm.expect(item).to.have.property(\"correo\");",
+                      "    pm.expect(item.correo).to.be.a(\"string\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "me"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "401 - Perfil sin autenticación",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "me"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unidades",
+      "item": [
+        {
+          "name": "200 - Lista Unidades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"La respuesta es un array con la estructura de UnidadDto\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\").that.is.not.empty;",
+                  "",
+                  "    jsonData.forEach(function(item) {",
+                  "        pm.expect(item).to.have.all.keys(\"id\", \"nombre\", \"direccion\", \"planId\", \"planNombre\");",
+                  "        pm.expect(item.id).to.be.a(\"string\");",
+                  "        pm.expect(item.nombre).to.be.a(\"string\");",
+                  "        pm.expect(item.nombre.length).to.be.greaterThan(0);",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test(\"Existen las 2 unidades seed (Gimnasio + Espacio Mora)\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.length).to.be.at.least(2);",
+                  "",
+                  "    if (jsonData.length >= 1) {",
+                  "        pm.collectionVariables.set(\"unidadId1\", jsonData[0].id);",
+                  "    }",
+                  "    if (jsonData.length >= 2) {",
+                  "        pm.collectionVariables.set(\"unidadId2\", jsonData[1].id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/unidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["unidades"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Planes",
+      "item": [
+        {
+          "name": "GetAll",
+          "item": [
+            {
+              "name": "200 - Lista Planes",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta es un array con la estructura de PlanDto\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\").that.is.not.empty;",
+                      "",
+                      "    jsonData.forEach(function(item) {",
+                      "        pm.expect(item).to.have.all.keys(",
+                      "            \"id\", \"nombre\", \"unidadId\", \"unidadNombre\", \"precio\", \"descripcion\", \"estaActivo\"",
+                      "        );",
+                      "        pm.expect(item.id).to.be.a(\"string\");",
+                      "        pm.expect(item.nombre).to.be.a(\"string\");",
+                      "        pm.expect(item.unidadId).to.be.a(\"string\");",
+                      "        pm.expect(item.unidadNombre).to.be.a(\"string\");",
+                      "        pm.expect(item.precio).to.be.a(\"number\");",
+                      "        pm.expect(item.estaActivo).to.be.a(\"boolean\");",
+                      "        pm.expect(item.id).to.have.lengthOf(36);",
+                      "        pm.expect(item.precio).to.be.at.least(0);",
+                      "        pm.expect(item.nombre.length).to.be.greaterThan(0);",
+                      "    });",
+                      "});",
+                      "",
+                      "const jsonData = pm.response.json();",
+                      "if (jsonData.length > 0) {",
+                      "    pm.collectionVariables.set(\"planId\", jsonData[0].id);",
+                      "    pm.collectionVariables.set(\"planUnidadId\", jsonData[0].unidadId);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "GetById",
+          "item": [
+            {
+              "name": "200 - Plan por ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta tiene la estructura de PlanDto\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.be.an(\"object\");",
+                      "    pm.expect(item).to.have.all.keys(",
+                      "        \"id\", \"nombre\", \"unidadId\", \"unidadNombre\", \"precio\", \"descripcion\", \"estaActivo\"",
+                      "    );",
+                      "    pm.expect(item.id).to.be.a(\"string\");",
+                      "    pm.expect(item.estaActivo).to.be.a(\"boolean\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes/{{planId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes", "{{planId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Plan no encontrado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Create",
+          "item": [
+            {
+              "name": "201 - Crear Plan",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"El plan creado tiene la estructura esperada\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.be.an(\"object\");",
+                      "    pm.expect(item).to.have.property(\"id\");",
+                      "    pm.expect(item.id).to.be.a(\"string\").and.to.have.lengthOf(36);",
+                      "    pm.expect(item).to.have.property(\"nombre\", \"Plan Test Postman\");",
+                      "    pm.expect(item).to.have.property(\"precio\", 1500);",
+                      "    pm.expect(item).to.have.property(\"estaActivo\", true);",
+                      "});",
+                      "",
+                      "const item = pm.response.json();",
+                      "pm.collectionVariables.set(\"createdPlanId\", item.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Plan Test Postman\",\n  \"unidadId\": \"{{unidadId1}}\",\n  \"precio\": 1500,\n  \"descripcion\": \"Plan creado desde Postman para testing\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/planes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "400 - Crear Plan sin nombre",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"El mensaje de error es descriptivo\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"title\");",
+                      "    pm.expect(jsonData).to.have.property(\"errors\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"\",\n  \"unidadId\": {{unidadId1}},\n  \"precio\": 1500,\n  \"descripcion\": \"Plan sin nombre\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/planes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "400 - Crear Plan con unidad inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400 o 404\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Plan Fantasma\",\n  \"unidadId\": \"00000000-0000-0000-0000-000000000000\",\n  \"precio\": 1000,\n  \"descripcion\": \"Unidad que no existe\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/planes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Update",
+          "item": [
+            {
+              "name": "200 - Actualizar Plan",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"El plan se actualizó correctamente\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.property(\"nombre\", \"Plan Test Actualizado\");",
+                      "    pm.expect(item).to.have.property(\"precio\", 2000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Plan Test Actualizado\",\n  \"precio\": 2000,\n  \"descripcion\": \"Plan actualizado desde Postman\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/planes/{{createdPlanId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes", "{{createdPlanId}}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Delete",
+          "item": [
+            {
+              "name": "204 - Eliminar Plan",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204 o 200\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes/{{createdPlanId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes", "{{createdPlanId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Eliminar Plan inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Socios",
+      "item": [
+        {
+          "name": "GetAll",
+          "item": [
+            {
+              "name": "200 - Lista Socios",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta es un array (puede estar vacío si no hay socios)\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "});",
+                      "",
+                      "pm.test(\"Si hay socios, la estructura de SocioDto es correcta\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    if (jsonData.length > 0) {",
+                      "        jsonData.forEach(function(item) {",
+                      "            pm.expect(item).to.have.property(\"id\");",
+                      "            pm.expect(item).to.have.property(\"nombre\");",
+                      "            pm.expect(item).to.have.property(\"apellido\");",
+                      "            pm.expect(item).to.have.property(\"correo\");",
+                      "            pm.expect(item).to.have.property(\"tipoDocumento\");",
+                      "            pm.expect(item).to.have.property(\"fechaAlta\");",
+                      "            pm.expect(item).to.have.property(\"estaActivo\");",
+                      "            pm.expect(item.id).to.be.a(\"string\");",
+                      "            pm.expect(item.nombre).to.be.a(\"string\");",
+                      "            pm.expect(item.apellido).to.be.a(\"string\");",
+                      "            pm.expect(item.correo).to.be.a(\"string\");",
+                      "            pm.expect(item.estaActivo).to.be.a(\"boolean\");",
+                      "            const regexISO = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/;",
+                      "            pm.expect(item.fechaAlta).to.match(regexISO);",
+                      "        });",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Create",
+          "item": [
+            {
+              "name": "201 - Crear Socio",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Generar correo único",
+                      "const correoUnico = `juan.perez.${Date.now()}@gymflow.com`;",
+                      "pm.collectionVariables.set(\"socioCorreoTest\", correoUnico);",
+                      "",
+                      "// Generar cédula uruguaya válida (algoritmo de dígito verificador)",
+                      "function generarCedulaValida() {",
+                      "    const pesos = [2, 9, 8, 7, 6, 3, 4];",
+                      "    let digitos = [];",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        digitos.push(Math.floor(Math.random() * 10));",
+                      "    }",
+                      "    if (digitos[0] === 0) digitos[0] = Math.floor(Math.random() * 9) + 1;",
+                      "    let suma = 0;",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        suma += digitos[i] * pesos[i];",
+                      "    }",
+                      "    const verificador = (10 - (suma % 10)) % 10;",
+                      "    digitos.push(verificador);",
+                      "    return digitos.join('');",
+                      "}",
+                      "",
+                      "pm.collectionVariables.set(\"cedulaDinamica\", generarCedulaValida());",
+                      "console.log(\"Cédula generada: \" + pm.collectionVariables.get(\"cedulaDinamica\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"El socio creado tiene la estructura de SocioDto\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.be.an(\"object\");",
+                      "    pm.expect(item).to.have.property(\"id\");",
+                      "    pm.expect(item.id).to.be.a(\"string\").and.to.have.lengthOf(36);",
+                      "    pm.expect(item).to.have.property(\"nombre\", \"Juan\");",
+                      "    pm.expect(item).to.have.property(\"apellido\", \"Pérez Test\");",
+                      "    pm.expect(item.correo).to.eql(pm.collectionVariables.get(\"socioCorreoTest\"));",
+                      "    pm.expect(item).to.have.property(\"estaActivo\", true);",
+                      "    pm.expect(item).to.have.property(\"fechaAlta\");",
+                      "    const fechaAlta = new Date(item.fechaAlta);",
+                      "    pm.expect(isNaN(fechaAlta.getTime())).to.be.false;",
+                      "});",
+                      "",
+                      "const item = pm.response.json();",
+                      "pm.collectionVariables.set(\"createdSocioId\", item.id);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez Test\",\n  \"correo\": \"{{socioCorreoTest}}\",\n  \"telefono\": \"099123456\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"fechaNacimiento\": \"1995-06-15T00:00:00Z\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ],\n  \"consentimientoInformado\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "400 - Crear Socio sin nombre",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "function generarCedulaValida() {",
+                      "    const pesos = [2, 9, 8, 7, 6, 3, 4];",
+                      "    let digitos = [];",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        digitos.push(Math.floor(Math.random() * 10));",
+                      "    }",
+                      "    if (digitos[0] === 0) digitos[0] = Math.floor(Math.random() * 9) + 1;",
+                      "    let suma = 0;",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        suma += digitos[i] * pesos[i];",
+                      "    }",
+                      "    const verificador = (10 - (suma % 10)) % 10;",
+                      "    digitos.push(verificador);",
+                      "    return digitos.join('');",
+                      "}",
+                      "pm.collectionVariables.set(\"cedulaDinamica\", generarCedulaValida());"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"El error es descriptivo\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include(\"nombre\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"\",\n  \"apellido\": \"Sin Nombre\",\n  \"correo\": \"sinnombre@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ],\n  \"consentimientoInformado\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "400 - Crear Socio sin consentimiento (Ley 18.331)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "function generarCedulaValida() {",
+                      "    const pesos = [2, 9, 8, 7, 6, 3, 4];",
+                      "    let digitos = [];",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        digitos.push(Math.floor(Math.random() * 10));",
+                      "    }",
+                      "    if (digitos[0] === 0) digitos[0] = Math.floor(Math.random() * 9) + 1;",
+                      "    let suma = 0;",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        suma += digitos[i] * pesos[i];",
+                      "    }",
+                      "    const verificador = (10 - (suma % 10)) % 10;",
+                      "    digitos.push(verificador);",
+                      "    return digitos.join('');",
+                      "}",
+                      "pm.collectionVariables.set(\"cedulaDinamica\", generarCedulaValida());"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"El error menciona el consentimiento\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include(\"consentimiento\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"María\",\n  \"apellido\": \"Sin Consentimiento\",\n  \"correo\": \"maria.sincons@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ],\n  \"consentimientoInformado\": false\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "400 - Crear Socio con correo duplicado",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "function generarCedulaValida() {",
+                      "    const pesos = [2, 9, 8, 7, 6, 3, 4];",
+                      "    let digitos = [];",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        digitos.push(Math.floor(Math.random() * 10));",
+                      "    }",
+                      "    if (digitos[0] === 0) digitos[0] = Math.floor(Math.random() * 9) + 1;",
+                      "    let suma = 0;",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        suma += digitos[i] * pesos[i];",
+                      "    }",
+                      "    const verificador = (10 - (suma % 10)) % 10;",
+                      "    digitos.push(verificador);",
+                      "    return digitos.join('');",
+                      "}",
+                      "pm.collectionVariables.set(\"cedulaDinamica\", generarCedulaValida());"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400 o 409\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);",
+                      "});",
+                      "",
+                      "pm.test(\"El error indica correo duplicado\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include(\"correo\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez Duplicado\",\n  \"correo\": \"{{socioCorreoTest}}\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ],\n  \"consentimientoInformado\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "GetById",
+          "item": [
+            {
+              "name": "200 - Socio por ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta tiene la estructura de SocioDto\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.be.an(\"object\");",
+                      "    pm.expect(item).to.have.property(\"id\");",
+                      "    pm.expect(item).to.have.property(\"nombre\");",
+                      "    pm.expect(item).to.have.property(\"apellido\");",
+                      "    pm.expect(item).to.have.property(\"correo\");",
+                      "    pm.expect(item).to.have.property(\"estaActivo\");",
+                      "    pm.expect(item).to.have.property(\"fechaAlta\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/socios/{{createdSocioId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "{{createdSocioId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Socio no encontrado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Update",
+          "item": [
+            {
+              "name": "200 - Actualizar Socio",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "function generarCedulaValida() {",
+                      "    const pesos = [2, 9, 8, 7, 6, 3, 4];",
+                      "    let digitos = [];",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        digitos.push(Math.floor(Math.random() * 10));",
+                      "    }",
+                      "    if (digitos[0] === 0) digitos[0] = Math.floor(Math.random() * 9) + 1;",
+                      "    let suma = 0;",
+                      "    for (let i = 0; i < 7; i++) {",
+                      "        suma += digitos[i] * pesos[i];",
+                      "    }",
+                      "    const verificador = (10 - (suma % 10)) % 10;",
+                      "    digitos.push(verificador);",
+                      "    return digitos.join('');",
+                      "}",
+                      "pm.collectionVariables.set(\"cedulaDinamica\", generarCedulaValida());"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"El socio se actualizó correctamente\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.property(\"nombre\", \"Juan Actualizado\");",
+                      "    pm.expect(item).to.have.property(\"telefono\", \"099999999\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Juan Actualizado\",\n  \"apellido\": \"Pérez Test\",\n  \"correo\": \"{{socioCorreoTest}}\",\n  \"telefono\": \"099999999\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"fechaNacimiento\": \"1995-06-15T00:00:00Z\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ]\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios/{{createdSocioId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "{{createdSocioId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Actualizar Socio inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Fantasma\",\n  \"apellido\": \"No Existe\",\n  \"correo\": \"fantasma@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"unidades\": []\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Delete (Baja lógica)",
+          "item": [
+            {
+              "name": "200 - Baja lógica de Socio",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 o 204\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"motivo\": \"Baja para testing desde Postman\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios/{{createdSocioId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "{{createdSocioId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "200 - Verificar socio inactivo tras baja",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"El socio está inactivo (baja lógica, no eliminado)\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.property(\"estaActivo\", false);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/socios/{{createdSocioId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "{{createdSocioId}}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Reactivar",
+          "item": [
+            {
+              "name": "200 - Reactivar Socio",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"El socio está activo nuevamente\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.property(\"estaActivo\", true);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/socios/{{createdSocioId}}/reactivar",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "{{createdSocioId}}", "reactivar"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Reactivar Socio inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000000/reactivar",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "00000000-0000-0000-0000-000000000000", "reactivar"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auditoría",
+      "item": [
+        {
+          "name": "200 - Lista Auditoría (sin filtros)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"La respuesta es un array con estructura de AuditoriaDto\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    if (jsonData.length > 0) {",
+                  "        const item = jsonData[0];",
+                  "        pm.expect(item).to.have.property(\"id\");",
+                  "        pm.expect(item).to.have.property(\"usuarioId\");",
+                  "        pm.expect(item).to.have.property(\"tipoAccion\");",
+                  "        pm.expect(item).to.have.property(\"entidadAfectada\");",
+                  "        pm.expect(item).to.have.property(\"descripcion\");",
+                  "        pm.expect(item).to.have.property(\"fechaHora\");",
+                  "        pm.expect(item.id).to.be.a(\"string\");",
+                  "        pm.expect(item.tipoAccion).to.be.a(\"string\");",
+                  "        pm.expect(item.entidadAfectada).to.be.a(\"string\");",
+                  "        const regexISO = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/;",
+                  "        pm.expect(item.fechaHora).to.match(regexISO);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Hay registros de auditoría (las operaciones anteriores generaron logs)\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.length).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auditoria",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditoria"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Auditoría con filtro por tipoAccion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Todos los registros son del tipo filtrado\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    jsonData.forEach(function(item) {",
+                  "        pm.expect(item.tipoAccion.toLowerCase()).to.include(\"creacion\");",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auditoria?tipoAccion=Creacion",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditoria"],
+              "query": [{ "key": "tipoAccion", "value": "Creacion" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Auditoría con filtro por fechas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"La respuesta es un array\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auditoria?desde=2026-01-01&hasta=2026-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["auditoria"],
+              "query": [
+                { "key": "desde", "value": "2026-01-01" },
+                { "key": "hasta", "value": "2026-12-31" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "RNF-01 - Control de Acceso por Roles",
+      "item": [
+        {
+          "name": "Setup",
+          "item": [
+            {
+              "name": "1. Login Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Login admin exitoso\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const data = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", data.token);",
+                      "console.log(\"Token admin guardado para setup RNF-01\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2. Obtener Permisos disponibles",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Se obtuvieron permisos del sistema\", function () {",
+                      "    const permisos = pm.response.json();",
+                      "    pm.expect(permisos).to.be.an(\"array\").that.is.not.empty;",
+                      "    pm.expect(permisos.length).to.be.at.least(20);",
+                      "});",
+                      "",
+                      "// Mapear permisos por modulo-operacion para uso en tests",
+                      "const permisos = pm.response.json();",
+                      "const mapa = {};",
+                      "",
+                      "permisos.forEach(function(p) {",
+                      "    // Soportar tanto string como integer para enums",
+                      "    const modulo = (typeof p.modulo === 'string') ? p.modulo : ['Socios','Planes','Unidades','Auditoria','Empleados'][p.modulo];",
+                      "    const operacion = (typeof p.operacion === 'string') ? p.operacion : ['Lectura','Escritura','Modificacion','Eliminacion'][p.operacion];",
+                      "    const key = modulo + '_' + operacion;",
+                      "    mapa[key] = p.id;",
+                      "});",
+                      "",
+                      "// Guardar IDs de permisos que usaremos para el rol restringido",
+                      "// Rol 'Recepcionista Test': Socios(Lectura), Planes(Lectura+Escritura)",
+                      "const permisosRol = [",
+                      "    mapa['Socios_Lectura'],",
+                      "    mapa['Planes_Lectura'],",
+                      "    mapa['Planes_Escritura']",
+                      "];",
+                      "",
+                      "pm.collectionVariables.set(\"rnfPermisoIds\", JSON.stringify(permisosRol));",
+                      "",
+                      "// Guardar todos los IDs individuales por si se necesitan",
+                      "Object.keys(mapa).forEach(function(key) {",
+                      "    pm.collectionVariables.set(\"permiso_\" + key, mapa[key]);",
+                      "});",
+                      "",
+                      "console.log(\"Permisos mapeados: \" + JSON.stringify(permisosRol));"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/permisos",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["permisos"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3. Obtener Unidades (datos auxiliares)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const jsonData = pm.response.json();",
+                      "if (jsonData.length >= 1) {",
+                      "    pm.collectionVariables.set(\"unidadId1\", jsonData[0].id);",
+                      "}",
+                      "console.log(\"UnidadId1 guardado: \" + jsonData[0].id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/unidades",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["unidades"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "4. Crear Rol Restringido (Recepcionista Test)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Nombre único para evitar 409 en re-ejecuciones",
+                      "const nombreRol = `Recepcionista Test RNF01 ${Date.now()}`;",
+                      "pm.collectionVariables.set(\"rnfRolNombre\", nombreRol);",
+                      "",
+                      "const permisoIds = JSON.parse(pm.collectionVariables.get(\"rnfPermisoIds\"));",
+                      "const body = {",
+                      "    nombre: nombreRol,",
+                      "    permisoIds: permisoIds",
+                      "};",
+                      "pm.variables.set(\"rnfRolBody\", JSON.stringify(body));"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Rol restringido creado exitosamente (201)\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"El rol tiene los permisos correctos\", function () {",
+                      "    const rol = pm.response.json();",
+                      "    const nombreEsperado = pm.collectionVariables.get(\"rnfRolNombre\");",
+                      "    pm.expect(rol).to.have.property(\"id\");",
+                      "    pm.expect(rol).to.have.property(\"nombre\", nombreEsperado);",
+                      "    pm.expect(rol).to.have.property(\"esSistema\", false);",
+                      "    pm.expect(rol.permisos).to.be.an(\"array\").with.lengthOf(3);",
+                      "});",
+                      "",
+                      "const rol = pm.response.json();",
+                      "pm.collectionVariables.set(\"rnfRolId\", rol.id);",
+                      "console.log(\"Rol restringido creado: \" + rol.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{{rnfRolBody}}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/roles",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["roles"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "5. Crear Empleado con Rol Restringido",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const correo = `recepcionista.test.${Date.now()}@gymflow.com`;",
+                      "pm.collectionVariables.set(\"rnfEmpleadoCorreo\", correo);",
+                      "pm.collectionVariables.set(\"rnfEmpleadoPassword\", \"TestRnf01_2026!\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Empleado restringido creado exitosamente (201)\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"El empleado tiene el rol correcto\", function () {",
+                      "    const emp = pm.response.json();",
+                      "    pm.expect(emp).to.have.property(\"id\");",
+                      "    pm.expect(emp).to.have.property(\"nombre\", \"Test\");",
+                      "    pm.expect(emp).to.have.property(\"apellido\", \"Recepcionista RNF01\");",
+                      "    pm.expect(emp).to.have.property(\"rolNombre\", pm.collectionVariables.get(\"rnfRolNombre\"));",
+                      "    pm.expect(emp).to.have.property(\"estaActivo\", true);",
+                      "});",
+                      "",
+                      "const emp = pm.response.json();",
+                      "pm.collectionVariables.set(\"rnfEmpleadoId\", emp.id);",
+                      "console.log(\"Empleado restringido creado: \" + emp.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Test\",\n  \"apellido\": \"Recepcionista RNF01\",\n  \"correo\": \"{{rnfEmpleadoCorreo}}\",\n  \"password\": \"{{rnfEmpleadoPassword}}\",\n  \"rolId\": \"{{rnfRolId}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/empleados",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["empleados"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "6. Login como Empleado Restringido",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Login del empleado restringido exitoso (200)\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Se obtuvo token JWT válido\", function () {",
+                      "    const data = pm.response.json();",
+                      "    pm.expect(data).to.have.property(\"token\");",
+                      "    pm.expect(data.token.split(\".\").length).to.eql(3);",
+                      "});",
+                      "",
+                      "const data = pm.response.json();",
+                      "pm.collectionVariables.set(\"restrictedToken\", data.token);",
+                      "console.log(\"Token restringido guardado para tests RNF-01\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"{{rnfEmpleadoCorreo}}\",\n  \"password\": \"{{rnfEmpleadoPassword}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Acciones Permitidas",
+          "item": [
+            {
+              "name": "200 - Leer Socios (tiene Socios.Lectura)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 - Permiso Socios.Lectura concedido\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta es un array de socios\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "200 - Leer Planes (tiene Planes.Lectura)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 - Permiso Planes.Lectura concedido\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta es un array de planes\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "201 - Crear Plan (tiene Planes.Escritura)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201 - Permiso Planes.Escritura concedido\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"El plan fue creado por el usuario restringido\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.property(\"id\");",
+                      "    pm.expect(item).to.have.property(\"nombre\", \"Plan Creado por Recepcionista\");",
+                      "    pm.expect(item).to.have.property(\"precio\", 800);",
+                      "});",
+                      "",
+                      "const item = pm.response.json();",
+                      "pm.collectionVariables.set(\"rnfCreatedPlanId\", item.id);",
+                      "console.log(\"Plan creado por usuario restringido: \" + item.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Plan Creado por Recepcionista\",\n  \"unidadId\": \"{{unidadId1}}\",\n  \"precio\": 800,\n  \"descripcion\": \"Plan creado por usuario con rol restringido - test RNF-01\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/planes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Acciones Denegadas (403)",
+          "item": [
+            {
+              "name": "403 - Crear Socio (sin Socios.Escritura)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Permiso Socios.Escritura DENEGADO\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Intento\",\n  \"apellido\": \"Denegado\",\n  \"correo\": \"denegado@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"12345670\",\n  \"unidades\": [],\n  \"consentimientoInformado\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Modificar Socio (sin Socios.Modificacion)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Permiso Socios.Modificacion DENEGADO\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Intento Modificar\",\n  \"apellido\": \"Sin Permiso\",\n  \"correo\": \"sinpermiso@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"unidades\": []\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000001",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "00000000-0000-0000-0000-000000000001"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Eliminar Socio (sin Socios.Eliminacion)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Permiso Socios.Eliminacion DENEGADO\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"motivo\": \"Intento de baja sin permiso\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000001",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios", "00000000-0000-0000-0000-000000000001"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Modificar Plan (sin Planes.Modificacion)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Permiso Planes.Modificacion DENEGADO\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Intento Modificar Plan\",\n  \"precio\": 9999,\n  \"descripcion\": \"No debería poder modificar\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/planes/{{rnfCreatedPlanId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes", "{{rnfCreatedPlanId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Eliminar Plan (sin Planes.Eliminacion)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Permiso Planes.Eliminacion DENEGADO\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes/{{rnfCreatedPlanId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes", "{{rnfCreatedPlanId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Leer Auditoría (sin acceso al módulo Auditoria)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Sin acceso al módulo Auditoría\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auditoria",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auditoria"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Leer Empleados (sin acceso al módulo Empleados)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Sin acceso al módulo Empleados\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/empleados",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["empleados"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Leer Unidades (sin acceso al módulo Unidades)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Sin acceso al módulo Unidades\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/unidades",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["unidades"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Crear Rol (sin acceso al módulo Auditoria)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Sin permiso para gestionar roles\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Rol Intruso\",\n  \"permisoIds\": []\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/roles",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["roles"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "403 - Crear Empleado (sin acceso al módulo Empleados)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 - Sin permiso para crear empleados\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Intruso\",\n  \"apellido\": \"Sin Permiso\",\n  \"correo\": \"intruso@gymflow.com\",\n  \"password\": \"Password123!\",\n  \"rolId\": \"{{rnfRolId}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/empleados",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["empleados"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Sin Token (401)",
+          "item": [
+            {
+              "name": "401 - Acceder a Socios sin autenticación",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401 - Sin token de autenticación\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "401 - Acceder a Planes sin autenticación",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401 - Sin token de autenticación\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "401 - Crear Socio con token inválido",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401 - Token inválido rechazado\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "token.invalido.falso", "type": "string" }]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Hacker\",\n  \"apellido\": \"Intruso\",\n  \"correo\": \"hacker@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"12345670\",\n  \"unidades\": [],\n  \"consentimientoInformado\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/socios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["socios"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Cleanup",
+          "item": [
+            {
+              "name": "1. Login Admin para cleanup",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Login admin para cleanup\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const data = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", data.token);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2. Eliminar Plan creado en test",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Plan de test eliminado (200 o 204)\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/planes/{{rnfCreatedPlanId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["planes", "{{rnfCreatedPlanId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3. Reasignar Empleado al rol Admin (evitar FK)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Rol del empleado reasignado al Admin (200 o 204)\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Test\",\n  \"apellido\": \"Recepcionista RNF01\",\n  \"correo\": \"{{rnfEmpleadoCorreo}}\",\n  \"rolId\": \"11111111-1111-1111-1111-111111111111\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/empleados/{{rnfEmpleadoId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["empleados", "{{rnfEmpleadoId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "4. Dar de baja Empleado test",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Empleado de test dado de baja (200 o 204)\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/empleados/{{rnfEmpleadoId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["empleados", "{{rnfEmpleadoId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "5. Eliminar Rol test",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Rol de test eliminado (200 o 204)\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/roles/{{rnfRolId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["roles", "{{rnfRolId}}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5173/api"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@gymflow.com"
+    },
+    {
+      "key": "adminPassword",
+      "value": "admin123"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "unidadId1",
+      "value": ""
+    },
+    {
+      "key": "unidadId2",
+      "value": ""
+    },
+    {
+      "key": "planId",
+      "value": ""
+    },
+    {
+      "key": "planUnidadId",
+      "value": ""
+    },
+    {
+      "key": "createdPlanId",
+      "value": ""
+    },
+    {
+      "key": "createdSocioId",
+      "value": ""
+    },
+    {
+      "key": "socioCorreoTest",
+      "value": ""
+    },
+    {
+      "key": "cedulaDinamica",
+      "value": ""
+    },
+    {
+      "key": "restrictedToken",
+      "value": ""
+    },
+    {
+      "key": "rnfRolId",
+      "value": ""
+    },
+    {
+      "key": "rnfEmpleadoId",
+      "value": ""
+    },
+    {
+      "key": "rnfEmpleadoCorreo",
+      "value": ""
+    },
+    {
+      "key": "rnfEmpleadoPassword",
+      "value": ""
+    },
+    {
+      "key": "rnfCreatedPlanId",
+      "value": ""
+    },
+    {
+      "key": "rnfPermisoIds",
+      "value": ""
+    },
+    {
+      "key": "rnfRolNombre",
+      "value": ""
+    }
+  ]
+}

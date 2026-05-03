@@ -12,13 +12,18 @@ public class CreateSocioCommandTests
     private readonly Mock<ISocioRepository> _socioRepo = new();
     private readonly Mock<IUnidadRepository> _unidadRepo = new();
     private readonly Mock<IPlanRepository> _planRepo = new();
+    private readonly Mock<IRolRepository> _rolRepo = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
 
-    private CreateSocioCommand CrearCommand() =>
-        new(_socioRepo.Object, _unidadRepo.Object, _planRepo.Object, _auditLogger.Object);
+    private CreateSocioCommand CrearCommand()
+    {
+        _rolRepo.Setup(r => r.GetByNombreAsync("Socio", default))
+            .ReturnsAsync(new Rol(Guid.NewGuid(), "Socio", true, DateTime.UtcNow));
+        return new(_socioRepo.Object, _unidadRepo.Object, _planRepo.Object, _rolRepo.Object, _auditLogger.Object);
+    }
 
     private static Socio SocioFake(TipoDocumento tipo, string? doc) =>
-        new("Juan", "García", "juan@test.com", "PENDING_OAUTH",
+        new(Guid.NewGuid(), "Juan", "García", "juan@test.com", null,
             DateTime.UtcNow, true, tipo, null, doc, null);
 
     private void ConfigurarMocksBase(Guid unidadId, TipoDocumento tipo, string? doc)

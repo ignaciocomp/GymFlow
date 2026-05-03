@@ -1,3 +1,4 @@
+using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.UseCases.Auditoria;
 using GymFlow.Domain.Enums;
@@ -17,6 +18,7 @@ public class AuditoriaController : ControllerBase
     }
 
     [HttpGet]
+    [RequierePermiso(Modulo.Auditoria, Operacion.Lectura)]
     public async Task<ActionResult<IEnumerable<AuditoriaDto>>> GetAll(
         [FromQuery] DateTime? desde,
         [FromQuery] DateTime? hasta,

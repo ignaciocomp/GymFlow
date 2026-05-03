@@ -1,3 +1,4 @@
+using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.UseCases.Planes;
 using GymFlow.Domain.Enums;
@@ -34,6 +35,7 @@ public class PlanesController : ControllerBase
     }
 
     [HttpGet]
+    [RequierePermiso(Modulo.Planes, Operacion.Lectura)]
     public async Task<ActionResult<IEnumerable<PlanDto>>> GetAll(
         [FromQuery] Guid? unidadId,
         [FromQuery] bool includeInactive = false)
@@ -43,6 +45,7 @@ public class PlanesController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [RequierePermiso(Modulo.Planes, Operacion.Lectura)]
     public async Task<ActionResult<PlanDto>> GetById(Guid id)
     {
         try
@@ -57,6 +60,7 @@ public class PlanesController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso(Modulo.Planes, Operacion.Escritura)]
     public async Task<ActionResult<PlanDto>> Create([FromBody] CreatePlanRequest request)
     {
         try
@@ -72,6 +76,7 @@ public class PlanesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [RequierePermiso(Modulo.Planes, Operacion.Modificacion)]
     public async Task<ActionResult<PlanDto>> Update(Guid id, [FromBody] UpdatePlanRequest request)
     {
         try
@@ -99,6 +104,7 @@ public class PlanesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [RequierePermiso(Modulo.Planes, Operacion.Eliminacion)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try
