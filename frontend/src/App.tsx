@@ -11,6 +11,10 @@ import AuditoriaPage from '@/pages/admin/AuditoriaPage'
 import RolesPage from '@/pages/admin/RolesPage'
 import NuevoRolPage from '@/pages/admin/NuevoRolPage'
 import EditRolPage from '@/pages/admin/EditRolPage'
+import UsuariosPage from '@/pages/admin/UsuariosPage'
+import NuevoUsuarioPage from '@/pages/admin/NuevoUsuarioPage'
+import EditUsuarioPage from '@/pages/admin/EditUsuarioPage'
+import CambiarPasswordPage from '@/pages/admin/CambiarPasswordPage'
 
 export default function App() {
   return (
@@ -30,6 +34,10 @@ export default function App() {
         <Route path="roles" element={<RolesPage />} />
         <Route path="roles/nuevo" element={<NuevoRolPage />} />
         <Route path="roles/:id/editar" element={<EditRolPage />} />
+        <Route path="usuarios" element={<UsuariosPage />} />
+        <Route path="usuarios/nuevo" element={<NuevoUsuarioPage />} />
+        <Route path="usuarios/:id/editar" element={<EditUsuarioPage />} />
+        <Route path="usuarios/:id/password" element={<CambiarPasswordPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />

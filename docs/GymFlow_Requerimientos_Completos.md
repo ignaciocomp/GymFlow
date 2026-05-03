@@ -133,7 +133,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 | Código | Descripción | Tipo |
 |--------|-------------|------|
-| **RNF-01** | Autenticación y autorización basada en roles. Cada usuario accede solo a funcionalidades de su perfil. | Seguridad |
+| **RNF-01** | Autenticación y autorización basada en roles. Cada usuario accede solo a funcionalidades de su perfil. Implementado en dos partes: It.2 (admin, profesor y otros roles internos vía email + password con BCrypt) e It.5 (socios vía Google OAuth). | Seguridad |
 | **RNF-02** | Dashboard actualiza en tiempo real sin recarga de página. | Rendimiento |
 | **RNF-03** | Plataforma responsive: móvil, tablet y escritorio. | Usabilidad |
 | **RNF-04** | Sitio público optimizado SEO: semántica HTML5, metaetiquetas, URLs amigables, carga rápida. | Rendimiento/Marketing |
@@ -525,6 +525,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-05 (Ver perfil del socio)
 - RF-06 (Recordatorios automáticos de cuota)
 - RF-07 (Control de estado de cuota)
+- RNF-01 (Autenticación y autorización por roles — parte interna: empleados con email+password, roles dinámicos)
 - RNF-03 (Responsive)
 - RNF-06 (Disponibilidad ≥ 95%)
 

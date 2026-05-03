@@ -136,12 +136,12 @@ La migración se aplica automáticamente en el próximo `docker compose up`.
 ### Jerarquía de Usuarios (TPH — Table Per Hierarchy)
 
 ```
-Usuario (abstract base)
-├── Profesor — ClasesAsignadas[]
-└── Socio — Cuotas[], Inscripciones[], Asistencias[], Rutinas[], TipoDocumento (CI/Pasaporte/Otro, requerido)
+Usuario (abstract base, PasswordHash nullable)
+├── Empleado — admin, profesor, recepcionista, etc. Login email + password (BCrypt). PasswordHash siempre seteado.
+└── Socio — Cuotas[], Inscripciones[], Asistencias[], Rutinas[], TipoDocumento. Login Google OAuth (It.5). PasswordHash null hasta entonces.
 ```
 
-**Admin no es subclase** — es un valor del enum `Rol` en `Usuario`. No tiene atributos propios.
+**El rol del usuario es un `RolId` (FK a `Rol`)**, no una subclase. La jerarquía solo refleja diferencias de atributos y mecanismo de auth, no de rol asignado.
 
 **Relación Usuario-Unidad es N:M** — un socio o profesor puede pertenecer a ambas unidades (tabla intermedia `UsuarioUnidad`). La tabla `UsuarioUnidad` incluye `PlanId` (nullable, FK a `Planes`): cada socio puede tener un Plan distinto por Unidad. Un socio ya no tiene un Plan global único.
 
@@ -174,10 +174,19 @@ Usuario (abstract base)
 
 ## Autenticación
 
-- **Fase 1:** JWT (access + refresh token), login email/contraseña, 3 roles: Admin, Socio, Profesor
-- **Fase 2:** OAuth 2.0 con Google para socios
-- Passwords hasheados con BCrypt
-- Endpoints protegidos con `[Authorize(Roles = "...")]`
+**Dos mecanismos de login según tipo de usuario:**
+
+| Tipo | Login | Roles posibles |
+|---|---|---|
+| **Empleado** | email + password (+ MFA en It.5) | Cualquier rol salvo Socio |
+| **Socio** | Google OAuth (It.5) | Únicamente el rol Socio |
+
+- **JWT** firmado con clave simétrica, expiración 8 horas. Lleva `userId`, `correo`, `rolId`, `rolNombre`, `nombre`, `apellido`.
+- **Passwords de empleados** hasheados con BCrypt.Net-Next (factor 11).
+- **Endpoints protegidos** con `[RequierePermiso(Modulo, Operacion)]` (no `[Authorize(Roles=...)]`).
+- **Empleado de bootstrap:** la migración crea `admin@gymflow.com` / `admin123` automáticamente. En producción debe cambiar su password al primer login.
+
+**Estado actual (It.2):** login productivo solo para Empleados. Login de Socios queda para It.5.
 
 ---
 
@@ -282,7 +291,7 @@ Cada merge a main se etiqueta con un tag de versión. Esto permite trazar:
 9. **Multi-espacio** — Toda query administrativa debe soportar filtrado por UnidadId.
 10. **No agregues features fuera del alcance** — No hay pagos online, no hay app móvil nativa, no hay QR/molinete.
 
-### Al agregar un módulo nuevo (RF-23 — Roles y Permisos)
+### Al agregar un módulo nuevo (RNF-01 — Roles y Permisos)
 
 Cuando se crea un módulo nuevo en el backend (ej. `Cuotas`, `Eventos`), **es obligatorio**:
 
@@ -297,6 +306,8 @@ Cuando se crea un módulo nuevo en el backend (ej. `Cuotas`, `Eventos`), **es ob
 5. En el frontend, actualizar el tipo `Modulo` en `frontend/src/types/permisos.ts` y agregar el grupo correspondiente en `Sidebar.tsx` con la propiedad `modulo` para que se filtre por permiso.
 
 El sistema de permisos es de catálogo cerrado en código: no se inventan módulos en runtime. Ver spec: `docs/superpowers/specs/2026-04-26-rf-23-roles-y-permisos.md`.
+
+**Para crear empleados que puedan loguearse, ver:** `docs/superpowers/specs/2026-04-28-rnf-01-gestion-usuarios.md`. La gestión de usuarios usa la entidad `Empleado` (subclase de `Usuario`) y se administra desde `/admin/usuarios` en el frontend.
 
 > **Validación de cédula uruguaya (en `Socio.EsCedulaUruguayaValida`):**
 > Normalizar eliminando puntos y guiones. Paddear a 8 dígitos con cero a la izquierda. Pesos: `[2,9,8,7,6,3,4]`.

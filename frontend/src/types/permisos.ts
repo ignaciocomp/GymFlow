@@ -1,4 +1,4 @@
-export type Modulo = 'Socios' | 'Planes' | 'Unidades' | 'Auditoria'
+export type Modulo = 'Socios' | 'Planes' | 'Unidades' | 'Auditoria' | 'Empleados'
 export type Operacion = 'Lectura' | 'Escritura' | 'Modificacion' | 'Eliminacion'
 
 export interface Permiso {

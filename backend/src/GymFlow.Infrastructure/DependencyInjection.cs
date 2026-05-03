@@ -23,6 +23,8 @@ public static class DependencyInjection
         services.AddScoped<IRolRepository, RolRepository>();
         services.AddScoped<IPermisoRepository, PermisoRepository>();
         services.AddScoped<IPermisoCache, PermisoCache>();
+        services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddMemoryCache();
 
         return services;

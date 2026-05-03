@@ -13,13 +13,14 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
 
         // TPH discriminator
         builder.HasDiscriminator<string>("TipoUsuario")
-            .HasValue<Socio>("Socio");
+            .HasValue<Socio>("Socio")
+            .HasValue<Empleado>("Empleado");
 
         builder.Property(u => u.Nombre).IsRequired().HasMaxLength(100);
         builder.Property(u => u.Apellido).IsRequired().HasMaxLength(100);
         builder.Property(u => u.Correo).IsRequired().HasMaxLength(200);
         builder.HasIndex(u => u.Correo).IsUnique();
-        builder.Property(u => u.PasswordHash).IsRequired().HasMaxLength(500);
+        builder.Property(u => u.PasswordHash).IsRequired(false).HasMaxLength(500);
         builder.Property(u => u.EstaActivo).IsRequired();
         builder.Property(u => u.FechaCreacion).IsRequired();
 

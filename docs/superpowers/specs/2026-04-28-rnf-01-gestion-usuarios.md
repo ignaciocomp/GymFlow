@@ -3,7 +3,7 @@
 **Fecha:** 2026-04-28
 **Iteración:** 2
 **Branch:** `feature/RNF_01` (continuación)
-**Estado:** Spec — pendiente de aprobación para generar plan
+**Estado:** Implementado y mergeado a `develop`.
 
 > **Contexto:** este spec es la continuación de `2026-04-26-rnf-01-roles-y-permisos.md` (parte 1, ya implementada). Juntas, ambas partes cubren la entrega de **RNF-01** prevista para Iteración 2 según el documento académico actualizado.
 
@@ -202,20 +202,20 @@ Una sola migración que cubre:
 
 ## Criterios de aceptación
 
-- [ ] La entidad `Empleado` existe en el dominio y es subclase concreta de `Usuario`.
-- [ ] `Usuario.PasswordHash` es nullable.
-- [ ] El placeholder `"PENDING_OAUTH"` ya no aparece en el código (los Socios persistidos quedan con `PasswordHash = null`).
-- [ ] Una migración EF Core crea el discriminador TPH para `Empleado`, hace `PasswordHash` nullable, agrega los permisos del módulo `Empleados` y los asigna al rol Administrador, y siembra el empleado admin de bootstrap.
-- [ ] El módulo `Empleados` aparece en el enum `Modulo` y en el tipo `Modulo` del frontend.
-- [ ] La lista hardcodeada de usuarios en `AuthController` ya no existe.
-- [ ] El login funciona contra DB con BCrypt: `admin@gymflow.com` / `admin123` entra exitosamente; cualquier otra combinación devuelve 401.
-- [ ] Existen los endpoints `/api/empleados` (CRUD completo + cambio de password + reactivar) protegidos con `[RequierePermiso(Empleados, X)]`.
-- [ ] No se puede crear ni editar un empleado con `rolId == RolSocioId`.
-- [ ] El admin no puede darse de baja a sí mismo desde la API.
-- [ ] La pantalla `/admin/usuarios` permite crear, editar, dar de baja, reactivar y cambiar password de empleados.
-- [ ] El sidebar muestra "Usuarios" en el grupo "Sistema" si el usuario logueado tiene permiso `Empleados.Lectura`.
-- [ ] Tests de Domain, Application y autorización para todo lo anterior pasan en CI.
-- [ ] El CRUD de socios sigue funcionando idéntico a antes (regresión).
+- [x] La entidad `Empleado` existe en el dominio y es subclase concreta de `Usuario`.
+- [x] `Usuario.PasswordHash` es nullable.
+- [x] El placeholder `"PENDING_OAUTH"` ya no aparece en el código (los Socios persistidos quedan con `PasswordHash = null`).
+- [x] Una migración EF Core crea el discriminador TPH para `Empleado`, hace `PasswordHash` nullable, agrega los permisos del módulo `Empleados` y los asigna al rol Administrador, y siembra el empleado admin de bootstrap.
+- [x] El módulo `Empleados` aparece en el enum `Modulo` y en el tipo `Modulo` del frontend.
+- [x] La lista hardcodeada de usuarios en `AuthController` ya no existe.
+- [x] El login funciona contra DB con BCrypt: `admin@gymflow.com` / `admin123` entra exitosamente; cualquier otra combinación devuelve 401.
+- [x] Existen los endpoints `/api/empleados` (CRUD completo + cambio de password + reactivar) protegidos con `[RequierePermiso(Empleados, X)]`.
+- [x] No se puede crear ni editar un empleado con `rolId == RolSocioId`.
+- [x] El admin no puede darse de baja a sí mismo desde la API.
+- [x] La pantalla `/admin/usuarios` permite crear, editar, dar de baja, reactivar y cambiar password de empleados.
+- [x] El sidebar muestra "Usuarios" en el grupo "Sistema" si el usuario logueado tiene permiso `Empleados.Lectura`.
+- [x] Tests de Domain, Application y autorización para todo lo anterior pasan en CI.
+- [x] El CRUD de socios sigue funcionando idéntico a antes (regresión).
 
 ## Trabajo futuro (queda para It.5)
 

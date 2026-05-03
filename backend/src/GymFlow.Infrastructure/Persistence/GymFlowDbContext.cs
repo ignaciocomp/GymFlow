@@ -1,3 +1,4 @@
+using GymFlow.Domain.Constants;
 using GymFlow.Domain.Entities;
 using GymFlow.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ public class GymFlowDbContext : DbContext
     public DbSet<Unidad> Unidades => Set<Unidad>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Socio> Socios => Set<Socio>();
+    public DbSet<Empleado> Empleados => Set<Empleado>();
     public DbSet<Plan> Planes => Set<Plan>();
     public DbSet<UsuarioUnidad> UsuarioUnidades => Set<UsuarioUnidad>();
     public DbSet<RegistroAuditoria> RegistrosAuditoria => Set<RegistroAuditoria>();
@@ -49,6 +51,21 @@ public class GymFlowDbContext : DbContext
             .Select(pid => (object)new { RolId = RolSeed.AdminRolId, PermisoId = pid })
             .ToList();
         modelBuilder.Entity<RolPermiso>().HasData(rolPermisoSeeds);
+
+        // Seed Empleado admin de bootstrap
+        // Hash precalculado con BCrypt para "admin123" — determinístico para que la migración no genere salts aleatorios cada build.
+        const string adminPasswordHashBootstrap = "$2a$11$8TnD1uScCjtswRRfjtIMDufn8npEr3r1lKxd/aJ6LCv9wFtEPjvXS";
+        modelBuilder.Entity<Empleado>().HasData(new
+        {
+            Id = EmpleadoSeed.AdminBootstrapId,
+            Nombre = "Admin",
+            Apellido = "Inicial",
+            Correo = "admin@gymflow.com",
+            PasswordHash = adminPasswordHashBootstrap,
+            RolId = RolesSeed.AdminRolId,
+            EstaActivo = true,
+            FechaCreacion = RolSeed.SeedTimestamp
+        });
     }
 
     private static Guid DeterministicGuid(string input)
@@ -61,7 +78,12 @@ public class GymFlowDbContext : DbContext
 
 public static class RolSeed
 {
-    public static readonly Guid AdminRolId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-    public static readonly Guid SocioRolId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    public static readonly Guid AdminRolId = RolesSeed.AdminRolId;
+    public static readonly Guid SocioRolId = RolesSeed.SocioRolId;
     public static readonly DateTime SeedTimestamp = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+}
+
+public static class EmpleadoSeed
+{
+    public static readonly Guid AdminBootstrapId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 }
