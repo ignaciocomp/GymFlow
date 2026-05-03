@@ -296,14 +296,13 @@ Cada merge a main se etiqueta con un tag de versión. Esto permite trazar:
 Cuando se crea un módulo nuevo en el backend (ej. `Cuotas`, `Eventos`), **es obligatorio**:
 
 1. Agregar el valor al enum `GymFlow.Domain.Enums.Modulo` (en `backend/src/GymFlow.Domain/Enums/Modulo.cs`).
-2. Generar una migración EF Core que inserte las 4 filas correspondientes en la tabla `Permisos`:
-   - `(NuevoModulo, Lectura)`
-   - `(NuevoModulo, Escritura)`
-   - `(NuevoModulo, Modificacion)`
-   - `(NuevoModulo, Eliminacion)`
-3. Decidir si el rol `Administrador` debe tener esos 4 permisos automáticamente (lo más común: sí). Si sí, la misma migración inserta las 4 filas en `RolPermisos` apuntando al `RolSeed.AdminRolId`.
-4. Aplicar `[RequierePermiso(Modulo.NuevoModulo, Operacion.X)]` a los endpoints del controller.
+2. Generar una nueva migración EF Core (`dotnet ef migrations add`). El seed en `GymFlowDbContext.OnModelCreating` genera automáticamente los 4 permisos (`Lectura`, `Escritura`, `Modificacion`, `Eliminacion`) para cada valor del enum mediante producto cartesiano `Modulo × Operacion`. Los IDs se generan con `DeterministicGuid($"{Modulo}-{Operacion}")` — **no inventar GUIDs a mano**, este patrón garantiza IDs estables entre migraciones.
+3. El rol `Administrador` recibe automáticamente todos los permisos nuevos (el seed agrega todas las combinaciones a `RolPermisos` apuntando al `RolSeed.AdminRolId`). No hace falta ninguna acción manual para esto.
+4. Aplicar `[RequierePermiso(Modulo.NuevoModulo, Operacion.X)]` a **cada endpoint** del controller. Mapeo estándar: GET → `Lectura`, POST → `Escritura`, PUT/PATCH → `Modificacion`, DELETE → `Eliminacion`. Todo endpoint que no sea de autenticación debe tener este atributo.
 5. En el frontend, actualizar el tipo `Modulo` en `frontend/src/types/permisos.ts` y agregar el grupo correspondiente en `Sidebar.tsx` con la propiedad `modulo` para que se filtre por permiso.
+6. Agregar tests que verifiquen que los endpoints devuelven **403** cuando el rol no tiene el permiso requerido. Ver `backend/tests/GymFlow.Application.Tests/Authorization/RequierePermisoAttributeTests.cs` como referencia.
+
+**Sobre la caché de permisos:** `PermisoCache` (en Infrastructure) cachea las consultas de permisos por rol. Los commands `ActualizarRolCommand` y `EliminarRolCommand` invalidan la caché. Si se crean nuevos commands que modifiquen permisos, deben invalidar la caché también.
 
 El sistema de permisos es de catálogo cerrado en código: no se inventan módulos en runtime. Ver spec: `docs/superpowers/specs/2026-04-26-rf-23-roles-y-permisos.md`.
 
