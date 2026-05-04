@@ -2,6 +2,7 @@ using GymFlow.Application.UseCases.Auditoria;
 using GymFlow.Application.UseCases.Empleados;
 using GymFlow.Application.UseCases.Permisos;
 using GymFlow.Application.UseCases.Planes;
+using GymFlow.Application.UseCases.Portal;
 using GymFlow.Application.UseCases.Roles;
 using GymFlow.Application.UseCases.Socios;
 using GymFlow.Application.UseCases.Unidades;
@@ -39,6 +40,9 @@ public static class DependencyInjection
         services.AddScoped<CambiarPasswordCommand>();
         services.AddScoped<DarDeBajaEmpleadoCommand>();
         services.AddScoped<ReactivarEmpleadoCommand>();
+        services.AddScoped<GetSocioPerfilQuery>();
+        services.AddScoped<SolicitarModificacionCommand>();
+        services.AddScoped<SolicitarBajaCommand>();
         return services;
     }
 }

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -91,6 +91,23 @@ export const planesApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/planes/${id}`)
+  },
+}
+
+export const portalApi = {
+  getPerfil: async (): Promise<Socio> => {
+    const { data } = await api.get<Socio>('/portal/perfil')
+    return data
+  },
+
+  solicitarModificacion: async (request: SolicitarModificacionRequest): Promise<{ mensaje: string }> => {
+    const { data } = await api.post<{ mensaje: string }>('/portal/solicitar-modificacion', request)
+    return data
+  },
+
+  solicitarBaja: async (request?: SolicitarBajaRequest): Promise<{ mensaje: string }> => {
+    const { data } = await api.post<{ mensaje: string }>('/portal/solicitar-baja', request ?? { motivo: null })
+    return data
   },
 }
 

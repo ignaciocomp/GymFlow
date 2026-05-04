@@ -17,6 +17,7 @@ public class AuthController : ControllerBase
     private readonly IAuditLogger _auditLogger;
     private readonly IPermisoCache _permisoCache;
     private readonly IEmpleadoRepository _empleadoRepository;
+    private readonly ISocioRepository _socioRepository;
     private readonly IRolRepository _rolRepository;
     private readonly IPasswordHasher _passwordHasher;
 
@@ -25,6 +26,7 @@ public class AuthController : ControllerBase
         IAuditLogger auditLogger,
         IPermisoCache permisoCache,
         IEmpleadoRepository empleadoRepository,
+        ISocioRepository socioRepository,
         IRolRepository rolRepository,
         IPasswordHasher passwordHasher)
     {
@@ -32,6 +34,7 @@ public class AuthController : ControllerBase
         _auditLogger = auditLogger;
         _permisoCache = permisoCache;
         _empleadoRepository = empleadoRepository;
+        _socioRepository = socioRepository;
         _rolRepository = rolRepository;
         _passwordHasher = passwordHasher;
     }
@@ -43,25 +46,44 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = "El correo y la contraseña son obligatorios." });
 
         var empleado = await _empleadoRepository.GetByCorreoAsync(request.Correo);
-        if (empleado == null || !empleado.EstaActivo || string.IsNullOrEmpty(empleado.PasswordHash) ||
-            !_passwordHasher.Verify(request.Password, empleado.PasswordHash))
+        if (empleado != null && empleado.EstaActivo && !string.IsNullOrEmpty(empleado.PasswordHash) &&
+            _passwordHasher.Verify(request.Password, empleado.PasswordHash))
         {
-            return Unauthorized(new { error = "Correo o contraseña incorrectos." });
+            var rol = await _rolRepository.GetByIdAsync(empleado.RolId);
+            var rolNombre = rol?.Nombre ?? "—";
+
+            var token = GenerateJwt(empleado.Id, empleado.Correo, empleado.RolId, rolNombre, empleado.Nombre, empleado.Apellido);
+            var permisos = await _permisoCache.ObtenerPermisosAsync(empleado.RolId);
+            var permisosDto = permisos.Select(p => new PermisoDto(Guid.Empty, p.Modulo, p.Operacion)).ToList();
+
+            await _auditLogger.LogAsync(
+                empleado.Id, $"{empleado.Nombre} {empleado.Apellido}",
+                TipoAccionAuditoria.InicioSesion, "Sesion", null,
+                $"Inicio de sesión de {empleado.Nombre} {empleado.Apellido} ({rolNombre})");
+
+            return Ok(new LoginResponse(token, empleado.Nombre, empleado.Apellido, empleado.Correo, rolNombre, permisosDto));
         }
 
-        var rol = await _rolRepository.GetByIdAsync(empleado.RolId);
-        var rolNombre = rol?.Nombre ?? "—";
+        var socio = await _socioRepository.GetByCorreoAsync(request.Correo);
+        if (socio != null && socio.EstaActivo && !string.IsNullOrEmpty(socio.PasswordHash) &&
+            _passwordHasher.Verify(request.Password, socio.PasswordHash))
+        {
+            var rol = await _rolRepository.GetByIdAsync(socio.RolId);
+            var rolNombre = rol?.Nombre ?? "Socio";
 
-        var token = GenerateJwt(empleado.Id, empleado.Correo, empleado.RolId, rolNombre, empleado.Nombre, empleado.Apellido);
-        var permisos = await _permisoCache.ObtenerPermisosAsync(empleado.RolId);
-        var permisosDto = permisos.Select(p => new PermisoDto(Guid.Empty, p.Modulo, p.Operacion)).ToList();
+            var token = GenerateJwt(socio.Id, socio.Correo, socio.RolId, rolNombre, socio.Nombre, socio.Apellido);
+            var permisos = await _permisoCache.ObtenerPermisosAsync(socio.RolId);
+            var permisosDto = permisos.Select(p => new PermisoDto(Guid.Empty, p.Modulo, p.Operacion)).ToList();
 
-        await _auditLogger.LogAsync(
-            empleado.Id, $"{empleado.Nombre} {empleado.Apellido}",
-            TipoAccionAuditoria.InicioSesion, "Sesion", null,
-            $"Inicio de sesión de {empleado.Nombre} {empleado.Apellido} ({rolNombre})");
+            await _auditLogger.LogAsync(
+                socio.Id, $"{socio.Nombre} {socio.Apellido}",
+                TipoAccionAuditoria.InicioSesion, "Sesion", null,
+                $"Inicio de sesión de {socio.Nombre} {socio.Apellido} ({rolNombre})");
 
-        return Ok(new LoginResponse(token, empleado.Nombre, empleado.Apellido, empleado.Correo, rolNombre, permisosDto));
+            return Ok(new LoginResponse(token, socio.Nombre, socio.Apellido, socio.Correo, rolNombre, permisosDto));
+        }
+
+        return Unauthorized(new { error = "Correo o contraseña incorrectos." });
     }
 
     [HttpGet("me")]

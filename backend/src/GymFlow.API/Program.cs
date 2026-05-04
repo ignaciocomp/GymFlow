@@ -1,6 +1,8 @@
 using System.Text;
 using GymFlow.API;
+using GymFlow.Domain.Constants;
 using GymFlow.Domain.Entities;
+using GymFlow.Domain.Enums;
 using GymFlow.Infrastructure;
 using GymFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -73,6 +75,31 @@ using (var scope = app.Services.CreateScope())
             new Plan("Plan Completo", 3500, "Acceso a todas las actividades", gimnasioNM.Id),
             new Plan("Plan Libre", 4500, "Acceso a ambas sedes y todas las actividades", gimnasioNM.Id)
         );
+        db.SaveChanges();
+    }
+
+    // Seed socio de prueba vinculado al usuario hardcodeado socio@gymflow.com
+    if (!db.Socios.Any(s => s.Correo == "socio@gymflow.com"))
+    {
+        var hasher = scope.ServiceProvider.GetRequiredService<GymFlow.Application.Interfaces.IPasswordHasher>();
+        var unidad = db.Unidades.First(u => u.Nombre == "Espacio Mora");
+        var plan = db.Planes.First(p => p.UnidadId == unidad.Id && p.Nombre == "Plan Musculación");
+
+        var socio = new Socio(
+            rolSocioId: RolesSeed.SocioRolId,
+            nombre: "María",
+            apellido: "López",
+            correo: "socio@gymflow.com",
+            passwordHash: hasher.Hash("socio123"),
+            fechaAlta: new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc),
+            consentimientoInformado: true,
+            tipoDocumento: TipoDocumento.CI,
+            telefono: "099 123 456",
+            documentoIdentidad: "12345672",
+            fechaNacimiento: new DateTime(1992, 6, 20, 0, 0, 0, DateTimeKind.Utc));
+
+        socio.UnidadesAsignadas.Add(new UsuarioUnidad(socio.Id, unidad.Id, plan.Id));
+        db.Socios.Add(socio);
         db.SaveChanges();
     }
 }
