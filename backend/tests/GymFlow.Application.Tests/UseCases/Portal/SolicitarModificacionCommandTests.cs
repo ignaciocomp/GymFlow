@@ -29,7 +29,8 @@ public class SolicitarModificacionCommandTests
         _auditLogger.Verify(a => a.LogAsync(
             It.IsAny<Guid>(), "María López",
             TipoAccionAuditoria.SolicitudModificacion, "Socio", socio.Id,
-            It.Is<string>(s => s.Contains("Cambiar teléfono"))),
+            It.Is<string>(s => s.Contains("Cambiar teléfono")),
+            It.IsAny<string?>()),
             Times.Once);
     }
 

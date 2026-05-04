@@ -29,7 +29,8 @@ public class SolicitarBajaCommandTests
         _auditLogger.Verify(a => a.LogAsync(
             It.IsAny<Guid>(), "María López",
             TipoAccionAuditoria.SolicitudBaja, "Socio", socio.Id,
-            It.Is<string>(s => s.Contains("Me mudo"))),
+            It.Is<string>(s => s.Contains("Me mudo")),
+            It.IsAny<string?>()),
             Times.Once);
     }
 
@@ -44,7 +45,8 @@ public class SolicitarBajaCommandTests
         _auditLogger.Verify(a => a.LogAsync(
             It.IsAny<Guid>(), "María López",
             TipoAccionAuditoria.SolicitudBaja, "Socio", socio.Id,
-            It.Is<string>(s => s.Contains("solicitó la baja") && !s.Contains("Motivo"))),
+            It.Is<string>(s => s.Contains("solicitó la baja") && !s.Contains("Motivo")),
+            It.IsAny<string?>()),
             Times.Once);
     }
 

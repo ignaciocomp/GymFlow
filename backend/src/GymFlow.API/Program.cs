@@ -81,6 +81,7 @@ using (var scope = app.Services.CreateScope())
     // Seed socio de prueba vinculado al usuario hardcodeado socio@gymflow.com
     if (!db.Socios.Any(s => s.Correo == "socio@gymflow.com"))
     {
+        var hasher = scope.ServiceProvider.GetRequiredService<GymFlow.Application.Interfaces.IPasswordHasher>();
         var unidad = db.Unidades.First(u => u.Nombre == "Espacio Mora");
         var plan = db.Planes.First(p => p.UnidadId == unidad.Id && p.Nombre == "Plan Musculación");
 
@@ -89,7 +90,7 @@ using (var scope = app.Services.CreateScope())
             nombre: "María",
             apellido: "López",
             correo: "socio@gymflow.com",
-            passwordHash: null,
+            passwordHash: hasher.Hash("socio123"),
             fechaAlta: new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc),
             consentimientoInformado: true,
             tipoDocumento: TipoDocumento.CI,
