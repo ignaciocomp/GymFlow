@@ -109,15 +109,17 @@ public class EmpleadosController : ControllerBase
 
     [HttpPatch("{id:guid}/reactivar")]
     [RequierePermiso(Modulo.Empleados, Operacion.Modificacion)]
-    public async Task<IActionResult> Reactivar(Guid id)
+    public async Task<IActionResult> Reactivar(Guid id, [FromBody] ReactivarEmpleadoRequest request)
     {
         try
         {
             var (uid, uname) = GetCurrentUser();
-            await _reactivar.ExecuteAsync(id, uid, uname);
+            await _reactivar.ExecuteAsync(id, request.RolId, uid, uname);
             return NoContent();
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     private (Guid Id, string Nombre) GetCurrentUser()

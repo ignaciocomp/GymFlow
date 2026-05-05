@@ -8,7 +8,7 @@ public interface IRolRepository
     Task<Rol?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<Rol?> GetByNombreAsync(string nombre, CancellationToken ct = default);
     Task<bool> ExisteConNombreAsync(string nombre, Guid? excludeId = null, CancellationToken ct = default);
-    Task<bool> TieneUsuariosAsignadosAsync(Guid rolId, CancellationToken ct = default);
+    Task<bool> TieneUsuariosActivosAsignadosAsync(Guid rolId, CancellationToken ct = default);
     Task AddAsync(Rol rol, CancellationToken ct = default);
     void Remove(Rol rol);
     Task SaveChangesAsync(CancellationToken ct = default);

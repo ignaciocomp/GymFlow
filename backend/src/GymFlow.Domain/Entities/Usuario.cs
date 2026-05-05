@@ -7,8 +7,8 @@ public abstract class Usuario
     public string Apellido { get; private set; } = string.Empty;
     public string Correo { get; private set; } = string.Empty;
     public string? PasswordHash { get; private set; }
-    public Guid RolId { get; private set; }
-    public Rol Rol { get; private set; } = null!;
+    public Guid? RolId { get; private set; }
+    public Rol? Rol { get; private set; }
     public bool EstaActivo { get; private set; } = true;
     public DateTime FechaCreacion { get; private set; }
 

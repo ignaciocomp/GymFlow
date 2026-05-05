@@ -32,12 +32,12 @@ public class EliminarRolCommandTests
     }
 
     [Fact]
-    public async Task RolConUsuarios_LanzaInvalidOperationException()
+    public async Task RolConUsuariosActivos_LanzaInvalidOperationException()
     {
         var rol = new Rol("Recepcionista");
         var repo = new Mock<IRolRepository>();
         repo.Setup(r => r.GetByIdAsync(rol.Id, default)).ReturnsAsync(rol);
-        repo.Setup(r => r.TieneUsuariosAsignadosAsync(rol.Id, default)).ReturnsAsync(true);
+        repo.Setup(r => r.TieneUsuariosActivosAsignadosAsync(rol.Id, default)).ReturnsAsync(true);
 
         var sut = new EliminarRolCommand(repo.Object, Mock.Of<IPermisoCache>(), Mock.Of<IAuditLogger>());
 
@@ -50,7 +50,7 @@ public class EliminarRolCommandTests
         var rol = new Rol("Recepcionista");
         var repo = new Mock<IRolRepository>();
         repo.Setup(r => r.GetByIdAsync(rol.Id, default)).ReturnsAsync(rol);
-        repo.Setup(r => r.TieneUsuariosAsignadosAsync(rol.Id, default)).ReturnsAsync(false);
+        repo.Setup(r => r.TieneUsuariosActivosAsignadosAsync(rol.Id, default)).ReturnsAsync(false);
         var cache = new Mock<IPermisoCache>();
         var audit = new Mock<IAuditLogger>();
 

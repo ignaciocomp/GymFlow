@@ -24,10 +24,12 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.Property(u => u.EstaActivo).IsRequired();
         builder.Property(u => u.FechaCreacion).IsRequired();
 
+        builder.Property(u => u.RolId).IsRequired(false);
         builder.HasOne(u => u.Rol)
             .WithMany()
             .HasForeignKey(u => u.RolId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasMany(u => u.UnidadesAsignadas)
             .WithOne(uu => uu.Usuario)

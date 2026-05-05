@@ -2,18 +2,30 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
-  listarEmpleados,
-  darDeBajaEmpleado,
-  reactivarEmpleado,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  listarEmpleados, darDeBajaEmpleado, reactivarEmpleado,
 } from '@/services/empleados'
+import { listarRoles } from '@/services/roles'
 import type { Empleado } from '@/types/empleado'
+import type { Rol } from '@/types/permisos'
 import { usePermisos } from '@/hooks/usePermisos'
 
 export default function UsuariosPage() {
   const [empleados, setEmpleados] = useState<Empleado[]>([])
+  const [roles, setRoles] = useState<Rol[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<'activos' | 'inactivos'>('activos')
+
+  const [bajaDialog, setBajaDialog] = useState<{ id: string; nombre: string } | null>(null)
+  const [bajaError, setBajaError] = useState<string | null>(null)
+
+  const [reactivarDialog, setReactivarDialog] = useState<Empleado | null>(null)
+  const [reactivarRolId, setReactivarRolId] = useState<string>('')
+  const [reactivarError, setReactivarError] = useState<string | null>(null)
+
   const { puedeEscribir, puedeModificar, puedeEliminar } = usePermisos()
   const puedeCrear = puedeEscribir('Empleados')
   const puedeEditar = puedeModificar('Empleados')
@@ -30,26 +42,43 @@ export default function UsuariosPage() {
 
   useEffect(() => { cargar() }, [tab])
 
-  const onBaja = async (id: string, nombre: string) => {
-    if (!confirm(`¿Dar de baja a "${nombre}"?`)) return
+  useEffect(() => {
+    listarRoles().then(setRoles).catch(() => setRoles([]))
+  }, [])
+
+  const onConfirmarBaja = async () => {
+    if (!bajaDialog) return
     try {
-      await darDeBajaEmpleado(id)
+      await darDeBajaEmpleado(bajaDialog.id)
+      setBajaDialog(null)
+      setBajaError(null)
       cargar()
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: string } } }
-      alert(err?.response?.data?.error ?? 'Error al dar de baja')
+      setBajaError(err?.response?.data?.error ?? 'Error al dar de baja')
     }
   }
 
-  const onReactivar = async (id: string) => {
+  const onConfirmarReactivar = async () => {
+    if (!reactivarDialog) return
+    const necesitaRol = !reactivarDialog.rolId
+    if (necesitaRol && !reactivarRolId) {
+      setReactivarError('Debe seleccionar un rol para reactivar al empleado.')
+      return
+    }
     try {
-      await reactivarEmpleado(id)
+      await reactivarEmpleado(reactivarDialog.id, necesitaRol ? reactivarRolId : undefined)
+      setReactivarDialog(null)
+      setReactivarRolId('')
+      setReactivarError(null)
       cargar()
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: string } } }
-      alert(err?.response?.data?.error ?? 'Error al reactivar')
+      setReactivarError(err?.response?.data?.error ?? 'Error al reactivar')
     }
   }
+
+  const rolesDisponibles = roles.filter(r => r.nombre !== 'Socio')
 
   if (loading) return <div className="p-6">Cargando...</div>
   if (error) return <div className="p-6 text-destructive">{error}</div>
@@ -89,7 +118,11 @@ export default function UsuariosPage() {
               <tr key={emp.id} className="border-b border-border last:border-0">
                 <td className="py-3 px-4">{emp.apellido}, {emp.nombre}</td>
                 <td className="py-3 px-4 text-sm text-muted-foreground">{emp.correo}</td>
-                <td className="py-3 px-4">{emp.rolNombre}</td>
+                <td className="py-3 px-4">
+                  {emp.rolNombre
+                    ? emp.rolNombre
+                    : <span className="text-destructive text-sm">Sin rol</span>}
+                </td>
                 <td className="py-3 px-4 text-sm">
                   {emp.estaActivo
                     ? <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">Activo</span>
@@ -110,12 +143,12 @@ export default function UsuariosPage() {
                     </>
                   )}
                   {puedeBorrar && emp.estaActivo && (
-                    <Button size="sm" variant="destructive" onClick={() => onBaja(emp.id, `${emp.nombre} ${emp.apellido}`)}>
+                    <Button size="sm" variant="destructive" onClick={() => { setBajaError(null); setBajaDialog({ id: emp.id, nombre: `${emp.nombre} ${emp.apellido}` }) }}>
                       Baja
                     </Button>
                   )}
                   {puedeEditar && !emp.estaActivo && (
-                    <Button size="sm" variant="secondary" onClick={() => onReactivar(emp.id)}>
+                    <Button size="sm" variant="secondary" onClick={() => { setReactivarError(null); setReactivarRolId(''); setReactivarDialog(emp) }}>
                       Reactivar
                     </Button>
                   )}
@@ -132,6 +165,67 @@ export default function UsuariosPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Dialog de baja */}
+      <Dialog open={!!bajaDialog} onOpenChange={() => { setBajaDialog(null); setBajaError(null) }}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Confirmar baja de usuario</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Estás por dar de baja a <strong className="text-foreground">{bajaDialog?.nombre}</strong>. El usuario quedará inactivo y no podrá iniciar sesión.
+            </DialogDescription>
+          </DialogHeader>
+          {bajaError && <p className="text-sm text-destructive">{bajaError}</p>}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setBajaDialog(null); setBajaError(null) }} className="cursor-pointer">
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={onConfirmarBaja} className="cursor-pointer">
+              Dar de baja
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de reactivación */}
+      <Dialog open={!!reactivarDialog} onOpenChange={() => { setReactivarDialog(null); setReactivarError(null); setReactivarRolId('') }}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Reactivar usuario</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Estás por reactivar a <strong className="text-foreground">{reactivarDialog?.nombre} {reactivarDialog?.apellido}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          {!reactivarDialog?.rolId && (
+            <div className="space-y-2">
+              <p className="text-sm text-destructive">El rol asignado a este usuario fue eliminado. Seleccioná un nuevo rol para continuar.</p>
+              {rolesDisponibles.length > 0 ? (
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={reactivarRolId}
+                  onChange={e => { setReactivarRolId(e.target.value); setReactivarError(null) }}
+                >
+                  <option value="">Seleccionar rol...</option>
+                  {rolesDisponibles.map(r => (
+                    <option key={r.id} value={r.id}>{r.nombre}</option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-sm text-muted-foreground">No se pudieron cargar los roles disponibles.</p>
+              )}
+            </div>
+          )}
+          {reactivarError && <p className="text-sm text-destructive">{reactivarError}</p>}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setReactivarDialog(null); setReactivarError(null); setReactivarRolId('') }} className="cursor-pointer">
+              Cancelar
+            </Button>
+            <Button variant="default" onClick={onConfirmarReactivar} className="cursor-pointer">
+              Reactivar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

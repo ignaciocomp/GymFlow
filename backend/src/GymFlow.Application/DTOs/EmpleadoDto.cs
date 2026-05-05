@@ -5,7 +5,7 @@ public record EmpleadoDto(
     string Nombre,
     string Apellido,
     string Correo,
-    Guid RolId,
-    string RolNombre,
+    Guid? RolId,
+    string? RolNombre,
     bool EstaActivo,
     DateTime FechaCreacion);

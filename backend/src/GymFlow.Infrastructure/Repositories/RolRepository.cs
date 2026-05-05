@@ -28,8 +28,8 @@ public class RolRepository : IRolRepository
     public async Task<bool> ExisteConNombreAsync(string nombre, Guid? excludeId = null, CancellationToken ct = default) =>
         await _db.Roles.AnyAsync(r => r.Nombre == nombre && (excludeId == null || r.Id != excludeId), ct);
 
-    public async Task<bool> TieneUsuariosAsignadosAsync(Guid rolId, CancellationToken ct = default) =>
-        await _db.Set<Usuario>().AnyAsync(u => u.RolId == rolId, ct);
+    public async Task<bool> TieneUsuariosActivosAsignadosAsync(Guid rolId, CancellationToken ct = default) =>
+        await _db.Set<Usuario>().AnyAsync(u => u.RolId == rolId && u.EstaActivo, ct);
 
     public async Task AddAsync(Rol rol, CancellationToken ct = default) =>
         await _db.Roles.AddAsync(rol, ct);

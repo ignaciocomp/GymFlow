@@ -36,6 +36,6 @@ export async function darDeBajaEmpleado(id: string): Promise<void> {
   await api.delete(`/empleados/${id}`)
 }
 
-export async function reactivarEmpleado(id: string): Promise<void> {
-  await api.patch(`/empleados/${id}/reactivar`)
+export async function reactivarEmpleado(id: string, rolId?: string): Promise<void> {
+  await api.patch(`/empleados/${id}/reactivar`, { rolId: rolId ?? null })
 }

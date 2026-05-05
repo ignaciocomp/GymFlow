@@ -18,11 +18,11 @@ public class GetEmpleadoByIdQuery
     {
         var empleado = await _empleadoRepository.GetByIdAsync(id, ct)
             ?? throw new KeyNotFoundException($"Empleado {id} no encontrado.");
-        var rol = await _rolRepository.GetByIdAsync(empleado.RolId, ct);
+        var rol = empleado.RolId.HasValue ? await _rolRepository.GetByIdAsync(empleado.RolId.Value, ct) : null;
 
         return new EmpleadoDto(
             empleado.Id, empleado.Nombre, empleado.Apellido, empleado.Correo,
-            empleado.RolId, rol?.Nombre ?? "—",
+            empleado.RolId, rol?.Nombre,
             empleado.EstaActivo, empleado.FechaCreacion);
     }
 }

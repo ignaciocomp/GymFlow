@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog'
 import { listarRoles, eliminarRol } from '@/services/roles'
 import type { Rol } from '@/types/permisos'
 import { usePermisos } from '@/hooks/usePermisos'
@@ -9,8 +12,9 @@ export default function RolesPage() {
   const [roles, setRoles] = useState<Rol[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deleteDialog, setDeleteDialog] = useState<{ id: string; nombre: string } | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const { puedeEscribir, puedeModificar, puedeEliminar } = usePermisos()
-  // Reutilizamos Modulo.Auditoria como "permiso de gestión administrativa"
   const puedeCrear = puedeEscribir('Auditoria')
   const puedeEditar = puedeModificar('Auditoria')
   const puedeBorrar = puedeEliminar('Auditoria')
@@ -25,14 +29,16 @@ export default function RolesPage() {
 
   useEffect(() => { cargar() }, [])
 
-  const onEliminar = async (id: string, nombre: string) => {
-    if (!confirm(`¿Eliminar el rol "${nombre}"?`)) return
+  const onConfirmarEliminar = async () => {
+    if (!deleteDialog) return
     try {
-      await eliminarRol(id)
+      await eliminarRol(deleteDialog.id)
+      setDeleteDialog(null)
+      setDeleteError(null)
       cargar()
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: string } } }
-      alert(err?.response?.data?.error ?? 'Error al eliminar')
+      setDeleteError(err?.response?.data?.error ?? 'Error al eliminar')
     }
   }
 
@@ -74,7 +80,7 @@ export default function RolesPage() {
                     </Link>
                   )}
                   {puedeBorrar && !r.esSistema && (
-                    <Button size="sm" variant="destructive" onClick={() => onEliminar(r.id, r.nombre)}>
+                    <Button size="sm" variant="destructive" onClick={() => { setDeleteError(null); setDeleteDialog({ id: r.id, nombre: r.nombre }) }}>
                       Eliminar
                     </Button>
                   )}
@@ -84,6 +90,28 @@ export default function RolesPage() {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={!!deleteDialog} onOpenChange={() => { setDeleteDialog(null); setDeleteError(null) }}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Confirmar eliminación de rol</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Estás por eliminar el rol <strong className="text-foreground">{deleteDialog?.nombre}</strong>. Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          {deleteError && (
+            <p className="text-sm text-destructive">{deleteError}</p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeleteDialog(null); setDeleteError(null) }} className="cursor-pointer">
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={onConfirmarEliminar} className="cursor-pointer">
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

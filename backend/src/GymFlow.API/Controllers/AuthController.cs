@@ -46,14 +46,16 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = "El correo y la contraseña son obligatorios." });
 
         var empleado = await _empleadoRepository.GetByCorreoAsync(request.Correo);
-        if (empleado != null && empleado.EstaActivo && !string.IsNullOrEmpty(empleado.PasswordHash) &&
+        if (empleado != null && empleado.EstaActivo && empleado.RolId.HasValue &&
+            !string.IsNullOrEmpty(empleado.PasswordHash) &&
             _passwordHasher.Verify(request.Password, empleado.PasswordHash))
         {
-            var rol = await _rolRepository.GetByIdAsync(empleado.RolId);
+            var rolId = empleado.RolId.Value;
+            var rol = await _rolRepository.GetByIdAsync(rolId);
             var rolNombre = rol?.Nombre ?? "—";
 
-            var token = GenerateJwt(empleado.Id, empleado.Correo, empleado.RolId, rolNombre, empleado.Nombre, empleado.Apellido);
-            var permisos = await _permisoCache.ObtenerPermisosAsync(empleado.RolId);
+            var token = GenerateJwt(empleado.Id, empleado.Correo, rolId, rolNombre, empleado.Nombre, empleado.Apellido);
+            var permisos = await _permisoCache.ObtenerPermisosAsync(rolId);
             var permisosDto = permisos.Select(p => new PermisoDto(Guid.Empty, p.Modulo, p.Operacion)).ToList();
 
             await _auditLogger.LogAsync(
@@ -65,14 +67,16 @@ public class AuthController : ControllerBase
         }
 
         var socio = await _socioRepository.GetByCorreoAsync(request.Correo);
-        if (socio != null && socio.EstaActivo && !string.IsNullOrEmpty(socio.PasswordHash) &&
+        if (socio != null && socio.EstaActivo && socio.RolId.HasValue &&
+            !string.IsNullOrEmpty(socio.PasswordHash) &&
             _passwordHasher.Verify(request.Password, socio.PasswordHash))
         {
-            var rol = await _rolRepository.GetByIdAsync(socio.RolId);
+            var rolId = socio.RolId.Value;
+            var rol = await _rolRepository.GetByIdAsync(rolId);
             var rolNombre = rol?.Nombre ?? "Socio";
 
-            var token = GenerateJwt(socio.Id, socio.Correo, socio.RolId, rolNombre, socio.Nombre, socio.Apellido);
-            var permisos = await _permisoCache.ObtenerPermisosAsync(socio.RolId);
+            var token = GenerateJwt(socio.Id, socio.Correo, rolId, rolNombre, socio.Nombre, socio.Apellido);
+            var permisos = await _permisoCache.ObtenerPermisosAsync(rolId);
             var permisosDto = permisos.Select(p => new PermisoDto(Guid.Empty, p.Modulo, p.Operacion)).ToList();
 
             await _auditLogger.LogAsync(

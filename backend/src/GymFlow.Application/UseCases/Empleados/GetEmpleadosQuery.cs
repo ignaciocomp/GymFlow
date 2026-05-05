@@ -22,7 +22,8 @@ public class GetEmpleadosQuery
 
         return empleados.Select(e => new EmpleadoDto(
             e.Id, e.Nombre, e.Apellido, e.Correo,
-            e.RolId, rolMap.TryGetValue(e.RolId, out var n) ? n : "—",
+            e.RolId,
+            e.RolId.HasValue && rolMap.TryGetValue(e.RolId.Value, out var n) ? n : null,
             e.EstaActivo, e.FechaCreacion)).ToList();
     }
 }

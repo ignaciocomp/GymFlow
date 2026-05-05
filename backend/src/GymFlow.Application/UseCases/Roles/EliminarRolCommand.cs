@@ -24,8 +24,8 @@ public class EliminarRolCommand
         if (rol.EsSistema)
             throw new InvalidOperationException("No se puede eliminar un rol del sistema.");
 
-        if (await _rolRepository.TieneUsuariosAsignadosAsync(id, ct))
-            throw new InvalidOperationException("No se puede eliminar un rol con usuarios asignados.");
+        if (await _rolRepository.TieneUsuariosActivosAsignadosAsync(id, ct))
+            throw new InvalidOperationException("No se puede eliminar un rol con usuarios activos asignados.");
 
         _rolRepository.Remove(rol);
         await _rolRepository.SaveChangesAsync(ct);

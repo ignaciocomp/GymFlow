@@ -3,8 +3,8 @@ export interface Empleado {
   nombre: string
   apellido: string
   correo: string
-  rolId: string
-  rolNombre: string
+  rolId: string | null
+  rolNombre: string | null
   estaActivo: boolean
   fechaCreacion: string
 }
