@@ -18,7 +18,7 @@ export default function EditUsuarioPage() {
     if (!id) return
     Promise.all([obtenerEmpleado(id), listarRoles()])
       .then(([emp, rs]) => {
-        setForm({ nombre: emp.nombre, apellido: emp.apellido, correo: emp.correo, rolId: emp.rolId })
+        setForm({ nombre: emp.nombre, apellido: emp.apellido, correo: emp.correo, rolId: emp.rolId ?? '' })
         setRoles(rs.filter(r => r.nombre !== 'Socio'))
       })
       .catch(e => setError(e?.response?.data?.error ?? 'Error al cargar'))
