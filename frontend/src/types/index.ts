@@ -102,7 +102,7 @@ export interface AuditoriaEntry {
   fechaHora: string
 }
 
-export type EstadoCuota = 'Pendiente' | 'Pagada'
+export type EstadoCuota = 'Pendiente' | 'Pagada' | 'Anulada'
 
 export interface CuotaDto {
   id: string
