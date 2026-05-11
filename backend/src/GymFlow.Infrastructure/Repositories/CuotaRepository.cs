@@ -25,7 +25,7 @@ public class CuotaRepository : ICuotaRepository
     {
         return await _context.Cuotas
             .Include(c => c.Unidad)
-            .Where(c => c.SocioId == socioId && !c.FechaBaja.HasValue)
+            .Where(c => c.SocioId == socioId && c.Estado != EstadoCuota.Anulada)
             .OrderByDescending(c => c.FechaVencimiento)
             .ToListAsync();
     }
@@ -39,7 +39,7 @@ public class CuotaRepository : ICuotaRepository
             .AsQueryable();
 
         if (!incluirAnuladas)
-            query = query.Where(c => !c.FechaBaja.HasValue);
+            query = query.Where(c => c.Estado != EstadoCuota.Anulada);
 
         if (estado.HasValue)
             query = query.Where(c => c.Estado == estado.Value);
@@ -61,7 +61,7 @@ public class CuotaRepository : ICuotaRepository
     public async Task<Cuota?> GetUltimaCuotaAsync(Guid socioId, Guid unidadId)
     {
         return await _context.Cuotas
-            .Where(c => c.SocioId == socioId && c.UnidadId == unidadId && !c.FechaBaja.HasValue)
+            .Where(c => c.SocioId == socioId && c.UnidadId == unidadId && c.Estado != EstadoCuota.Anulada)
             .OrderByDescending(c => c.FechaVencimiento)
             .FirstOrDefaultAsync();
     }
@@ -71,7 +71,7 @@ public class CuotaRepository : ICuotaRepository
     public async Task DeletePendientesBySocioAsync(Guid socioId)
     {
         var pendientes = await _context.Cuotas
-            .Where(c => c.SocioId == socioId && c.Estado == EstadoCuota.Pendiente && !c.FechaBaja.HasValue)
+            .Where(c => c.SocioId == socioId && c.Estado == EstadoCuota.Pendiente)
             .ToListAsync();
         _context.Cuotas.RemoveRange(pendientes);
     }

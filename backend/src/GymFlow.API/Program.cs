@@ -59,7 +59,7 @@ using (var scope = app.Services.CreateScope())
     if (!db.Unidades.Any())
     {
         var espacioMora = new Unidad("Espacio Mora", "Av. 8 de Octubre 2845");
-        var gimnasioNM = new Unidad("Gimnasio Nuevo Malvin", "Av. Italia 5765");
+        var gimnasioNM = new Unidad("Gimnasio Nuevo Malvín", "Av. Italia 5765");
         db.Unidades.AddRange(espacioMora, gimnasioNM);
         db.SaveChanges();
     }
@@ -67,12 +67,12 @@ using (var scope = app.Services.CreateScope())
     if (!db.Planes.Any())
     {
         var espacioMora = db.Unidades.First(u => u.Nombre == "Espacio Mora");
-        var gimnasioNM = db.Unidades.First(u => u.Nombre == "Gimnasio Nuevo Malvin");
+        var gimnasioNM = db.Unidades.First(u => u.Nombre == "Gimnasio Nuevo Malvín");
 
         db.Planes.AddRange(
-            new Plan("Plan Musculacion", 2500, "Acceso a sala de musculacion", espacioMora.Id),
+            new Plan("Plan Musculación", 2500, "Acceso a sala de musculación", espacioMora.Id),
             new Plan("Plan Completo", 3500, "Acceso a todas las actividades", espacioMora.Id),
-            new Plan("Plan Musculacion", 2500, "Acceso a sala de musculacion", gimnasioNM.Id),
+            new Plan("Plan Musculación", 2500, "Acceso a sala de musculación", gimnasioNM.Id),
             new Plan("Plan Completo", 3500, "Acceso a todas las actividades", gimnasioNM.Id),
             new Plan("Plan Libre", 4500, "Acceso a ambas sedes y todas las actividades", gimnasioNM.Id)
         );
@@ -84,12 +84,12 @@ using (var scope = app.Services.CreateScope())
     {
         var hasher = scope.ServiceProvider.GetRequiredService<GymFlow.Application.Interfaces.IPasswordHasher>();
         var unidad = db.Unidades.First(u => u.Nombre == "Espacio Mora");
-        var plan = db.Planes.First(p => p.UnidadId == unidad.Id && p.Nombre == "Plan Musculacion");
+        var plan = db.Planes.First(p => p.UnidadId == unidad.Id && p.Nombre == "Plan Musculación");
 
         var socio = new Socio(
             rolSocioId: RolesSeed.SocioRolId,
-            nombre: "Maria",
-            apellido: "Lopez",
+            nombre: "María",
+            apellido: "López",
             correo: "socio@gymflow.com",
             passwordHash: hasher.Hash("socio123"),
             fechaAlta: new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc),
@@ -137,9 +137,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Middleware global de manejo de excepciones: captura cualquier excepcion no manejada
-// en los controllers y devuelve un 500 con un mensaje generico, evitando exponer
-// detalles internos (stack trace, tipos de excepcion, etc.) al cliente.
+// Middleware global de manejo de excepciones: captura cualquier excepción no manejada
+// en los controllers y devuelve un 500 con un mensaje genérico, evitando exponer
+// detalles internos (stack trace, tipos de excepción, etc.) al cliente.
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -148,7 +148,7 @@ app.UseExceptionHandler(errorApp =>
         context.Response.ContentType = "application/json";
         await context.Response.WriteAsJsonAsync(new
         {
-            error = "Ocurrio un error interno. Intente nuevamente."
+            error = "Ocurrió un error interno. Intente nuevamente."
         });
     });
 });

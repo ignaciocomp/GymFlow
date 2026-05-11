@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { CreditCard, Search, CheckCircle, XCircle, Undo2 } from 'lucide-react'
+import { CreditCard, Search, CheckCircle, XCircle, Undo2, ChevronLeft, ChevronRight } from 'lucide-react'
 
 type ConfirmAction = 'pagar' | 'anular' | 'revertir-pago' | 'revertir-anulacion'
 
@@ -36,17 +36,19 @@ export default function CuotasPage() {
   const queryClient = useQueryClient()
   const [cedula, setCedula] = useState('')
   const [searchedCedula, setSearchedCedula] = useState<string | null>(null)
-  const [estadoFilter, setEstadoFilter] = useState<string>('all')
-  const [mesFilter, setMesFilter] = useState<string>('all')
-  const [anioFilter, setAnioFilter] = useState<string>('all')
-  const [unidadFilter, setUnidadFilter] = useState<string>('all')
+  const [estadoFilter, setEstadoFilter] = useState<string | null>(null)
+  const [mesFilter, setMesFilter] = useState<string | null>(null)
+  const [anioFilter, setAnioFilter] = useState<string | null>(null)
+  const [unidadFilter, setUnidadFilter] = useState<string | null>(null)
   const [confirmDialog, setConfirmDialog] = useState<{
     type: ConfirmAction
     id: string
     plan: string
   } | null>(null)
+  const [mutationError, setMutationError] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
 
-  const incluirAnuladas = estadoFilter === 'Anulada' || estadoFilter === 'all'
+  const incluirAnuladas = estadoFilter === 'Anulada' || !estadoFilter
 
   const { data: unidades } = useQuery({
     queryKey: ['unidades'],
@@ -58,38 +60,56 @@ export default function CuotasPage() {
     queryFn: () =>
       cuotasApi.getAdmin({
         documentoIdentidad: searchedCedula!,
-        estado: estadoFilter !== 'all' && estadoFilter !== 'Anulada' ? estadoFilter : undefined,
-        mes: mesFilter !== 'all' ? parseInt(mesFilter) : undefined,
-        anio: anioFilter !== 'all' ? parseInt(anioFilter) : undefined,
-        unidadId: unidadFilter !== 'all' ? unidadFilter : undefined,
+        estado: estadoFilter && estadoFilter !== 'Anulada' ? estadoFilter : undefined,
+        mes: mesFilter ? parseInt(mesFilter) : undefined,
+        anio: anioFilter ? parseInt(anioFilter) : undefined,
+        unidadId: unidadFilter || undefined,
         incluirAnuladas,
       }),
     enabled: !!searchedCedula,
   })
 
+  const PAGE_SIZE = 12
+
   const filteredCuotas = estadoFilter === 'Anulada'
-    ? cuotas?.filter(c => c.fechaBaja)
+    ? cuotas?.filter((c: any) => c.estado === 'Anulada')
     : cuotas
+
+  const totalPages = filteredCuotas ? Math.ceil(filteredCuotas.length / PAGE_SIZE) : 0
+  const paginatedCuotas = filteredCuotas?.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
+  const onMutationSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['cuotas-admin'] })
+    setConfirmDialog(null)
+    setMutationError(null)
+  }
+  const onMutationError = (err: any) => {
+    setMutationError(err?.response?.data?.error || 'Ocurrió un error al procesar la acción.')
+  }
 
   const pagarMutation = useMutation({
     mutationFn: (id: string) => cuotasApi.marcarPagada(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['cuotas-admin'] }); setConfirmDialog(null) },
+    onSuccess: onMutationSuccess,
+    onError: onMutationError,
   })
   const anularMutation = useMutation({
     mutationFn: (id: string) => cuotasApi.anular(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['cuotas-admin'] }); setConfirmDialog(null) },
+    onSuccess: onMutationSuccess,
+    onError: onMutationError,
   })
   const revertirPagoMutation = useMutation({
     mutationFn: (id: string) => cuotasApi.revertirPago(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['cuotas-admin'] }); setConfirmDialog(null) },
+    onSuccess: onMutationSuccess,
+    onError: onMutationError,
   })
   const revertirAnulacionMutation = useMutation({
     mutationFn: (id: string) => cuotasApi.revertirAnulacion(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['cuotas-admin'] }); setConfirmDialog(null) },
+    onSuccess: onMutationSuccess,
+    onError: onMutationError,
   })
 
   const handleSearch = () => {
-    if (cedula.trim()) setSearchedCedula(cedula.trim())
+    if (cedula.trim()) { setSearchedCedula(cedula.trim()); setPage(0) }
   }
 
   const handleConfirm = () => {
@@ -125,8 +145,8 @@ export default function CuotasPage() {
     }
   }
 
-  const getBadge = (cuota: { estado: string; fechaBaja: string | null }) => {
-    if (cuota.fechaBaja) return <Badge variant="outline">Anulada</Badge>
+  const getBadge = (cuota: { estado: string }) => {
+    if (cuota.estado === 'Anulada') return <Badge variant="outline">Anulada</Badge>
     if (cuota.estado === 'Pagada') return <Badge variant="default">Pagada</Badge>
     return <Badge variant="destructive">Pendiente</Badge>
   }
@@ -178,53 +198,65 @@ export default function CuotasPage() {
 
       {searchedCedula && (
         <div className="flex flex-wrap items-center gap-3">
-          <Select value={estadoFilter} onValueChange={(value) => setEstadoFilter(value ?? 'all')}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Todos los estados" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="Pendiente">Pendiente</SelectItem>
-              <SelectItem value="Pagada">Pagada</SelectItem>
-              <SelectItem value="Anulada">Anulada</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Estado</label>
+            <Select value={estadoFilter} onValueChange={(v) => { setEstadoFilter(v); setPage(0) }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Todos los estados" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>Todos los estados</SelectItem>
+                <SelectItem value="Pendiente">Pendiente</SelectItem>
+                <SelectItem value="Pagada">Pagada</SelectItem>
+                <SelectItem value="Anulada">Anulada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Select value={mesFilter} onValueChange={(value) => setMesFilter(value ?? 'all')}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Todos los meses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los meses</SelectItem>
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Mes</label>
+            <Select value={mesFilter} onValueChange={(v) => { setMesFilter(v); setPage(0) }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Todos los meses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>Todos los meses</SelectItem>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Select value={anioFilter} onValueChange={(value) => setAnioFilter(value ?? 'all')}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Todos los anos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los anos</SelectItem>
-              {years.map((year) => (
-                <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Año</label>
+            <Select value={anioFilter} onValueChange={(v) => { setAnioFilter(v); setPage(0) }}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Todos los años" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>Todos los años</SelectItem>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Select value={unidadFilter} onValueChange={(value) => setUnidadFilter(value ?? 'all')}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Todas las unidades" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las unidades</SelectItem>
-              {unidades?.map((unidad) => (
-                <SelectItem key={unidad.id} value={unidad.id}>{unidad.nombre}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Unidad</label>
+            <Select value={unidadFilter} onValueChange={(v) => { setUnidadFilter(v); setPage(0) }}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Todas las unidades" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>Todas las unidades</SelectItem>
+                {unidades?.map((unidad) => (
+                  <SelectItem key={unidad.id} value={unidad.id}>{unidad.nombre}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       )}
 
@@ -250,15 +282,15 @@ export default function CuotasPage() {
                   </TableCell>
                 </TableRow>
               )}
-              {filteredCuotas?.length === 0 && (
+              {filteredCuotas?.length === 0 && !isLoading && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-muted-foreground">
                     No se encontraron cuotas.
                   </TableCell>
                 </TableRow>
               )}
-              {filteredCuotas?.map((cuota) => (
-                <TableRow key={cuota.id} className={cuota.fechaBaja ? 'opacity-60' : ''}>
+              {paginatedCuotas?.map((cuota) => (
+                <TableRow key={cuota.id} className={cuota.estado === 'Anulada' ? 'opacity-60' : ''}>
                   <TableCell className="font-medium">{cuota.nombreSocio}</TableCell>
                   <TableCell>{cuota.nombreUnidad}</TableCell>
                   <TableCell>{cuota.nombrePlan}</TableCell>
@@ -267,13 +299,13 @@ export default function CuotasPage() {
                   <TableCell>{getBadge(cuota)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      {cuota.estado === 'Pendiente' && !cuota.fechaBaja && (
+                      {cuota.estado === 'Pendiente' && (
                         <>
                           <Button
                             size="sm"
                             variant="outline"
                             className="gap-1"
-                            onClick={() => setConfirmDialog({ type: 'pagar', id: cuota.id, plan: cuota.nombrePlan })}
+                            onClick={() => { setMutationError(null); setConfirmDialog({ type: 'pagar', id: cuota.id, plan: cuota.nombrePlan }) }}
                           >
                             <CheckCircle className="h-3.5 w-3.5" />
                             Pagada
@@ -282,30 +314,30 @@ export default function CuotasPage() {
                             size="sm"
                             variant="outline"
                             className="gap-1 text-destructive hover:text-destructive"
-                            onClick={() => setConfirmDialog({ type: 'anular', id: cuota.id, plan: cuota.nombrePlan })}
+                            onClick={() => { setMutationError(null); setConfirmDialog({ type: 'anular', id: cuota.id, plan: cuota.nombrePlan }) }}
                           >
                             <XCircle className="h-3.5 w-3.5" />
                             Anular
                           </Button>
                         </>
                       )}
-                      {cuota.estado === 'Pagada' && !cuota.fechaBaja && (
+                      {cuota.estado === 'Pagada' && (
                         <Button
                           size="sm"
                           variant="outline"
                           className="gap-1"
-                          onClick={() => setConfirmDialog({ type: 'revertir-pago', id: cuota.id, plan: cuota.nombrePlan })}
+                          onClick={() => { setMutationError(null); setConfirmDialog({ type: 'revertir-pago', id: cuota.id, plan: cuota.nombrePlan }) }}
                         >
                           <Undo2 className="h-3.5 w-3.5" />
                           Revertir pago
                         </Button>
                       )}
-                      {cuota.fechaBaja && (
+                      {cuota.estado === 'Anulada' && (
                         <Button
                           size="sm"
                           variant="outline"
                           className="gap-1"
-                          onClick={() => setConfirmDialog({ type: 'revertir-anulacion', id: cuota.id, plan: cuota.nombrePlan })}
+                          onClick={() => { setMutationError(null); setConfirmDialog({ type: 'revertir-anulacion', id: cuota.id, plan: cuota.nombrePlan }) }}
                         >
                           <Undo2 className="h-3.5 w-3.5" />
                           Revertir anulacion
@@ -320,6 +352,30 @@ export default function CuotasPage() {
         </div>
       )}
 
+      {searchedCedula && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Página {page + 1} de {totalPages}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       <Dialog open={!!confirmDialog} onOpenChange={() => setConfirmDialog(null)}>
         <DialogContent>
           <DialogHeader>
@@ -328,8 +384,13 @@ export default function CuotasPage() {
               {getDialogDescription(confirmDialog?.type, confirmDialog?.plan)}
             </DialogDescription>
           </DialogHeader>
+          {mutationError && (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              {mutationError}
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDialog(null)}>
+            <Button variant="outline" onClick={() => { setConfirmDialog(null); setMutationError(null) }}>
               Cancelar
             </Button>
             <Button

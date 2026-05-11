@@ -43,7 +43,7 @@ public class Cuota
     {
         if (Estado == EstadoCuota.Pagada)
             throw new InvalidOperationException("La cuota ya está pagada.");
-        if (FechaBaja.HasValue)
+        if (Estado == EstadoCuota.Anulada)
             throw new InvalidOperationException("No se puede pagar una cuota anulada.");
 
         Estado = EstadoCuota.Pagada;
@@ -54,8 +54,6 @@ public class Cuota
     {
         if (Estado != EstadoCuota.Pagada)
             throw new InvalidOperationException("Solo se puede revertir el pago de una cuota pagada.");
-        if (FechaBaja.HasValue)
-            throw new InvalidOperationException("No se puede revertir el pago de una cuota anulada.");
 
         Estado = EstadoCuota.Pendiente;
         FechaPago = null;
@@ -65,17 +63,19 @@ public class Cuota
     {
         if (Estado == EstadoCuota.Pagada)
             throw new InvalidOperationException("No se puede anular una cuota ya pagada.");
-        if (FechaBaja.HasValue)
+        if (Estado == EstadoCuota.Anulada)
             throw new InvalidOperationException("La cuota ya fue anulada.");
 
+        Estado = EstadoCuota.Anulada;
         FechaBaja = DateTime.UtcNow;
     }
 
     public void RevertirAnulacion()
     {
-        if (!FechaBaja.HasValue)
+        if (Estado != EstadoCuota.Anulada)
             throw new InvalidOperationException("La cuota no está anulada.");
 
+        Estado = EstadoCuota.Pendiente;
         FechaBaja = null;
     }
 }

@@ -1,4 +1,5 @@
 // frontend/src/pages/portal/MisCuotasPage.tsx
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { cuotasApi } from '@/services/api'
 import { formatDate } from '@/lib/utils'
@@ -12,13 +13,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, ChevronLeft, ChevronRight } from 'lucide-react'
+
+const PAGE_SIZE = 12
+
+function getBadgeVariant(cuota: { estado: string; fechaVencimiento: string }) {
+  if (cuota.estado === 'Pagada') return 'default'
+  if (cuota.estado === 'Anulada') return 'secondary'
+  const vencida = new Date(cuota.fechaVencimiento) < new Date()
+  return vencida ? 'destructive' : 'outline'
+}
 
 export default function MisCuotasPage() {
+  const [page, setPage] = useState(0)
   const { data: cuotas, isLoading } = useQuery({
     queryKey: ['mis-cuotas'],
     queryFn: cuotasApi.getMisCuotas,
   })
+
+  const totalPages = cuotas ? Math.ceil(cuotas.length / PAGE_SIZE) : 0
+  const paginatedCuotas = cuotas?.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
     <div className="space-y-6">
@@ -59,18 +73,19 @@ export default function MisCuotasPage() {
                 </TableCell>
               </TableRow>
             )}
-            {cuotas?.map((cuota) => (
+            {paginatedCuotas?.map((cuota) => (
               <TableRow key={cuota.id}>
                 <TableCell className="font-medium">{cuota.nombrePlan}</TableCell>
                 <TableCell>{cuota.nombreUnidad}</TableCell>
                 <TableCell>${cuota.monto.toLocaleString()}</TableCell>
                 <TableCell>{formatDate(cuota.fechaVencimiento)}</TableCell>
                 <TableCell>
-                  <Badge variant={cuota.estado === 'Pagada' ? 'default' : 'destructive'}>
+                  <Badge variant={getBadgeVariant(cuota)}>
                     {cuota.estado}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
+                  {/* Pago online no implementado aún (futuro RF). Botón disabled como placeholder. */}
                   {cuota.estado === 'Pendiente' && (
                     <Button size="sm" variant="outline" disabled>
                       Pagar
@@ -82,6 +97,30 @@ export default function MisCuotasPage() {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Página {page + 1} de {totalPages}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
