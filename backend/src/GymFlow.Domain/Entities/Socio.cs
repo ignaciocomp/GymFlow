@@ -74,6 +74,13 @@ public class Socio : Usuario
         DocumentoIdentidad = documentoIdentidad;
     }
 
+    public void ActualizarFechaAlta(DateTime fechaAlta)
+    {
+        if (fechaAlta > DateTime.UtcNow)
+            throw new ArgumentException("La fecha de alta no puede ser futura.", nameof(fechaAlta));
+        FechaAlta = fechaAlta;
+    }
+
     private static void ValidarDocumento(TipoDocumento tipoDocumento, string? documentoIdentidad)
     {
         if (tipoDocumento != TipoDocumento.CI)

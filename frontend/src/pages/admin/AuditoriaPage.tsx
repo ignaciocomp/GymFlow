@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { auditoriaApi } from '@/services/api'
+import { formatDateTime } from '@/lib/utils'
 import type { AuditoriaEntry, TipoAccionAuditoria } from '@/types'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 
@@ -52,13 +53,6 @@ export default function AuditoriaPage() {
     fetchRegistros()
   }, [tipoAccionFilter, desde, hasta])
 
-  const formatDate = (iso: string) => {
-    const d = new Date(iso)
-    return d.toLocaleDateString('es-UY', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    })
-  }
 
   const renderDetalles = (json: string) => {
     try {
@@ -168,7 +162,7 @@ export default function AuditoriaPage() {
                           : <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm whitespace-nowrap">{formatDate(r.fechaHora)}</td>
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">{formatDateTime(r.fechaHora)}</td>
                     <td className="px-4 py-3 text-sm">{r.usuarioNombre}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${

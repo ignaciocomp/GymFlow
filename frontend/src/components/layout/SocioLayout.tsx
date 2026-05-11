@@ -1,9 +1,10 @@
-import { Outlet, Navigate } from 'react-router-dom'
+import { Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
-import { Dumbbell, LogOut, User } from 'lucide-react'
+import { Dumbbell, LogOut, User, CreditCard } from 'lucide-react'
 
 export default function SocioLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
+  const location = useLocation()
 
   if (isLoading) {
     return (
@@ -56,11 +57,29 @@ export default function SocioLayout() {
         </div>
 
         {/* Nav */}
-        <nav className="mx-auto flex max-w-4xl gap-1 px-6 pb-0">
-          <div className="flex items-center gap-1.5 border-b-2 border-primary px-1 pb-2 text-sm font-medium text-primary">
+        <nav className="mx-auto flex max-w-4xl gap-4 px-6 pb-0">
+          <Link
+            to="/portal/perfil"
+            className={`flex items-center gap-1.5 border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+              location.pathname === '/portal' || location.pathname === '/portal/perfil'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
             <User className="h-4 w-4" />
             Mi Perfil
-          </div>
+          </Link>
+          <Link
+            to="/portal/mis-cuotas"
+            className={`flex items-center gap-1.5 border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+              location.pathname === '/portal/mis-cuotas'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <CreditCard className="h-4 w-4" />
+            Mis Cuotas
+          </Link>
         </nav>
       </header>
 

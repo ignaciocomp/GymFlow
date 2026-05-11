@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+﻿import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from '@/pages/Login'
 import AdminLayout from '@/components/layout/AdminLayout'
 import SocioLayout from '@/components/layout/SocioLayout'
@@ -17,6 +17,8 @@ import NuevoUsuarioPage from '@/pages/admin/NuevoUsuarioPage'
 import EditUsuarioPage from '@/pages/admin/EditUsuarioPage'
 import CambiarPasswordPage from '@/pages/admin/CambiarPasswordPage'
 import PerfilSocioPage from '@/pages/portal/PerfilSocioPage'
+import MisCuotasPage from '@/pages/portal/MisCuotasPage'
+import CuotasPage from '@/pages/admin/CuotasPage'
 
 export default function App() {
   return (
@@ -40,13 +42,16 @@ export default function App() {
         <Route path="usuarios/nuevo" element={<NuevoUsuarioPage />} />
         <Route path="usuarios/:id/editar" element={<EditUsuarioPage />} />
         <Route path="usuarios/:id/password" element={<CambiarPasswordPage />} />
+        <Route path="cuotas" element={<CuotasPage />} />
       </Route>
       <Route path="/portal" element={<SocioLayout />}>
         <Route index element={<PerfilSocioPage />} />
         <Route path="perfil" element={<PerfilSocioPage />} />
+        <Route path="mis-cuotas" element={<MisCuotasPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
 }
+

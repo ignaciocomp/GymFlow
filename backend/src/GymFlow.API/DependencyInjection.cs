@@ -5,6 +5,7 @@ using GymFlow.Application.UseCases.Planes;
 using GymFlow.Application.UseCases.Portal;
 using GymFlow.Application.UseCases.Roles;
 using GymFlow.Application.UseCases.Socios;
+using GymFlow.Application.UseCases.Cuotas;
 using GymFlow.Application.UseCases.Unidades;
 
 namespace GymFlow.API;
@@ -43,6 +44,12 @@ public static class DependencyInjection
         services.AddScoped<GetSocioPerfilQuery>();
         services.AddScoped<SolicitarModificacionCommand>();
         services.AddScoped<SolicitarBajaCommand>();
+        services.AddScoped<MarcarCuotaPagadaCommand>();
+        services.AddScoped<AnularCuotaCommand>();
+        services.AddScoped<GetCuotasBySocioQuery>();
+        services.AddScoped<GetCuotasAdminQuery>();
+        services.AddScoped<RevertirPagoCuotaCommand>();
+        services.AddScoped<RevertirAnulacionCuotaCommand>();
         return services;
     }
 }

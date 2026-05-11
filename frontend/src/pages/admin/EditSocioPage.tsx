@@ -63,6 +63,7 @@ export default function EditSocioPage() {
     nombre: '', apellido: '', correo: '',
     telefono: null, tipoDocumento: null, documentoIdentidad: null, fechaNacimiento: null,
     unidades: [],
+    fechaAlta: null,
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -88,6 +89,7 @@ export default function EditSocioPage() {
         documentoIdentidad: socio.documentoIdentidad,
         fechaNacimiento: socio.fechaNacimiento ? socio.fechaNacimiento.split('T')[0] : null,
         unidades: socio.unidades.map((u) => ({ unidadId: u.id, planId: u.planId })),
+        fechaAlta: socio.fechaAlta ? socio.fechaAlta.split('T')[0] : null,
       })
     }
   }, [socio])
@@ -329,6 +331,17 @@ export default function EditSocioPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Plan y acceso
           </h2>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Miembro desde</Label>
+            <Input
+              type="date"
+              value={form.fechaAlta || ''}
+              onChange={(e) => setForm({ ...form, fechaAlta: e.target.value || null })}
+              max={new Date().toISOString().split('T')[0]}
+              className="bg-muted/30 border-border"
+            />
+          </div>
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">Espacio asignado *</Label>

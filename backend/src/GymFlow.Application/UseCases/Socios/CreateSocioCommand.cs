@@ -12,19 +12,22 @@ public class CreateSocioCommand
     private readonly IPlanRepository _planRepository;
     private readonly IRolRepository _rolRepository;
     private readonly IAuditLogger _auditLogger;
+    private readonly ICuotaGeneradorService _cuotaGenerador;
 
     public CreateSocioCommand(
         ISocioRepository socioRepository,
         IUnidadRepository unidadRepository,
         IPlanRepository planRepository,
         IRolRepository rolRepository,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        ICuotaGeneradorService cuotaGenerador)
     {
         _socioRepository = socioRepository;
         _unidadRepository = unidadRepository;
         _planRepository = planRepository;
         _rolRepository = rolRepository;
         _auditLogger = auditLogger;
+        _cuotaGenerador = cuotaGenerador;
     }
 
     public async Task<SocioDto> ExecuteAsync(CreateSocioRequest request, Guid usuarioId, string usuarioNombre)
@@ -55,6 +58,9 @@ public class CreateSocioCommand
             }
         }
 
+        if (request.FechaAlta.HasValue && request.FechaAlta.Value > DateTime.UtcNow)
+            throw new ArgumentException("La fecha de alta no puede ser futura.");
+
         var rolSocio = await _rolRepository.GetByNombreAsync("Socio")
             ?? throw new InvalidOperationException("Rol 'Socio' no encontrado en seed data.");
 
@@ -64,7 +70,9 @@ public class CreateSocioCommand
             apellido: request.Apellido,
             correo: request.Correo,
             passwordHash: null, // Socio se autentica por Google OAuth (It.5)
-            fechaAlta: DateTime.UtcNow,
+            fechaAlta: request.FechaAlta.HasValue
+                ? DateTime.SpecifyKind(request.FechaAlta.Value, DateTimeKind.Utc)
+                : DateTime.UtcNow,
             consentimientoInformado: request.ConsentimientoInformado,
             tipoDocumento: request.TipoDocumento,
             telefono: request.Telefono,
@@ -79,6 +87,16 @@ public class CreateSocioCommand
         }
 
         await _socioRepository.AddAsync(socio);
+        await _socioRepository.SaveChangesAsync();
+
+        foreach (var asignacion in unidades)
+        {
+            if (asignacion.PlanId.HasValue)
+            {
+                var uu = socio.UnidadesAsignadas.First(u => u.UnidadId == asignacion.UnidadId);
+                await _cuotaGenerador.GenerarCuotasRetroactivasAsync(socio.Id, uu, socio.FechaAlta);
+            }
+        }
         await _socioRepository.SaveChangesAsync();
 
         await _auditLogger.LogAsync(

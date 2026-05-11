@@ -62,6 +62,7 @@ export default function NuevoSocioPage() {
     nombre: '', apellido: '', correo: '',
     telefono: null, tipoDocumento: null, documentoIdentidad: null, fechaNacimiento: null,
     unidades: [], consentimientoInformado: false,
+    fechaAlta: null,
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -261,6 +262,20 @@ export default function NuevoSocioPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Plan y acceso
           </h2>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Miembro desde</Label>
+            <Input
+              type="date"
+              value={form.fechaAlta || ''}
+              onChange={(e) => setForm({ ...form, fechaAlta: e.target.value || null })}
+              max={new Date().toISOString().split('T')[0]}
+              className="bg-muted/30 border-border"
+            />
+            <p className="text-xs text-muted-foreground">
+              Si no se selecciona, se usa la fecha de hoy.
+            </p>
+          </div>
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">Espacio asignado *</Label>

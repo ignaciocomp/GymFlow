@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -120,6 +120,41 @@ export const auditoriaApi = {
   }): Promise<AuditoriaEntry[]> => {
     const { data } = await api.get<AuditoriaEntry[]>('/auditoria', { params })
     return data
+  },
+}
+
+export const cuotasApi = {
+  getMisCuotas: async (): Promise<CuotaDto[]> => {
+    const { data } = await api.get<CuotaDto[]>('/cuotas/mis-cuotas')
+    return data
+  },
+
+  getAdmin: async (params: {
+    documentoIdentidad: string
+    estado?: string
+    mes?: number
+    anio?: number
+    unidadId?: string
+    incluirAnuladas?: boolean
+  }): Promise<CuotaDto[]> => {
+    const { data } = await api.get<CuotaDto[]>('/cuotas/admin', { params })
+    return data
+  },
+
+  marcarPagada: async (id: string): Promise<void> => {
+    await api.put(`/cuotas/${id}/pagar`)
+  },
+
+  anular: async (id: string): Promise<void> => {
+    await api.delete(`/cuotas/${id}`)
+  },
+
+  revertirPago: async (id: string): Promise<void> => {
+    await api.put(`/cuotas/${id}/revertir-pago`)
+  },
+
+  revertirAnulacion: async (id: string): Promise<void> => {
+    await api.put(`/cuotas/${id}/revertir-anulacion`)
   },
 }
 

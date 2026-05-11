@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -129,7 +130,7 @@ export default function UsuariosPage() {
                     : <span className="rounded-full bg-muted px-2 py-0.5 text-xs">Inactivo</span>}
                 </td>
                 <td className="py-3 px-4 text-sm text-muted-foreground">
-                  {new Date(emp.fechaCreacion).toLocaleDateString('es-UY')}
+                  {formatDate(emp.fechaCreacion)}
                 </td>
                 <td className="py-3 px-4 text-right space-x-2">
                   {puedeEditar && (

@@ -19,6 +19,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+builder.Services.AddHostedService<GymFlow.API.BackgroundServices.CuotaGeneracionBackgroundService>();
 
 // JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "GymFlowDevSecretKey2026!SuperSecure";
@@ -58,7 +59,7 @@ using (var scope = app.Services.CreateScope())
     if (!db.Unidades.Any())
     {
         var espacioMora = new Unidad("Espacio Mora", "Av. 8 de Octubre 2845");
-        var gimnasioNM = new Unidad("Gimnasio Nuevo Malvín", "Av. Italia 5765");
+        var gimnasioNM = new Unidad("Gimnasio Nuevo Malvin", "Av. Italia 5765");
         db.Unidades.AddRange(espacioMora, gimnasioNM);
         db.SaveChanges();
     }
@@ -66,12 +67,12 @@ using (var scope = app.Services.CreateScope())
     if (!db.Planes.Any())
     {
         var espacioMora = db.Unidades.First(u => u.Nombre == "Espacio Mora");
-        var gimnasioNM = db.Unidades.First(u => u.Nombre == "Gimnasio Nuevo Malvín");
+        var gimnasioNM = db.Unidades.First(u => u.Nombre == "Gimnasio Nuevo Malvin");
 
         db.Planes.AddRange(
-            new Plan("Plan Musculación", 2500, "Acceso a sala de musculación", espacioMora.Id),
+            new Plan("Plan Musculacion", 2500, "Acceso a sala de musculacion", espacioMora.Id),
             new Plan("Plan Completo", 3500, "Acceso a todas las actividades", espacioMora.Id),
-            new Plan("Plan Musculación", 2500, "Acceso a sala de musculación", gimnasioNM.Id),
+            new Plan("Plan Musculacion", 2500, "Acceso a sala de musculacion", gimnasioNM.Id),
             new Plan("Plan Completo", 3500, "Acceso a todas las actividades", gimnasioNM.Id),
             new Plan("Plan Libre", 4500, "Acceso a ambas sedes y todas las actividades", gimnasioNM.Id)
         );
@@ -83,12 +84,12 @@ using (var scope = app.Services.CreateScope())
     {
         var hasher = scope.ServiceProvider.GetRequiredService<GymFlow.Application.Interfaces.IPasswordHasher>();
         var unidad = db.Unidades.First(u => u.Nombre == "Espacio Mora");
-        var plan = db.Planes.First(p => p.UnidadId == unidad.Id && p.Nombre == "Plan Musculación");
+        var plan = db.Planes.First(p => p.UnidadId == unidad.Id && p.Nombre == "Plan Musculacion");
 
         var socio = new Socio(
             rolSocioId: RolesSeed.SocioRolId,
-            nombre: "María",
-            apellido: "López",
+            nombre: "Maria",
+            apellido: "Lopez",
             correo: "socio@gymflow.com",
             passwordHash: hasher.Hash("socio123"),
             fechaAlta: new DateTime(2025, 1, 15, 0, 0, 0, DateTimeKind.Utc),
@@ -101,12 +102,44 @@ using (var scope = app.Services.CreateScope())
         socio.UnidadesAsignadas.Add(new UsuarioUnidad(socio.Id, unidad.Id, plan.Id));
         db.Socios.Add(socio);
         db.SaveChanges();
+
+        if (!db.Set<GymFlow.Domain.Entities.Cuota>().Any(c => c.SocioId == socio.Id))
+        {
+            var cuotaSeed = new GymFlow.Domain.Entities.Cuota(
+                socioId: socio.Id,
+                unidadId: unidad.Id,
+                planId: plan.Id,
+                nombrePlan: plan.Nombre,
+                monto: plan.Precio,
+                fechaEmision: socio.FechaAlta);
+            db.Set<GymFlow.Domain.Entities.Cuota>().Add(cuotaSeed);
+            db.SaveChanges();
+        }
+    }
+
+    var socioSeed = db.Socios.FirstOrDefault(s => s.Correo == "socio@gymflow.com");
+    if (socioSeed is not null && !db.Set<GymFlow.Domain.Entities.Cuota>().Any(c => c.SocioId == socioSeed.Id))
+    {
+        var asignacionSeed = db.UsuarioUnidades.FirstOrDefault(uu => uu.UsuarioId == socioSeed.Id && uu.PlanId.HasValue);
+        if (asignacionSeed is not null)
+        {
+            var planSeed = db.Planes.First(p => p.Id == asignacionSeed.PlanId!.Value);
+            var cuotaSeed = new GymFlow.Domain.Entities.Cuota(
+                socioId: socioSeed.Id,
+                unidadId: asignacionSeed.UnidadId,
+                planId: planSeed.Id,
+                nombrePlan: planSeed.Nombre,
+                monto: planSeed.Precio,
+                fechaEmision: socioSeed.FechaAlta);
+            db.Set<GymFlow.Domain.Entities.Cuota>().Add(cuotaSeed);
+            db.SaveChanges();
+        }
     }
 }
 
-// Middleware global de manejo de excepciones: captura cualquier excepción no manejada
-// en los controllers y devuelve un 500 con un mensaje genérico, evitando exponer
-// detalles internos (stack trace, tipos de excepción, etc.) al cliente.
+// Middleware global de manejo de excepciones: captura cualquier excepcion no manejada
+// en los controllers y devuelve un 500 con un mensaje generico, evitando exponer
+// detalles internos (stack trace, tipos de excepcion, etc.) al cliente.
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -115,7 +148,7 @@ app.UseExceptionHandler(errorApp =>
         context.Response.ContentType = "application/json";
         await context.Response.WriteAsJsonAsync(new
         {
-            error = "Ocurrió un error interno. Intente nuevamente."
+            error = "Ocurrio un error interno. Intente nuevamente."
         });
     });
 });
@@ -126,3 +159,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

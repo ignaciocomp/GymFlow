@@ -14,12 +14,13 @@ public class AuditLoggingTests
     private readonly Mock<IPlanRepository> _planRepo = new();
     private readonly Mock<IRolRepository> _rolRepo = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
+    private readonly Mock<ICuotaGeneradorService> _cuotaGenerador = new();
 
     private CreateSocioCommand BuildCreateCommand()
     {
         _rolRepo.Setup(r => r.GetByNombreAsync("Socio", default))
             .ReturnsAsync(new Rol(Guid.NewGuid(), "Socio", true, DateTime.UtcNow));
-        return new CreateSocioCommand(_socioRepo.Object, _unidadRepo.Object, _planRepo.Object, _rolRepo.Object, _auditLogger.Object);
+        return new CreateSocioCommand(_socioRepo.Object, _unidadRepo.Object, _planRepo.Object, _rolRepo.Object, _auditLogger.Object, _cuotaGenerador.Object);
     }
 
     private static readonly Guid TestUserId = Guid.NewGuid();
