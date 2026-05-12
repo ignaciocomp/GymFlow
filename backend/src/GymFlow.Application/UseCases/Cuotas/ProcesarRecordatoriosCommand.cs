@@ -88,30 +88,5 @@ public class ProcesarRecordatoriosCommand
     }
 
     private static (string Asunto, string Cuerpo) ConstruirEmail(TipoRecordatorio tipo, Cuota cuota)
-    {
-        var (asunto, encabezado) = tipo switch
-        {
-            TipoRecordatorio.CincoDias => ("Tu cuota vence pronto", "Te recordamos que tu cuota vence en 5 días."),
-            TipoRecordatorio.UnDia => ("Tu cuota vence mañana", "Tu cuota vence mañana — no olvides regularizar tu pago."),
-            TipoRecordatorio.DiaVencimiento => ("Tu cuota vence hoy", "Tu cuota vence hoy. Por favor regularizá tu pago a la brevedad."),
-            _ => ("Recordatorio de cuota", "Tenés una cuota pendiente.")
-        };
-
-        var cuerpo = $@"
-            <html>
-            <body style='font-family: Arial, sans-serif;'>
-                <h2>Hola {cuota.Socio.Nombre},</h2>
-                <p>{encabezado}</p>
-                <table style='border-collapse: collapse;'>
-                    <tr><td><b>Plan:</b></td><td>{cuota.NombrePlan}</td></tr>
-                    <tr><td><b>Unidad:</b></td><td>{cuota.Unidad.Nombre}</td></tr>
-                    <tr><td><b>Monto:</b></td><td>${cuota.Monto:N2}</td></tr>
-                    <tr><td><b>Vencimiento:</b></td><td>{cuota.FechaVencimiento:dd/MM/yyyy}</td></tr>
-                </table>
-                <p>Saludos,<br/>Equipo GymFlow</p>
-            </body>
-            </html>";
-
-        return (asunto, cuerpo);
-    }
+        => EmailTemplates.Automatico(tipo, cuota.Socio, cuota);
 }

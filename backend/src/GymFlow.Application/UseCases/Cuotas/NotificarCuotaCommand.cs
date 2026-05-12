@@ -44,11 +44,12 @@ public class NotificarCuotaCommand
         if (string.IsNullOrWhiteSpace(socio.Correo))
             throw new InvalidOperationException("El socio no tiene correo registrado.");
 
-        if (await _recordatorioRepository.ExisteRecordatorioHoyAsync(cuotaId, TipoRecordatorio.Manual))
-            throw new InvalidOperationException("Ya se envió un recordatorio manual a este socio por esta cuota hoy.");
+        // Bloquear sólo si ya hay un recordatorio manual EXITOSO hoy.
+        // Si el último intento falló (timeout SMTP, etc.), permitimos reintentar.
+        if (await _recordatorioRepository.ExisteRecordatorioExitosoHoyAsync(cuotaId, TipoRecordatorio.Manual))
+            throw new InvalidOperationException("Ya se envió un recordatorio manual exitoso a este socio por esta cuota hoy.");
 
-        var asunto = $"Recordatorio: tu cuota de {cuota.NombrePlan} está pendiente";
-        var cuerpo = ConstruirCuerpoEmail(socio, cuota);
+        var (asunto, cuerpo) = EmailTemplates.Manual(socio, cuota);
 
         var resultado = await _emailService.EnviarAsync(socio.Correo, asunto, cuerpo);
 
@@ -68,25 +69,6 @@ public class NotificarCuotaCommand
             $"Recordatorio manual enviado a {socio.Nombre} {socio.Apellido} ({socio.Correo}) por la cuota de {cuota.NombrePlan}. Resultado: {(resultado.Exitoso ? "exitoso" : $"fallido — {resultado.Error}")}");
 
         if (!resultado.Exitoso)
-            throw new InvalidOperationException($"No se pudo enviar el email: {resultado.Error}");
-    }
-
-    private static string ConstruirCuerpoEmail(Socio socio, Cuota cuota)
-    {
-        return $@"
-            <html>
-            <body style='font-family: Arial, sans-serif;'>
-                <h2>Hola {socio.Nombre},</h2>
-                <p>Te recordamos que tenés una cuota pendiente en GymFlow.</p>
-                <table style='border-collapse: collapse;'>
-                    <tr><td><b>Plan:</b></td><td>{cuota.NombrePlan}</td></tr>
-                    <tr><td><b>Unidad:</b></td><td>{cuota.Unidad?.Nombre}</td></tr>
-                    <tr><td><b>Monto:</b></td><td>${cuota.Monto:N2}</td></tr>
-                    <tr><td><b>Vencimiento:</b></td><td>{cuota.FechaVencimiento:dd/MM/yyyy}</td></tr>
-                </table>
-                <p>Por favor regularizá tu pago a la brevedad.</p>
-                <p>Saludos,<br/>Equipo GymFlow</p>
-            </body>
-            </html>";
+            throw new InvalidOperationException("No se pudo enviar el email. Reintentá más tarde.");
     }
 }

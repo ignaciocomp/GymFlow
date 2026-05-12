@@ -29,6 +29,19 @@ public class RecordatorioCuotaRepository : IRecordatorioCuotaRepository
             r.FechaEnvio < manana);
     }
 
+    public async Task<bool> ExisteRecordatorioExitosoHoyAsync(Guid cuotaId, TipoRecordatorio tipo)
+    {
+        var hoy = DateTime.UtcNow.Date;
+        var manana = hoy.AddDays(1);
+
+        return await _context.RecordatoriosCuota.AnyAsync(r =>
+            r.CuotaId == cuotaId &&
+            r.TipoRecordatorio == tipo &&
+            r.Exitoso &&
+            r.FechaEnvio >= hoy &&
+            r.FechaEnvio < manana);
+    }
+
     public async Task<IEnumerable<RecordatorioCuota>> GetByCuotaIdAsync(Guid cuotaId)
     {
         return await _context.RecordatoriosCuota

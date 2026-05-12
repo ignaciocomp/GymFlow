@@ -41,13 +41,15 @@ public class NotificarCuotaCommandTests
 
         _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
         _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
-        _recordatorioRepo.Setup(r => r.ExisteRecordatorioHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
+        _recordatorioRepo.Setup(r => r.ExisteRecordatorioExitosoHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
         _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new EmailResultado(Exitoso: true));
 
         await CrearCommand().ExecuteAsync(cuota.Id, Guid.NewGuid(), "Admin Test");
 
-        _emailService.Verify(s => s.EnviarAsync(socio.Correo, It.Is<string>(a => a.Contains("Plan Musculación")), It.IsAny<string>()), Times.Once);
+        // El asunto contiene el nombre del plan HTML-encoded (defensa contra inyección).
+        // "Musculación" → "Musculaci&#243;n" tras HtmlEncode.
+        _emailService.Verify(s => s.EnviarAsync(socio.Correo, It.Is<string>(a => a.Contains("Musculaci")), It.IsAny<string>()), Times.Once);
         _recordatorioRepo.Verify(r => r.AddAsync(It.Is<RecordatorioCuota>(rc =>
             rc.CuotaId == cuota.Id &&
             rc.SocioId == socio.Id &&
@@ -116,20 +118,39 @@ public class NotificarCuotaCommandTests
     // El check defensivo en NotificarCuotaCommand cubre corrupción de datos eventual.
 
     [Fact]
-    public async Task ExecuteAsync_YaSeNotificoHoy_LanzaInvalidOperationException()
+    public async Task ExecuteAsync_YaSeNotificoExitosamenteHoy_LanzaInvalidOperationException()
     {
         var socio = CrearSocio();
         var cuota = CrearCuotaPendiente(socio.Id);
 
         _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
         _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
-        _recordatorioRepo.Setup(r => r.ExisteRecordatorioHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(true);
+        _recordatorioRepo.Setup(r => r.ExisteRecordatorioExitosoHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(true);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             CrearCommand().ExecuteAsync(cuota.Id, Guid.NewGuid(), "Admin"));
 
         Assert.Contains("hoy", ex.Message, StringComparison.OrdinalIgnoreCase);
         _emailService.Verify(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_IntentoFallidoPrevio_PermiteReintentar()
+    {
+        var socio = CrearSocio();
+        var cuota = CrearCuotaPendiente(socio.Id);
+
+        _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
+        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        // Hay un registro de hoy, pero NO exitoso (envío anterior falló)
+        _recordatorioRepo.Setup(r => r.ExisteRecordatorioExitosoHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
+        _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+
+        await CrearCommand().ExecuteAsync(cuota.Id, Guid.NewGuid(), "Admin");
+
+        // El segundo intento se ejecutó correctamente: el fallo previo no bloquea
+        _emailService.Verify(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
@@ -140,7 +161,7 @@ public class NotificarCuotaCommandTests
 
         _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
         _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
-        _recordatorioRepo.Setup(r => r.ExisteRecordatorioHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
+        _recordatorioRepo.Setup(r => r.ExisteRecordatorioExitosoHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
         _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new EmailResultado(Exitoso: false, Error: "SMTP timeout"));
 
@@ -151,5 +172,33 @@ public class NotificarCuotaCommandTests
         _recordatorioRepo.Verify(r => r.AddAsync(It.Is<RecordatorioCuota>(rc =>
             rc.Exitoso == false && rc.Error == "SMTP timeout")), Times.Once);
         _recordatorioRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NombrePlanConHtml_EscapaParaPrevenirInyeccion()
+    {
+        // Simulamos un escenario malicioso: alguien crea un plan con HTML en el nombre.
+        // El email enviado debe escapar el HTML (defensa en profundidad).
+        var socio = CrearSocio();
+        var cuota = new Cuota(socio.Id, Guid.NewGuid(), Guid.NewGuid(),
+            nombrePlan: "<script>alert('xss')</script>",
+            monto: 2500m,
+            fechaEmision: DateTime.UtcNow);
+
+        _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
+        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        _recordatorioRepo.Setup(r => r.ExisteRecordatorioExitosoHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
+
+        string? cuerpoCapturado = null;
+        _emailService.Setup(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Callback<string, string, string>((_, _, body) => cuerpoCapturado = body)
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+
+        await CrearCommand().ExecuteAsync(cuota.Id, Guid.NewGuid(), "Admin");
+
+        Assert.NotNull(cuerpoCapturado);
+        // El HTML peligroso debe estar escapado (no contener literalmente "<script>")
+        Assert.DoesNotContain("<script>", cuerpoCapturado);
+        Assert.Contains("&lt;script&gt;", cuerpoCapturado);
     }
 }
