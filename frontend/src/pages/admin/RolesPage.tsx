@@ -42,18 +42,23 @@ export default function RolesPage() {
     }
   }
 
-  if (loading) return <div className="p-6">Cargando…</div>
-  if (error) return <div className="p-6 text-destructive">{error}</div>
-
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Roles</h1>
         {puedeCrear && (
           <Link to="/admin/roles/nuevo"><Button>Nuevo rol</Button></Link>
         )}
       </div>
-      <div className="rounded-lg border border-border bg-card">
+
+      {error && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
+      {/* Tabla — visible en sm+ con scroll horizontal */}
+      <div className="hidden sm:block rounded-lg border border-border bg-card overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
@@ -64,16 +69,23 @@ export default function RolesPage() {
             </tr>
           </thead>
           <tbody>
-            {roles.map(r => (
+            {loading && (
+              <tr>
+                <td colSpan={4} className="py-8 px-4 text-center text-sm text-muted-foreground">
+                  Cargando roles...
+                </td>
+              </tr>
+            )}
+            {!loading && roles.map(r => (
               <tr key={r.id} className="border-b border-border last:border-0">
-                <td className="py-3 px-4">{r.nombre}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{r.nombre}</td>
                 <td className="py-3 px-4 text-sm">
                   {r.esSistema
-                    ? <span className="rounded-full bg-muted px-2 py-0.5 text-xs">Sistema</span>
-                    : <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">Personalizado</span>}
+                    ? <span className="rounded-full bg-muted px-2 py-0.5 text-xs whitespace-nowrap">Sistema</span>
+                    : <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs whitespace-nowrap">Personalizado</span>}
                 </td>
                 <td className="py-3 px-4 text-sm text-muted-foreground">{r.permisos.length}</td>
-                <td className="py-3 px-4 text-right space-x-2">
+                <td className="py-3 px-4 text-right whitespace-nowrap space-x-2">
                   {puedeEditar && !r.esSistema && (
                     <Link to={`/admin/roles/${r.id}/editar`}>
                       <Button size="sm" variant="outline">Editar</Button>
@@ -87,8 +99,61 @@ export default function RolesPage() {
                 </td>
               </tr>
             ))}
+            {!loading && roles.length === 0 && (
+              <tr>
+                <td colSpan={4} className="py-8 px-4 text-center text-sm text-muted-foreground">
+                  No hay roles configurados.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
+      </div>
+
+      {/* Cards (mobile only) */}
+      <div className="sm:hidden space-y-3">
+        {loading && (
+          <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
+            Cargando roles...
+          </div>
+        )}
+        {!loading && roles.length === 0 && (
+          <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
+            No hay roles configurados.
+          </div>
+        )}
+        {!loading && roles.map(r => (
+          <div key={r.id} className="rounded-lg border bg-card p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-medium">{r.nombre}</p>
+              {r.esSistema
+                ? <span className="rounded-full bg-muted px-2 py-0.5 text-xs whitespace-nowrap shrink-0">Sistema</span>
+                : <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs whitespace-nowrap shrink-0">Personalizado</span>}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {r.permisos.length} {r.permisos.length === 1 ? 'permiso' : 'permisos'}
+            </div>
+            {(puedeEditar || puedeBorrar) && !r.esSistema && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {puedeEditar && (
+                  <Link to={`/admin/roles/${r.id}/editar`} className="flex-1">
+                    <Button size="sm" variant="outline" className="w-full">Editar</Button>
+                  </Link>
+                )}
+                {puedeBorrar && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="flex-1"
+                    onClick={() => { setDeleteError(null); setDeleteDialog({ id: r.id, nombre: r.nombre }) }}
+                  >
+                    Eliminar
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       <Dialog open={!!deleteDialog} onOpenChange={() => { setDeleteDialog(null); setDeleteError(null) }}>

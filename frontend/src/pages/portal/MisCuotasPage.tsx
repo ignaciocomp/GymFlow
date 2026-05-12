@@ -46,7 +46,8 @@ export default function MisCuotasPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card overflow-hidden">
+      {/* Vista tabla (sm+) */}
+      <div className="hidden sm:block rounded-xl border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -96,6 +97,46 @@ export default function MisCuotasPage() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Vista cards (mobile only) */}
+      <div className="sm:hidden space-y-3">
+        {isLoading && (
+          <div className="rounded-xl border bg-card p-6 text-center text-muted-foreground">
+            Cargando...
+          </div>
+        )}
+        {cuotas?.length === 0 && !isLoading && (
+          <div className="rounded-xl border bg-card p-6 text-center text-muted-foreground">
+            No tenés cuotas registradas.
+          </div>
+        )}
+        {paginatedCuotas?.map((cuota) => (
+          <div key={cuota.id} className="rounded-xl border bg-card p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-medium text-foreground">{cuota.nombrePlan}</p>
+                <p className="text-xs text-muted-foreground">{cuota.nombreUnidad}</p>
+              </div>
+              <Badge variant={getBadgeVariant(cuota)}>{cuota.estado}</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Monto</p>
+                <p className="font-medium">${cuota.monto.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Vencimiento</p>
+                <p className="font-medium">{formatDate(cuota.fechaVencimiento)}</p>
+              </div>
+            </div>
+            {cuota.estado === 'Pendiente' && (
+              <Button size="sm" variant="outline" disabled className="w-full">
+                Pagar (próximamente)
+              </Button>
+            )}
+          </div>
+        ))}
       </div>
 
       {totalPages > 1 && (

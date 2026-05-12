@@ -168,7 +168,7 @@ export default function NuevoSocioPage() {
             Información personal
           </h2>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground">Nombre *</Label>
               <Input
@@ -200,7 +200,7 @@ export default function NuevoSocioPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground">Teléfono</Label>
               <Input

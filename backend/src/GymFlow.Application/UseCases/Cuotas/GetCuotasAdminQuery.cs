@@ -23,4 +23,13 @@ public class GetCuotasAdminQuery
         var cuotas = await _cuotaRepository.SearchAsync(socio.Id, estado, mes, anio, unidadId, incluirAnuladas);
         return cuotas.Select(GetCuotasBySocioQuery.MapToDto);
     }
+
+    public async Task<IEnumerable<CuotaDto>> ExecuteBySocioIdAsync(Guid socioId, EstadoCuota? estado, int? mes, int? anio, Guid? unidadId, bool incluirAnuladas = false)
+    {
+        var socio = await _socioRepository.GetByIdAsync(socioId)
+            ?? throw new KeyNotFoundException("No se encontró el socio.");
+
+        var cuotas = await _cuotaRepository.SearchAsync(socio.Id, estado, mes, anio, unidadId, incluirAnuladas);
+        return cuotas.Select(GetCuotasBySocioQuery.MapToDto);
+    }
 }

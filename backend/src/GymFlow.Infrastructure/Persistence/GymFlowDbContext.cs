@@ -20,6 +20,7 @@ public class GymFlowDbContext : DbContext
     public DbSet<Permiso> Permisos => Set<Permiso>();
     public DbSet<RolPermiso> RolPermisos => Set<RolPermiso>();
     public DbSet<Cuota> Cuotas => Set<Cuota>();
+    public DbSet<RecordatorioCuota> RecordatoriosCuota => Set<RecordatorioCuota>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

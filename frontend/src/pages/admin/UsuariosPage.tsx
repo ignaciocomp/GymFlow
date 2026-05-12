@@ -81,12 +81,9 @@ export default function UsuariosPage() {
 
   const rolesDisponibles = roles.filter(r => r.nombre !== 'Socio')
 
-  if (loading) return <div className="p-6">Cargando...</div>
-  if (error) return <div className="p-6 text-destructive">{error}</div>
-
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Usuarios</h1>
         {puedeCrear && (
           <Link to="/admin/usuarios/nuevo"><Button>Nuevo usuario</Button></Link>
@@ -102,22 +99,36 @@ export default function UsuariosPage() {
         </Button>
       </div>
 
-      <div className="rounded-lg border border-border bg-card">
+      {error && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
+      {/* Tabla — visible en sm+ con scroll horizontal */}
+      <div className="hidden sm:block rounded-lg border border-border bg-card overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-medium">Nombre</th>
+              <th className="text-left py-3 px-4 text-sm font-medium whitespace-nowrap">Nombre</th>
               <th className="text-left py-3 px-4 text-sm font-medium">Correo</th>
               <th className="text-left py-3 px-4 text-sm font-medium">Rol</th>
               <th className="text-left py-3 px-4 text-sm font-medium">Estado</th>
-              <th className="text-left py-3 px-4 text-sm font-medium">Alta</th>
+              <th className="text-left py-3 px-4 text-sm font-medium whitespace-nowrap">Alta</th>
               <th className="py-3 px-4" />
             </tr>
           </thead>
           <tbody>
-            {empleados.map(emp => (
+            {loading && (
+              <tr>
+                <td colSpan={6} className="py-8 px-4 text-center text-sm text-muted-foreground">
+                  Cargando usuarios...
+                </td>
+              </tr>
+            )}
+            {!loading && empleados.map(emp => (
               <tr key={emp.id} className="border-b border-border last:border-0">
-                <td className="py-3 px-4">{emp.apellido}, {emp.nombre}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{emp.apellido}, {emp.nombre}</td>
                 <td className="py-3 px-4 text-sm text-muted-foreground">{emp.correo}</td>
                 <td className="py-3 px-4">
                   {emp.rolNombre
@@ -126,13 +137,13 @@ export default function UsuariosPage() {
                 </td>
                 <td className="py-3 px-4 text-sm">
                   {emp.estaActivo
-                    ? <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs">Activo</span>
-                    : <span className="rounded-full bg-muted px-2 py-0.5 text-xs">Inactivo</span>}
+                    ? <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs whitespace-nowrap">Activo</span>
+                    : <span className="rounded-full bg-muted px-2 py-0.5 text-xs whitespace-nowrap">Inactivo</span>}
                 </td>
-                <td className="py-3 px-4 text-sm text-muted-foreground">
+                <td className="py-3 px-4 text-sm text-muted-foreground whitespace-nowrap">
                   {formatDate(emp.fechaCreacion)}
                 </td>
-                <td className="py-3 px-4 text-right space-x-2">
+                <td className="py-3 px-4 text-right whitespace-nowrap space-x-2">
                   {puedeEditar && (
                     <>
                       <Link to={`/admin/usuarios/${emp.id}/editar`}>
@@ -156,7 +167,7 @@ export default function UsuariosPage() {
                 </td>
               </tr>
             ))}
-            {empleados.length === 0 && (
+            {!loading && empleados.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-8 px-4 text-center text-sm text-muted-foreground">
                   No hay usuarios {tab === 'activos' ? 'activos' : 'inactivos'}.
@@ -165,6 +176,81 @@ export default function UsuariosPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Cards (mobile only) */}
+      <div className="sm:hidden space-y-3">
+        {loading && (
+          <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
+            Cargando usuarios...
+          </div>
+        )}
+        {!loading && empleados.length === 0 && (
+          <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
+            No hay usuarios {tab === 'activos' ? 'activos' : 'inactivos'}.
+          </div>
+        )}
+        {!loading && empleados.map(emp => (
+          <div key={emp.id} className="rounded-lg border bg-card p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{emp.apellido}, {emp.nombre}</p>
+                <p className="text-xs text-muted-foreground truncate">{emp.correo}</p>
+              </div>
+              {emp.estaActivo
+                ? <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs whitespace-nowrap shrink-0">Activo</span>
+                : <span className="rounded-full bg-muted px-2 py-0.5 text-xs whitespace-nowrap shrink-0">Inactivo</span>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Rol</p>
+                <p className="font-medium">
+                  {emp.rolNombre
+                    ? emp.rolNombre
+                    : <span className="text-destructive">Sin rol</span>}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Alta</p>
+                <p className="font-medium">{formatDate(emp.fechaCreacion)}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              {puedeEditar && (
+                <>
+                  <Link to={`/admin/usuarios/${emp.id}/editar`} className="flex-1">
+                    <Button size="sm" variant="outline" className="w-full">Editar</Button>
+                  </Link>
+                  <Link to={`/admin/usuarios/${emp.id}/password`} className="flex-1">
+                    <Button size="sm" variant="outline" className="w-full">Password</Button>
+                  </Link>
+                </>
+              )}
+              {puedeBorrar && emp.estaActivo && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="flex-1 min-w-[80px]"
+                  onClick={() => { setBajaError(null); setBajaDialog({ id: emp.id, nombre: `${emp.nombre} ${emp.apellido}` }) }}
+                >
+                  Baja
+                </Button>
+              )}
+              {puedeEditar && !emp.estaActivo && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => { setReactivarError(null); setReactivarRolId(''); setReactivarDialog(emp) }}
+                >
+                  Reactivar
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Dialog de baja */}

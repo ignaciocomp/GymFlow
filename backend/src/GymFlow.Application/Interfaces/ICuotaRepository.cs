@@ -9,6 +9,7 @@ public interface ICuotaRepository
     Task<IEnumerable<Cuota>> GetBySocioIdAsync(Guid socioId);
     Task<IEnumerable<Cuota>> SearchAsync(Guid socioId, EstadoCuota? estado, int? mes, int? anio, Guid? unidadId, bool incluirAnuladas = false);
     Task<Cuota?> GetUltimaCuotaAsync(Guid socioId, Guid unidadId);
+    Task<IEnumerable<Cuota>> GetCuotasParaRecordatorioAsync(DateTime hoy);
     Task AddAsync(Cuota cuota);
     Task DeletePendientesBySocioAsync(Guid socioId);
     Task SaveChangesAsync();

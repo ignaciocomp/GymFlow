@@ -8,6 +8,7 @@ import Topbar from './Topbar'
 export default function AdminLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false)
   const tieneAccesoAdmin = (user?.permisos?.length ?? 0) > 0
 
   if (isLoading) {
@@ -53,16 +54,22 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar collapsed={sidebarCollapsed} />
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        mobileOpen={sidebarMobileOpen}
+        onMobileClose={() => setSidebarMobileOpen(false)}
+      />
       <div
         className={`transition-all duration-300 ${
-          sidebarCollapsed ? 'ml-16' : 'ml-64'
+          // En mobile sin margin (sidebar es overlay); en desktop según collapsed
+          sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
         }`}
       >
         <Topbar
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onOpenMobileSidebar={() => setSidebarMobileOpen(true)}
         />
-        <main className="p-6">
+        <main className="p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

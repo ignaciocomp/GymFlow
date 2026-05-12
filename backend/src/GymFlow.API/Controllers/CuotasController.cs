@@ -19,6 +19,8 @@ public class CuotasController : ControllerBase
     private readonly AnularCuotaCommand _anularCommand;
     private readonly RevertirPagoCuotaCommand _revertirPagoCommand;
     private readonly RevertirAnulacionCuotaCommand _revertirAnulacionCommand;
+    private readonly NotificarCuotaCommand _notificarCommand;
+    private readonly GetSociosConEstadoCuotaQuery _getSociosConEstadoCuotaQuery;
 
     public CuotasController(
         GetCuotasBySocioQuery getCuotasBySocioQuery,
@@ -26,7 +28,9 @@ public class CuotasController : ControllerBase
         MarcarCuotaPagadaCommand marcarPagadaCommand,
         AnularCuotaCommand anularCommand,
         RevertirPagoCuotaCommand revertirPagoCommand,
-        RevertirAnulacionCuotaCommand revertirAnulacionCommand)
+        RevertirAnulacionCuotaCommand revertirAnulacionCommand,
+        NotificarCuotaCommand notificarCommand,
+        GetSociosConEstadoCuotaQuery getSociosConEstadoCuotaQuery)
     {
         _getCuotasBySocioQuery = getCuotasBySocioQuery;
         _getCuotasAdminQuery = getCuotasAdminQuery;
@@ -34,6 +38,8 @@ public class CuotasController : ControllerBase
         _anularCommand = anularCommand;
         _revertirPagoCommand = revertirPagoCommand;
         _revertirAnulacionCommand = revertirAnulacionCommand;
+        _notificarCommand = notificarCommand;
+        _getSociosConEstadoCuotaQuery = getSociosConEstadoCuotaQuery;
     }
 
     [HttpGet("mis-cuotas")]
@@ -57,6 +63,43 @@ public class CuotasController : ControllerBase
         try
         {
             var cuotas = await _getCuotasAdminQuery.ExecuteAsync(documentoIdentidad, estado, mes, anio, unidadId, incluirAnuladas);
+            return Ok(cuotas);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// RF-07: lista todos los socios con un resumen del estado de sus cuotas.
+    /// Usado por la vista admin de "Gestión de cuotas" para mostrar socios filtrados por unidad.
+    /// </summary>
+    [HttpGet("socios-estado")]
+    [RequierePermiso(Modulo.Cuotas, Operacion.Lectura)]
+    public async Task<ActionResult<IEnumerable<SocioConEstadoCuotaDto>>> GetSociosEstado(
+        [FromQuery] Guid? unidadId)
+    {
+        var socios = await _getSociosConEstadoCuotaQuery.ExecuteAsync(unidadId);
+        return Ok(socios);
+    }
+
+    /// <summary>
+    /// RF-07: obtiene las cuotas de un socio específico por su ID (usado por la vista detalle).
+    /// </summary>
+    [HttpGet("admin/socio/{socioId:guid}")]
+    [RequierePermiso(Modulo.Cuotas, Operacion.Lectura)]
+    public async Task<ActionResult<IEnumerable<CuotaDto>>> GetCuotasBySocioId(
+        Guid socioId,
+        [FromQuery] EstadoCuota? estado,
+        [FromQuery] int? mes,
+        [FromQuery] int? anio,
+        [FromQuery] Guid? unidadId,
+        [FromQuery] bool incluirAnuladas = false)
+    {
+        try
+        {
+            var cuotas = await _getCuotasAdminQuery.ExecuteBySocioIdAsync(socioId, estado, mes, anio, unidadId, incluirAnuladas);
             return Ok(cuotas);
         }
         catch (KeyNotFoundException ex)
@@ -101,6 +144,20 @@ public class CuotasController : ControllerBase
         {
             var (userId, userName) = GetCurrentUser();
             await _revertirPagoCommand.ExecuteAsync(id, userId, userName);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+    }
+
+    [HttpPost("{id:guid}/notificar")]
+    [RequierePermiso(Modulo.Cuotas, Operacion.Modificacion)]
+    public async Task<IActionResult> Notificar(Guid id)
+    {
+        try
+        {
+            var (userId, userName) = GetCurrentUser();
+            await _notificarCommand.ExecuteAsync(id, userId, userName);
             return NoContent();
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }

@@ -26,6 +26,8 @@ public static class DependencyInjection
         services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
         services.AddScoped<ICuotaRepository, CuotaRepository>();
         services.AddScoped<ICuotaGeneradorService, CuotaGeneradorService>();
+        services.AddScoped<IRecordatorioCuotaRepository, RecordatorioCuotaRepository>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddMemoryCache();
 

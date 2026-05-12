@@ -116,3 +116,17 @@ export interface CuotaDto {
   fechaPago: string | null
   fechaBaja: string | null
 }
+
+export type EstadoGeneralCuotas = 'AlDia' | 'Pendiente' | 'Vencido'
+
+export interface SocioConEstadoCuotaDto {
+  socioId: string
+  nombre: string
+  apellido: string
+  correo: string
+  documentoIdentidad: string | null
+  unidades: string[]
+  estado: EstadoGeneralCuotas
+  cuotasPendientes: number
+  cuotasVencidas: number
+}

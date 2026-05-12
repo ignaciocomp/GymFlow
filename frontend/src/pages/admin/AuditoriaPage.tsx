@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { auditoriaApi } from '@/services/api'
 import { formatDateTime } from '@/lib/utils'
 import type { AuditoriaEntry, TipoAccionAuditoria } from '@/types'
@@ -116,13 +116,13 @@ export default function AuditoriaPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border border-border bg-card">
+      {/* Tabla — visible en sm+ con scroll horizontal */}
+      <div className="hidden sm:block rounded-lg border border-border bg-card overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border bg-muted/50">
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground w-8"></th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Fecha/hora</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Fecha/hora</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Usuario</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Acción</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Entidad</th>
@@ -144,9 +144,8 @@ export default function AuditoriaPage() {
               </tr>
             ) : (
               registros.map((r) => (
-                <>
+                <Fragment key={r.id}>
                   <tr
-                    key={r.id}
                     className={`border-b border-border hover:bg-muted/30 transition-colors ${
                       r.detallesCambios ? 'cursor-pointer' : ''
                     }`}
@@ -163,19 +162,19 @@ export default function AuditoriaPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">{formatDateTime(r.fechaHora)}</td>
-                    <td className="px-4 py-3 text-sm">{r.usuarioNombre}</td>
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">{r.usuarioNombre}</td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${
                         accionBadgeColor[r.tipoAccion] || 'bg-gray-100 text-gray-800'
                       }`}>
                         {TIPO_ACCIONES.find((t) => t.value === r.tipoAccion)?.label || r.tipoAccion}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm">{r.entidadAfectada}</td>
-                    <td className="px-4 py-3 text-sm">{r.descripcion}</td>
+                    <td className="px-4 py-3 text-sm max-w-md">{r.descripcion}</td>
                   </tr>
                   {expandedRow === r.id && r.detallesCambios && (
-                    <tr key={`${r.id}-details`} className="bg-muted/20">
+                    <tr className="bg-muted/20">
                       <td></td>
                       <td colSpan={5} className="px-4 py-3">
                         <div className="text-xs font-medium text-muted-foreground mb-1">Campos modificados:</div>
@@ -183,11 +182,62 @@ export default function AuditoriaPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Cards (mobile only) */}
+      <div className="sm:hidden space-y-3">
+        {loading && (
+          <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
+            Cargando registros...
+          </div>
+        )}
+        {!loading && registros.length === 0 && (
+          <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
+            No se encontraron registros de auditoría.
+          </div>
+        )}
+        {!loading && registros.map((r) => {
+          const isExpanded = expandedRow === r.id
+          return (
+            <div
+              key={r.id}
+              className={`rounded-lg border bg-card p-4 space-y-2 ${r.detallesCambios ? 'cursor-pointer' : ''}`}
+              onClick={() => r.detallesCambios && setExpandedRow(isExpanded ? null : r.id)}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${
+                  accionBadgeColor[r.tipoAccion] || 'bg-gray-100 text-gray-800'
+                }`}>
+                  {TIPO_ACCIONES.find((t) => t.value === r.tipoAccion)?.label || r.tipoAccion}
+                </span>
+                {r.detallesCambios && (
+                  isExpanded
+                    ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    : <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+              <p className="text-sm text-foreground">{r.descripcion}</p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <span>{formatDateTime(r.fechaHora)}</span>
+                <span>·</span>
+                <span>{r.usuarioNombre}</span>
+                <span>·</span>
+                <span>{r.entidadAfectada}</span>
+              </div>
+              {isExpanded && r.detallesCambios && (
+                <div className="mt-2 border-t border-border pt-2">
+                  <div className="text-xs font-medium text-muted-foreground mb-1">Campos modificados:</div>
+                  {renderDetalles(r.detallesCambios)}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
