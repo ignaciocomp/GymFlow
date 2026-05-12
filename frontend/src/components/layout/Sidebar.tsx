@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ClipboardList,
   Shield,
+  Receipt,
 } from 'lucide-react'
 import { usePermisos } from '@/hooks/usePermisos'
 import type { Modulo } from '@/types/permisos'
@@ -44,12 +45,20 @@ const navigation: NavGroup[] = [
     ],
   },
   {
+    label: 'Cuotas',
+    icon: <Receipt className="h-5 w-5" />,
+    modulo: 'Cuotas',
+    items: [
+      { label: 'Gestion de cuotas', path: '/admin/cuotas', icon: <Receipt className="h-4 w-4" /> },
+    ],
+  },
+  {
     label: 'Sistema',
     icon: <ClipboardList className="h-5 w-5" />,
     modulo: 'Empleados',
     items: [
       { label: 'Usuarios', path: '/admin/usuarios', icon: <UserCog className="h-4 w-4" /> },
-      { label: 'Auditoría', path: '/admin/auditoria', icon: <ClipboardList className="h-4 w-4" /> },
+      { label: 'AuditorÃ­a', path: '/admin/auditoria', icon: <ClipboardList className="h-4 w-4" /> },
       { label: 'Roles', path: '/admin/roles', icon: <Shield className="h-4 w-4" /> },
     ],
   },
@@ -161,3 +170,5 @@ export default function Sidebar({ collapsed }: { collapsed: boolean }) {
     </aside>
   )
 }
+
+

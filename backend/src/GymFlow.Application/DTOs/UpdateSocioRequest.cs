@@ -10,4 +10,5 @@ public record UpdateSocioRequest(
     TipoDocumento TipoDocumento,
     string? DocumentoIdentidad,
     DateTime? FechaNacimiento,
-    List<UnidadAsignacionDto> Unidades);
+    List<UnidadAsignacionDto> Unidades,
+    DateTime? FechaAlta = null);

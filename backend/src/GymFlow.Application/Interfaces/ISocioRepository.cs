@@ -6,6 +6,7 @@ public interface ISocioRepository
 {
     Task<IEnumerable<Socio>> GetAllAsync(bool includeInactive = false);
     Task<Socio?> GetByIdAsync(Guid id);
+    Task<Socio?> GetByDocumentoIdentidadAsync(string documentoIdentidad);
     Task<Socio?> GetByCorreoAsync(string correo);
     Task<bool> ExisteCorreoAsync(string correo);
     Task<bool> ExisteCedulaAsync(string cedula);

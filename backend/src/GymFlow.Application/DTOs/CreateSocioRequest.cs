@@ -11,4 +11,5 @@ public record CreateSocioRequest(
     string? DocumentoIdentidad,
     DateTime? FechaNacimiento,
     List<UnidadAsignacionDto> Unidades,
-    bool ConsentimientoInformado);
+    bool ConsentimientoInformado,
+    DateTime? FechaAlta = null);

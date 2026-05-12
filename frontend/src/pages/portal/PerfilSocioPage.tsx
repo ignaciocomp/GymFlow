@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { portalApi } from '@/services/api'
+import { formatDate } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -19,10 +20,6 @@ const tipoDocumentoLabel: Record<TipoDocumento, string> = {
   Otro: 'Otro',
 }
 
-function formatDate(iso: string | null | undefined) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-UY', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (

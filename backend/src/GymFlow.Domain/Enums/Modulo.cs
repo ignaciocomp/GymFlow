@@ -6,5 +6,6 @@ public enum Modulo
     Planes,
     Unidades,
     Auditoria,
-    Empleados
+    Empleados,
+    Cuotas
 }

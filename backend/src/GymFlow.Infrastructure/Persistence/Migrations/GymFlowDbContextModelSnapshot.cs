@@ -22,6 +22,55 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("GymFlow.Domain.Entities.Cuota", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("FechaBaja")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaEmision")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("NombrePlan")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SocioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UnidadId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("SocioId");
+
+                    b.HasIndex("UnidadId");
+
+                    b.ToTable("Cuotas", (string)null);
+                });
+
             modelBuilder.Entity("GymFlow.Domain.Entities.Permiso", b =>
                 {
                     b.Property<Guid>("Id")
@@ -164,6 +213,30 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("49569ee3-9b6b-e594-865a-6dd30f40aa88"),
                             Modulo = "Empleados",
+                            Operacion = "Eliminacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("ef6441ba-c16e-cc6b-45a5-9e6375feb16d"),
+                            Modulo = "Cuotas",
+                            Operacion = "Lectura"
+                        },
+                        new
+                        {
+                            Id = new Guid("637b6d39-ebbf-9e16-8d7e-396861bd62ed"),
+                            Modulo = "Cuotas",
+                            Operacion = "Escritura"
+                        },
+                        new
+                        {
+                            Id = new Guid("47bf3159-8b32-a19a-0d37-af59a58a5f73"),
+                            Modulo = "Cuotas",
+                            Operacion = "Modificacion"
+                        },
+                        new
+                        {
+                            Id = new Guid("efd06b26-0147-c35f-9b0e-a7d6b57194e1"),
+                            Modulo = "Cuotas",
                             Operacion = "Eliminacion"
                         });
                 });
@@ -406,6 +479,26 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         {
                             RolId = new Guid("11111111-1111-1111-1111-111111111111"),
                             PermisoId = new Guid("49569ee3-9b6b-e594-865a-6dd30f40aa88")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("ef6441ba-c16e-cc6b-45a5-9e6375feb16d")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("637b6d39-ebbf-9e16-8d7e-396861bd62ed")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("47bf3159-8b32-a19a-0d37-af59a58a5f73")
+                        },
+                        new
+                        {
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            PermisoId = new Guid("efd06b26-0147-c35f-9b0e-a7d6b57194e1")
                         });
                 });
 
@@ -555,6 +648,33 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.HasDiscriminator().HasValue("Socio");
+                });
+
+            modelBuilder.Entity("GymFlow.Domain.Entities.Cuota", b =>
+                {
+                    b.HasOne("GymFlow.Domain.Entities.Plan", "Plan")
+                        .WithMany()
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GymFlow.Domain.Entities.Socio", "Socio")
+                        .WithMany()
+                        .HasForeignKey("SocioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GymFlow.Domain.Entities.Unidad", "Unidad")
+                        .WithMany()
+                        .HasForeignKey("UnidadId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Plan");
+
+                    b.Navigation("Socio");
+
+                    b.Navigation("Unidad");
                 });
 
             modelBuilder.Entity("GymFlow.Domain.Entities.Plan", b =>

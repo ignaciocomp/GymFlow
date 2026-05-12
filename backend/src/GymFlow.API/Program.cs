@@ -19,6 +19,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+builder.Services.AddHostedService<GymFlow.API.BackgroundServices.CuotaGeneracionBackgroundService>();
 
 // JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "GymFlowDevSecretKey2026!SuperSecure";
@@ -101,6 +102,38 @@ using (var scope = app.Services.CreateScope())
         socio.UnidadesAsignadas.Add(new UsuarioUnidad(socio.Id, unidad.Id, plan.Id));
         db.Socios.Add(socio);
         db.SaveChanges();
+
+        if (!db.Set<GymFlow.Domain.Entities.Cuota>().Any(c => c.SocioId == socio.Id))
+        {
+            var cuotaSeed = new GymFlow.Domain.Entities.Cuota(
+                socioId: socio.Id,
+                unidadId: unidad.Id,
+                planId: plan.Id,
+                nombrePlan: plan.Nombre,
+                monto: plan.Precio,
+                fechaEmision: socio.FechaAlta);
+            db.Set<GymFlow.Domain.Entities.Cuota>().Add(cuotaSeed);
+            db.SaveChanges();
+        }
+    }
+
+    var socioSeed = db.Socios.FirstOrDefault(s => s.Correo == "socio@gymflow.com");
+    if (socioSeed is not null && !db.Set<GymFlow.Domain.Entities.Cuota>().Any(c => c.SocioId == socioSeed.Id))
+    {
+        var asignacionSeed = db.UsuarioUnidades.FirstOrDefault(uu => uu.UsuarioId == socioSeed.Id && uu.PlanId.HasValue);
+        if (asignacionSeed is not null)
+        {
+            var planSeed = db.Planes.First(p => p.Id == asignacionSeed.PlanId!.Value);
+            var cuotaSeed = new GymFlow.Domain.Entities.Cuota(
+                socioId: socioSeed.Id,
+                unidadId: asignacionSeed.UnidadId,
+                planId: planSeed.Id,
+                nombrePlan: planSeed.Nombre,
+                monto: planSeed.Precio,
+                fechaEmision: socioSeed.FechaAlta);
+            db.Set<GymFlow.Domain.Entities.Cuota>().Add(cuotaSeed);
+            db.SaveChanges();
+        }
     }
 }
 
@@ -126,3 +159,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

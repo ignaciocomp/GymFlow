@@ -61,6 +61,7 @@ export interface CreateSocioRequest {
   fechaNacimiento: string | null
   unidades: { unidadId: string; planId: string | null }[]
   consentimientoInformado: boolean
+  fechaAlta?: string | null
 }
 
 export interface UpdateSocioRequest {
@@ -72,6 +73,7 @@ export interface UpdateSocioRequest {
   documentoIdentidad: string | null
   fechaNacimiento: string | null
   unidades: { unidadId: string; planId: string | null }[]
+  fechaAlta?: string | null
 }
 
 export interface DeleteSocioRequest {
@@ -98,4 +100,19 @@ export interface AuditoriaEntry {
   descripcion: string
   detallesCambios: string | null
   fechaHora: string
+}
+
+export type EstadoCuota = 'Pendiente' | 'Pagada' | 'Anulada'
+
+export interface CuotaDto {
+  id: string
+  nombrePlan: string
+  nombreUnidad: string
+  nombreSocio: string | null
+  monto: number
+  fechaEmision: string
+  fechaVencimiento: string
+  estado: EstadoCuota
+  fechaPago: string | null
+  fechaBaja: string | null
 }

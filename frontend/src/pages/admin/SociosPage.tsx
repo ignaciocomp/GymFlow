@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sociosApi, unidadesApi, planesApi } from '@/services/api'
+import { formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -241,7 +242,7 @@ export default function SociosPage() {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {new Date(socio.fechaAlta).toLocaleDateString('es-UY')}
+                  {formatDate(socio.fechaAlta)}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">

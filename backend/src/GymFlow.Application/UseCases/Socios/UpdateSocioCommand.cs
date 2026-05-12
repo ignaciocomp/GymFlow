@@ -11,17 +11,23 @@ public class UpdateSocioCommand
     private readonly IUnidadRepository _unidadRepository;
     private readonly IPlanRepository _planRepository;
     private readonly IAuditLogger _auditLogger;
+    private readonly ICuotaRepository _cuotaRepository;
+    private readonly ICuotaGeneradorService _cuotaGenerador;
 
     public UpdateSocioCommand(
         ISocioRepository socioRepository,
         IUnidadRepository unidadRepository,
         IPlanRepository planRepository,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        ICuotaRepository cuotaRepository,
+        ICuotaGeneradorService cuotaGenerador)
     {
         _socioRepository = socioRepository;
         _unidadRepository = unidadRepository;
         _planRepository = planRepository;
         _auditLogger = auditLogger;
+        _cuotaRepository = cuotaRepository;
+        _cuotaGenerador = cuotaGenerador;
     }
 
     public async Task<SocioDto> ExecuteAsync(Guid id, UpdateSocioRequest request, Guid usuarioId, string usuarioNombre)
@@ -71,6 +77,18 @@ public class UpdateSocioCommand
                 ? DateTime.SpecifyKind(request.FechaNacimiento.Value, DateTimeKind.Utc)
                 : null);
 
+        var fechaAltaCambio = false;
+        if (request.FechaAlta.HasValue)
+        {
+            var nuevaFechaAlta = DateTime.SpecifyKind(request.FechaAlta.Value, DateTimeKind.Utc);
+            if (socio.FechaAlta != nuevaFechaAlta)
+            {
+                cambios["FechaAlta"] = new { anterior = socio.FechaAlta, nuevo = nuevaFechaAlta };
+                socio.ActualizarFechaAlta(nuevaFechaAlta);
+                fechaAltaCambio = true;
+            }
+        }
+
         socio.UnidadesAsignadas.Clear();
         foreach (var asignacion in unidades)
         {
@@ -78,6 +96,22 @@ public class UpdateSocioCommand
         }
 
         await _socioRepository.SaveChangesAsync();
+
+        if (fechaAltaCambio)
+        {
+            await _cuotaRepository.DeletePendientesBySocioAsync(socio.Id);
+            await _cuotaRepository.SaveChangesAsync();
+
+            foreach (var asignacion in unidades)
+            {
+                if (asignacion.PlanId.HasValue)
+                {
+                    var uu = socio.UnidadesAsignadas.First(u => u.UnidadId == asignacion.UnidadId);
+                    await _cuotaGenerador.GenerarCuotasRetroactivasAsync(socio.Id, uu, socio.FechaAlta);
+                }
+            }
+            await _cuotaRepository.SaveChangesAsync();
+        }
 
         string? detallesJson = cambios.Count > 0
             ? System.Text.Json.JsonSerializer.Serialize(cambios)
