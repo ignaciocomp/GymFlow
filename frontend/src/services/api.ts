@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -155,6 +155,28 @@ export const cuotasApi = {
 
   revertirAnulacion: async (id: string): Promise<void> => {
     await api.put(`/cuotas/${id}/revertir-anulacion`)
+  },
+
+  notificar: async (id: string): Promise<void> => {
+    await api.post(`/cuotas/${id}/notificar`)
+  },
+
+  getSociosEstado: async (unidadId?: string): Promise<SocioConEstadoCuotaDto[]> => {
+    const params: Record<string, string> = {}
+    if (unidadId) params.unidadId = unidadId
+    const { data } = await api.get<SocioConEstadoCuotaDto[]>('/cuotas/socios-estado', { params })
+    return data
+  },
+
+  getBySocioId: async (socioId: string, params?: {
+    estado?: string
+    mes?: number
+    anio?: number
+    unidadId?: string
+    incluirAnuladas?: boolean
+  }): Promise<CuotaDto[]> => {
+    const { data } = await api.get<CuotaDto[]>(`/cuotas/admin/socio/${socioId}`, { params })
+    return data
   },
 }
 

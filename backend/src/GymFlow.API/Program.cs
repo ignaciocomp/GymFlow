@@ -20,6 +20,7 @@ builder.Services.AddControllers()
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddHostedService<GymFlow.API.BackgroundServices.CuotaGeneracionBackgroundService>();
+builder.Services.AddHostedService<GymFlow.API.BackgroundServices.RecordatorioBackgroundService>();
 
 // JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "GymFlowDevSecretKey2026!SuperSecure";

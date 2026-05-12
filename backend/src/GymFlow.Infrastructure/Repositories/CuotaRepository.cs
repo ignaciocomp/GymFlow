@@ -66,6 +66,33 @@ public class CuotaRepository : ICuotaRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task<IEnumerable<Cuota>> GetCuotasPendientesDeTodosLosSociosAsync(Guid? unidadId = null)
+    {
+        var query = _context.Cuotas
+            .Where(c => c.Estado == EstadoCuota.Pendiente);
+
+        if (unidadId.HasValue)
+            query = query.Where(c => c.UnidadId == unidadId.Value);
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<IEnumerable<Cuota>> GetCuotasParaRecordatorioAsync(DateTime hoy)
+    {
+        var hoyDate = hoy.Date;
+        var en5Dias = hoyDate.AddDays(5);
+        var en1Dia = hoyDate.AddDays(1);
+
+        return await _context.Cuotas
+            .Include(c => c.Socio)
+            .Include(c => c.Unidad)
+            .Where(c => c.Estado == EstadoCuota.Pendiente)
+            .Where(c => c.FechaVencimiento.Date == hoyDate
+                     || c.FechaVencimiento.Date == en1Dia
+                     || c.FechaVencimiento.Date == en5Dias)
+            .ToListAsync();
+    }
+
     public async Task AddAsync(Cuota cuota) => await _context.Cuotas.AddAsync(cuota);
 
     public async Task DeletePendientesBySocioAsync(Guid socioId)
