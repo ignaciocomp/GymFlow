@@ -1,3 +1,4 @@
+using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 using GymFlow.Domain.Enums;
 
@@ -14,7 +15,7 @@ public class RevertirPagoCuotaCommand
         _auditLogger = auditLogger;
     }
 
-    public async Task ExecuteAsync(Guid cuotaId, Guid usuarioId, string usuarioNombre)
+    public async Task<CuotaDto> ExecuteAsync(Guid cuotaId, Guid usuarioId, string usuarioNombre)
     {
         var cuota = await _cuotaRepository.GetByIdAsync(cuotaId)
             ?? throw new KeyNotFoundException("La cuota no fue encontrada.");
@@ -26,5 +27,7 @@ public class RevertirPagoCuotaCommand
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Modificacion, "Cuota", cuota.Id,
             $"Se revirtió el pago de la cuota de {cuota.NombrePlan} del socio {cuota.Socio?.Nombre} {cuota.Socio?.Apellido}");
+
+        return GetCuotasBySocioQuery.MapToDto(cuota);
     }
 }

@@ -66,13 +66,13 @@ public class EmpleadosController : ControllerBase
 
     [HttpPut("{id:guid}")]
     [RequierePermiso(Modulo.Empleados, Operacion.Modificacion)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] ActualizarEmpleadoRequest request)
+    public async Task<ActionResult<EmpleadoDto>> Update(Guid id, [FromBody] ActualizarEmpleadoRequest request)
     {
         try
         {
             var (uid, uname) = GetCurrentUser();
-            await _actualizar.ExecuteAsync(id, request, uid, uname);
-            return NoContent();
+            var dto = await _actualizar.ExecuteAsync(id, request, uid, uname);
+            return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
@@ -109,13 +109,13 @@ public class EmpleadosController : ControllerBase
 
     [HttpPatch("{id:guid}/reactivar")]
     [RequierePermiso(Modulo.Empleados, Operacion.Modificacion)]
-    public async Task<IActionResult> Reactivar(Guid id, [FromBody] ReactivarEmpleadoRequest request)
+    public async Task<ActionResult<EmpleadoDto>> Reactivar(Guid id, [FromBody] ReactivarEmpleadoRequest request)
     {
         try
         {
             var (uid, uname) = GetCurrentUser();
-            await _reactivar.ExecuteAsync(id, request.RolId, uid, uname);
-            return NoContent();
+            var dto = await _reactivar.ExecuteAsync(id, request.RolId, uid, uname);
+            return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }

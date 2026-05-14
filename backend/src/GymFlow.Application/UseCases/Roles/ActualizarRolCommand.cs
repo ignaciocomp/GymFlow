@@ -17,7 +17,7 @@ public class ActualizarRolCommand
         _auditLogger = auditLogger;
     }
 
-    public async Task ExecuteAsync(Guid id, ActualizarRolRequest request, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
+    public async Task<RolDto> ExecuteAsync(Guid id, ActualizarRolRequest request, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
     {
         var rol = await _rolRepository.GetByIdAsync(id, ct)
             ?? throw new KeyNotFoundException($"Rol {id} no encontrado.");
@@ -38,5 +38,8 @@ public class ActualizarRolCommand
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Modificacion, "Rol", rol.Id,
             $"Se modificó el rol {rol.Nombre} ({rol.Permisos.Count} permisos)");
+
+        return new RolDto(rol.Id, rol.Nombre, rol.EsSistema, rol.FechaCreacion,
+            rol.Permisos.Select(rp => new PermisoDto(rp.PermisoId, default, default)).ToList());
     }
 }

@@ -1,3 +1,4 @@
+using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 using GymFlow.Domain.Constants;
 using GymFlow.Domain.Enums;
@@ -20,7 +21,7 @@ public class ReactivarEmpleadoCommand
         _auditLogger = auditLogger;
     }
 
-    public async Task ExecuteAsync(Guid id, Guid? nuevoRolId, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
+    public async Task<EmpleadoDto> ExecuteAsync(Guid id, Guid? nuevoRolId, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
     {
         var empleado = await _empleadoRepository.GetByIdAsync(id, ct)
             ?? throw new KeyNotFoundException($"Empleado {id} no encontrado.");
@@ -49,5 +50,12 @@ public class ReactivarEmpleadoCommand
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Modificacion, "Empleado", id,
             $"Se reactivó al empleado {empleado.Nombre} {empleado.Apellido}");
+
+        var rolActual = empleado.RolId.HasValue
+            ? await _rolRepository.GetByIdAsync(empleado.RolId.Value, ct)
+            : null;
+
+        return new EmpleadoDto(empleado.Id, empleado.Nombre, empleado.Apellido, empleado.Correo,
+            rolActual?.Id, rolActual?.Nombre, empleado.EstaActivo, empleado.FechaCreacion);
     }
 }

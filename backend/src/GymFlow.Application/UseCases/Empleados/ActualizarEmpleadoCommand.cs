@@ -21,7 +21,7 @@ public class ActualizarEmpleadoCommand
         _auditLogger = auditLogger;
     }
 
-    public async Task ExecuteAsync(Guid id, ActualizarEmpleadoRequest request, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
+    public async Task<EmpleadoDto> ExecuteAsync(Guid id, ActualizarEmpleadoRequest request, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.Nombre) || string.IsNullOrWhiteSpace(request.Apellido) || string.IsNullOrWhiteSpace(request.Correo))
             throw new ArgumentException("Nombre, apellido y correo son obligatorios.", nameof(request));
@@ -47,5 +47,8 @@ public class ActualizarEmpleadoCommand
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Modificacion, "Empleado", id,
             $"Se actualizó el empleado {empleado.Nombre} {empleado.Apellido} (rol {rol.Nombre})");
+
+        return new EmpleadoDto(empleado.Id, empleado.Nombre, empleado.Apellido, empleado.Correo,
+            rol.Id, rol.Nombre, empleado.EstaActivo, empleado.FechaCreacion);
     }
 }
