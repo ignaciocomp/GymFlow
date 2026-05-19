@@ -61,13 +61,13 @@ public class RolesController : ControllerBase
 
     [HttpPut("{id:guid}")]
     [RequierePermiso(Modulo.Auditoria, Operacion.Modificacion)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] ActualizarRolRequest request)
+    public async Task<ActionResult<RolDto>> Update(Guid id, [FromBody] ActualizarRolRequest request)
     {
         try
         {
             var (uid, uname) = GetCurrentUser();
-            await _actualizarRol.ExecuteAsync(id, request, uid, uname);
-            return NoContent();
+            var dto = await _actualizarRol.ExecuteAsync(id, request, uid, uname);
+            return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }

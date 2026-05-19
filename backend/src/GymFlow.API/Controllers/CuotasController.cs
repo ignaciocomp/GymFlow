@@ -110,13 +110,13 @@ public class CuotasController : ControllerBase
 
     [HttpPut("{id:guid}/pagar")]
     [RequierePermiso(Modulo.Cuotas, Operacion.Modificacion)]
-    public async Task<IActionResult> MarcarComoPagada(Guid id)
+    public async Task<ActionResult<CuotaDto>> MarcarComoPagada(Guid id)
     {
         try
         {
             var (userId, userName) = GetCurrentUser();
-            await _marcarPagadaCommand.ExecuteAsync(id, userId, userName);
-            return NoContent();
+            var dto = await _marcarPagadaCommand.ExecuteAsync(id, userId, userName);
+            return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
@@ -124,13 +124,13 @@ public class CuotasController : ControllerBase
 
     [HttpDelete("{id:guid}")]
     [RequierePermiso(Modulo.Cuotas, Operacion.Eliminacion)]
-    public async Task<IActionResult> Anular(Guid id)
+    public async Task<ActionResult<CuotaDto>> Anular(Guid id)
     {
         try
         {
             var (userId, userName) = GetCurrentUser();
-            await _anularCommand.ExecuteAsync(id, userId, userName);
-            return NoContent();
+            var dto = await _anularCommand.ExecuteAsync(id, userId, userName);
+            return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
@@ -138,13 +138,13 @@ public class CuotasController : ControllerBase
 
     [HttpPut("{id:guid}/revertir-pago")]
     [RequierePermiso(Modulo.Cuotas, Operacion.Modificacion)]
-    public async Task<IActionResult> RevertirPago(Guid id)
+    public async Task<ActionResult<CuotaDto>> RevertirPago(Guid id)
     {
         try
         {
             var (userId, userName) = GetCurrentUser();
-            await _revertirPagoCommand.ExecuteAsync(id, userId, userName);
-            return NoContent();
+            var dto = await _revertirPagoCommand.ExecuteAsync(id, userId, userName);
+            return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
@@ -166,13 +166,13 @@ public class CuotasController : ControllerBase
 
     [HttpPut("{id:guid}/revertir-anulacion")]
     [RequierePermiso(Modulo.Cuotas, Operacion.Modificacion)]
-    public async Task<IActionResult> RevertirAnulacion(Guid id)
+    public async Task<ActionResult<CuotaDto>> RevertirAnulacion(Guid id)
     {
         try
         {
             var (userId, userName) = GetCurrentUser();
-            await _revertirAnulacionCommand.ExecuteAsync(id, userId, userName);
-            return NoContent();
+            var dto = await _revertirAnulacionCommand.ExecuteAsync(id, userId, userName);
+            return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
