@@ -6,6 +6,7 @@ using GymFlow.Application.UseCases.Portal;
 using GymFlow.Application.UseCases.Roles;
 using GymFlow.Application.UseCases.Socios;
 using GymFlow.Application.UseCases.Cuotas;
+using GymFlow.Application.UseCases.Clases;
 using GymFlow.Application.UseCases.Unidades;
 
 namespace GymFlow.API;
@@ -53,6 +54,12 @@ public static class DependencyInjection
         services.AddScoped<NotificarCuotaCommand>();
         services.AddScoped<ProcesarRecordatoriosCommand>();
         services.AddScoped<GetSociosConEstadoCuotaQuery>();
+        services.AddScoped<GetClasesQuery>();
+        services.AddScoped<GetClaseByIdQuery>();
+        services.AddScoped<CreateClaseCommand>();
+        services.AddScoped<UpdateClaseCommand>();
+        services.AddScoped<CancelClaseCommand>();
+        services.AddScoped<ReactivarClaseCommand>();
         return services;
     }
 }

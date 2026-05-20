@@ -91,5 +91,7 @@ TestResults/
 # =========================
 docker-compose.override.yml
 
-
-.claude
+# =========================
+# Claude Code
+# =========================
+.claude/
