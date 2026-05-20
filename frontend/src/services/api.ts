@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -176,6 +176,40 @@ export const cuotasApi = {
     incluirAnuladas?: boolean
   }): Promise<CuotaDto[]> => {
     const { data } = await api.get<CuotaDto[]>(`/cuotas/admin/socio/${socioId}`, { params })
+    return data
+  },
+}
+
+export const clasesApi = {
+  getAll: async (unidadId?: string, includeInactive?: boolean): Promise<Clase[]> => {
+    const params: Record<string, string> = {}
+    if (unidadId) params.unidadId = unidadId
+    if (includeInactive) params.includeInactive = 'true'
+    const { data } = await api.get<Clase[]>('/clases', { params })
+    return data
+  },
+
+  getById: async (id: string): Promise<Clase> => {
+    const { data } = await api.get<Clase>(`/clases/${id}`)
+    return data
+  },
+
+  create: async (request: CreateClaseRequest): Promise<Clase> => {
+    const { data } = await api.post<Clase>('/clases', request)
+    return data
+  },
+
+  update: async (id: string, request: UpdateClaseRequest): Promise<Clase> => {
+    const { data } = await api.put<Clase>(`/clases/${id}`, request)
+    return data
+  },
+
+  cancel: async (id: string): Promise<void> => {
+    await api.delete(`/clases/${id}`)
+  },
+
+  reactivate: async (id: string): Promise<Clase> => {
+    const { data } = await api.patch<Clase>(`/clases/${id}/reactivar`)
     return data
   },
 }

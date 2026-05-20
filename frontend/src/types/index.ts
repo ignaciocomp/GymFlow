@@ -117,6 +117,36 @@ export interface CuotaDto {
   fechaBaja: string | null
 }
 
+export interface Clase {
+  id: string
+  nombre: string
+  descripcion: string
+  capacidadMaxima: number
+  duracionMinutos: number
+  instructor: string
+  unidadId: string
+  unidadNombre: string
+  estaActivo: boolean
+  inscripcionesActivas: number
+}
+
+export interface CreateClaseRequest {
+  nombre: string
+  descripcion: string | null
+  capacidadMaxima: number
+  duracionMinutos: number
+  instructor: string
+  unidadId: string
+}
+
+export interface UpdateClaseRequest {
+  nombre: string
+  descripcion: string | null
+  capacidadMaxima: number
+  duracionMinutos: number
+  instructor: string
+}
+
 export type EstadoGeneralCuotas = 'AlDia' | 'Pendiente' | 'Vencido'
 
 export interface SocioConEstadoCuotaDto {

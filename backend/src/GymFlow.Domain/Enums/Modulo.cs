@@ -7,5 +7,6 @@ public enum Modulo
     Unidades,
     Auditoria,
     Empleados,
-    Cuotas
+    Cuotas,
+    Clases
 }

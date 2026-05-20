@@ -20,6 +20,9 @@ import PerfilSocioPage from '@/pages/portal/PerfilSocioPage'
 import MisCuotasPage from '@/pages/portal/MisCuotasPage'
 import CuotasPage from '@/pages/admin/CuotasPage'
 import SociosCuotasPage from '@/pages/admin/SociosCuotasPage'
+import ClasesPage from '@/pages/admin/ClasesPage'
+import NuevaClasePage from '@/pages/admin/NuevaClasePage'
+import EditClasePage from '@/pages/admin/EditClasePage'
 
 export default function App() {
   return (
@@ -45,6 +48,9 @@ export default function App() {
         <Route path="usuarios/:id/password" element={<CambiarPasswordPage />} />
         <Route path="cuotas" element={<SociosCuotasPage />} />
         <Route path="cuotas/:socioId" element={<CuotasPage />} />
+        <Route path="clases" element={<ClasesPage />} />
+        <Route path="clases/nueva" element={<NuevaClasePage />} />
+        <Route path="clases/:id/editar" element={<EditClasePage />} />
       </Route>
       <Route path="/portal" element={<SocioLayout />}>
         <Route index element={<PerfilSocioPage />} />
