@@ -2,12 +2,14 @@ using GymFlow.Application.DTOs;
 using GymFlow.Application.UseCases.Clases;
 using GymFlow.API.Authorization;
 using GymFlow.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GymFlow.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ClasesController : ControllerBase
 {
     private readonly GetClasesQuery _getClasesQuery;

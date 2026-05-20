@@ -31,20 +31,24 @@ public class CancelClaseCommand
 
         await _claseRepository.SaveChangesAsync();
 
-        foreach (var inscripcion in inscripciones)
+        // Enviar notificaciones en paralelo para no bloquear el request
+        var emailTasks = inscripciones.Select(inscripcion =>
         {
-            await _emailService.EnviarAsync(
-                inscripcion.Socio.Correo,
-                $"Clase cancelada: {clase.Nombre}",
-                $"<p>Hola {inscripcion.Socio.Nombre},</p>" +
-                $"<p>Te informamos que la clase <strong>{clase.Nombre}</strong> ha sido cancelada.</p>" +
-                $"<p>Disculpá las molestias.</p>" +
-                $"<p>— GymFlow</p>");
-        }
+            var (asunto, cuerpo) = ClaseEmailTemplates.Cancelacion(inscripcion.Socio, clase);
+            return _emailService.EnviarAsync(inscripcion.Socio.Correo, asunto, cuerpo);
+        });
+
+        var resultados = await Task.WhenAll(emailTasks);
+        var enviados = resultados.Count(r => r.Exitoso);
+        var fallidos = resultados.Length - enviados;
+
+        var detalle = fallidos > 0
+            ? $"Se canceló la clase '{clase.Nombre}'. Se notificaron {enviados} de {resultados.Length} socios ({fallidos} envíos fallaron)."
+            : $"Se canceló la clase '{clase.Nombre}'. Se notificaron {enviados} socios inscriptos.";
 
         await _auditLogger.LogAsync(
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Baja, "Clase", clase.Id,
-            $"Se canceló la clase '{clase.Nombre}'. Se notificaron {inscripciones.Count()} socios inscriptos.");
+            detalle);
     }
 }
