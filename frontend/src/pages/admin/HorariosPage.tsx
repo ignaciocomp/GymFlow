@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { horariosApi, clasesApi, unidadesApi } from '@/services/api'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
@@ -62,7 +61,7 @@ export default function HorariosPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   // Form state
-  const [formClaseId, setFormClaseId] = useState('')
+  const [formClaseId, setFormClaseId] = useState<string | null>('')
   const [formDia, setFormDia] = useState<DiaSemana>('Lunes')
   const [formInicio, setFormInicio] = useState('08:00')
   const [formFin, setFormFin] = useState('09:00')
@@ -164,7 +163,7 @@ export default function HorariosPage() {
       diaSemana: formDia,
       horaInicio: formInicio,
       horaFin: formFin,
-      sala: formSala.trim() || null,
+      sala: formSala?.trim() || null,
     })
   }
 
@@ -176,7 +175,7 @@ export default function HorariosPage() {
         diaSemana: formDia,
         horaInicio: formInicio,
         horaFin: formFin,
-        sala: formSala.trim() || null,
+        sala: formSala?.trim() || null,
       },
     })
   }
@@ -347,7 +346,7 @@ export default function HorariosPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Clase</Label>
-              <Select value={formClaseId} onValueChange={setFormClaseId}>
+              <Select value={formClaseId ?? undefined} onValueChange={setFormClaseId}>
                 <SelectTrigger className="bg-card border-border">
                   <SelectValue placeholder="Seleccionar clase" />
                 </SelectTrigger>
