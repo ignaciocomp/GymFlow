@@ -14,6 +14,7 @@ import {
   Shield,
   Receipt,
   BookOpen,
+  CalendarDays,
 } from 'lucide-react'
 import { usePermisos } from '@/hooks/usePermisos'
 import type { Modulo } from '@/types/permisos'
@@ -52,6 +53,7 @@ const navigation: NavGroup[] = [
     items: [
       { label: 'Nueva clase', path: '/admin/clases/nueva', icon: <BookOpen className="h-4 w-4" /> },
       { label: 'Lista de clases', path: '/admin/clases', icon: <BookOpen className="h-4 w-4" /> },
+      { label: 'Horarios', path: '/admin/horarios', icon: <CalendarDays className="h-4 w-4" /> },
     ],
   },
   {
@@ -121,7 +123,11 @@ export default function Sidebar({ collapsed, mobileOpen, onMobileClose }: Sideba
     }
     if (path === '/admin/clases') {
       return location.pathname.startsWith('/admin/clases') &&
-        location.pathname !== '/admin/clases/nueva'
+        location.pathname !== '/admin/clases/nueva' &&
+        location.pathname !== '/admin/horarios'
+    }
+    if (path === '/admin/horarios') {
+      return location.pathname === '/admin/horarios'
     }
     return location.pathname === path
   }

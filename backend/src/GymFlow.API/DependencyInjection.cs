@@ -7,6 +7,7 @@ using GymFlow.Application.UseCases.Roles;
 using GymFlow.Application.UseCases.Socios;
 using GymFlow.Application.UseCases.Cuotas;
 using GymFlow.Application.UseCases.Clases;
+using GymFlow.Application.UseCases.Horarios;
 using GymFlow.Application.UseCases.Unidades;
 
 namespace GymFlow.API;
@@ -60,6 +61,11 @@ public static class DependencyInjection
         services.AddScoped<UpdateClaseCommand>();
         services.AddScoped<CancelClaseCommand>();
         services.AddScoped<ReactivarClaseCommand>();
+        services.AddScoped<GetHorariosQuery>();
+        services.AddScoped<GetHorarioByIdQuery>();
+        services.AddScoped<CreateHorarioCommand>();
+        services.AddScoped<UpdateHorarioCommand>();
+        services.AddScoped<DeleteHorarioCommand>();
         return services;
     }
 }

@@ -147,6 +147,38 @@ export interface UpdateClaseRequest {
   instructor: string
 }
 
+export type DiaSemana = 'Lunes' | 'Martes' | 'Miercoles' | 'Jueves' | 'Viernes' | 'Sabado' | 'Domingo'
+
+export interface HorarioClase {
+  id: string
+  claseId: string
+  claseNombre: string
+  instructor: string
+  unidadId: string
+  unidadNombre: string
+  diaSemana: DiaSemana
+  horaInicio: string
+  horaFin: string
+  sala: string | null
+  capacidadMaxima: number
+  inscripcionesActivas: number
+}
+
+export interface CreateHorarioClaseRequest {
+  claseId: string
+  diaSemana: DiaSemana
+  horaInicio: string
+  horaFin: string
+  sala: string | null
+}
+
+export interface UpdateHorarioClaseRequest {
+  diaSemana: DiaSemana
+  horaInicio: string
+  horaFin: string
+  sala: string | null
+}
+
 export type EstadoGeneralCuotas = 'AlDia' | 'Pendiente' | 'Vencido'
 
 export interface SocioConEstadoCuotaDto {
