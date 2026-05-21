@@ -23,6 +23,8 @@ import SociosCuotasPage from '@/pages/admin/SociosCuotasPage'
 import ClasesPage from '@/pages/admin/ClasesPage'
 import NuevaClasePage from '@/pages/admin/NuevaClasePage'
 import EditClasePage from '@/pages/admin/EditClasePage'
+import HorariosPage from '@/pages/admin/HorariosPage'
+import HorariosPortalPage from '@/pages/portal/HorariosPortalPage'
 
 export default function App() {
   return (
@@ -51,11 +53,13 @@ export default function App() {
         <Route path="clases" element={<ClasesPage />} />
         <Route path="clases/nueva" element={<NuevaClasePage />} />
         <Route path="clases/:id/editar" element={<EditClasePage />} />
+        <Route path="horarios" element={<HorariosPage />} />
       </Route>
       <Route path="/portal" element={<SocioLayout />}>
         <Route index element={<PerfilSocioPage />} />
         <Route path="perfil" element={<PerfilSocioPage />} />
         <Route path="mis-cuotas" element={<MisCuotasPage />} />
+        <Route path="horarios" element={<HorariosPortalPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />

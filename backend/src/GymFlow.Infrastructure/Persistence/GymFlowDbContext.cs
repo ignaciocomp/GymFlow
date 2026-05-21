@@ -23,6 +23,7 @@ public class GymFlowDbContext : DbContext
     public DbSet<RecordatorioCuota> RecordatoriosCuota => Set<RecordatorioCuota>();
     public DbSet<Clase> Clases => Set<Clase>();
     public DbSet<InscripcionClase> InscripcionesClase => Set<InscripcionClase>();
+    public DbSet<HorarioClase> HorariosClase => Set<HorarioClase>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

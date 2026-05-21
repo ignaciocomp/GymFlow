@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -211,6 +211,34 @@ export const clasesApi = {
   reactivate: async (id: string): Promise<Clase> => {
     const { data } = await api.patch<Clase>(`/clases/${id}/reactivar`)
     return data
+  },
+}
+
+export const horariosApi = {
+  getAll: async (unidadId?: string): Promise<HorarioClase[]> => {
+    const params: Record<string, string> = {}
+    if (unidadId) params.unidadId = unidadId
+    const { data } = await api.get<HorarioClase[]>('/horarios', { params })
+    return data
+  },
+
+  getById: async (id: string): Promise<HorarioClase> => {
+    const { data } = await api.get<HorarioClase>(`/horarios/${id}`)
+    return data
+  },
+
+  create: async (request: CreateHorarioClaseRequest): Promise<HorarioClase> => {
+    const { data } = await api.post<HorarioClase>('/horarios', request)
+    return data
+  },
+
+  update: async (id: string, request: UpdateHorarioClaseRequest): Promise<HorarioClase> => {
+    const { data } = await api.put<HorarioClase>(`/horarios/${id}`, request)
+    return data
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/horarios/${id}`)
   },
 }
 
