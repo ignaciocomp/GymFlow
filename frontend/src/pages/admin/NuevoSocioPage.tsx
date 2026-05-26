@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { sociosApi, unidadesApi, planesApi } from '@/services/api'
-import type { CreateSocioRequest } from '@/types'
+import type { CreateSocioRequest, TipoDocumento } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,25 +11,64 @@ import {
 } from '@/components/ui/select'
 import { UserPlus, ArrowLeft, Shield } from 'lucide-react'
 
+function UnitPlanDropdown({
+  unidadId,
+  unidadNombre,
+  selectedPlanId,
+  onPlanChange,
+}: {
+  unidadId: string
+  unidadNombre: string
+  selectedPlanId: string | null
+  onPlanChange: (planId: string | null) => void
+}) {
+  const { data: planes } = useQuery({
+    queryKey: ['planes', unidadId],
+    queryFn: () => planesApi.getAll(unidadId),
+  })
+
+  const selectedPlan = planes?.find(p => p.id === selectedPlanId)
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-muted-foreground">{unidadNombre} — Plan</Label>
+      <Select
+        value={selectedPlanId || 'none'}
+        onValueChange={(val) => onPlanChange(!val || val === 'none' ? null : val)}
+      >
+        <SelectTrigger className="bg-muted/30 border-border">
+          <SelectValue>
+            {selectedPlan ? `${selectedPlan.nombre} — $${selectedPlan.precio}` : 'Sin plan'}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Sin plan</SelectItem>
+          {planes?.map((p) => (
+            <SelectItem key={p.id} value={p.id}>
+              {p.nombre} — ${p.precio}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
 export default function NuevoSocioPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
   const [form, setForm] = useState<CreateSocioRequest>({
     nombre: '', apellido: '', correo: '',
-    telefono: null, documentoIdentidad: null, fechaNacimiento: null,
-    planId: null, unidadIds: [], consentimientoInformado: false,
+    telefono: null, tipoDocumento: null, documentoIdentidad: null, fechaNacimiento: null,
+    unidades: [], consentimientoInformado: false,
+    fechaAlta: null,
   })
   const [error, setError] = useState<string | null>(null)
 
   const { data: unidades } = useQuery({
     queryKey: ['unidades'],
     queryFn: unidadesApi.getAll,
-  })
-
-  const { data: planes } = useQuery({
-    queryKey: ['planes'],
-    queryFn: () => planesApi.getAll(),
   })
 
   const createMutation = useMutation({
@@ -48,6 +87,13 @@ export default function NuevoSocioPage() {
     },
   })
 
+  const buildPayload = (): CreateSocioRequest => ({
+    ...form,
+    documentoIdentidad: form.tipoDocumento === 'CI' && form.documentoIdentidad
+      ? form.documentoIdentidad.replace(/[.\-]/g, '')
+      : form.documentoIdentidad,
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -55,7 +101,11 @@ export default function NuevoSocioPage() {
       setError('Nombre, apellido y correo son obligatorios.')
       return
     }
-    if (form.unidadIds.length === 0) {
+    if (!form.tipoDocumento) {
+      setError('El tipo de documento es obligatorio.')
+      return
+    }
+    if (form.unidades.length === 0) {
       setError('Debe seleccionar al menos una unidad.')
       return
     }
@@ -63,15 +113,27 @@ export default function NuevoSocioPage() {
       setError('El consentimiento informado es obligatorio (Ley 18.331).')
       return
     }
-    createMutation.mutate(form)
+    createMutation.mutate(buildPayload())
   }
 
   const toggleUnidad = (unidadId: string) => {
+    setForm((prev) => {
+      const exists = prev.unidades.some(u => u.unidadId === unidadId)
+      return {
+        ...prev,
+        unidades: exists
+          ? prev.unidades.filter(u => u.unidadId !== unidadId)
+          : [...prev.unidades, { unidadId, planId: null }],
+      }
+    })
+  }
+
+  const updateUnitPlan = (unidadId: string, planId: string | null) => {
     setForm((prev) => ({
       ...prev,
-      unidadIds: prev.unidadIds.includes(unidadId)
-        ? prev.unidadIds.filter((id) => id !== unidadId)
-        : [...prev.unidadIds, unidadId],
+      unidades: prev.unidades.map(u =>
+        u.unidadId === unidadId ? { ...u, planId } : u
+      ),
     }))
   }
 
@@ -90,7 +152,7 @@ export default function NuevoSocioPage() {
             <UserPlus className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Nuevo Socio</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Nuevo socio</h1>
             <p className="text-sm text-muted-foreground">
               Los campos marcados con * son obligatorios
             </p>
@@ -103,10 +165,10 @@ export default function NuevoSocioPage() {
         {/* Información Personal */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Información Personal
+            Información personal
           </h2>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground">Nombre *</Label>
               <Input
@@ -138,7 +200,7 @@ export default function NuevoSocioPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground">Teléfono</Label>
               <Input
@@ -149,15 +211,40 @@ export default function NuevoSocioPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Doc. Identidad (CI)</Label>
+              <Label className="text-muted-foreground">Tipo de documento *</Label>
+              <Select
+                value={form.tipoDocumento || ''}
+                onValueChange={(val) => setForm({
+                  ...form,
+                  tipoDocumento: val as TipoDocumento,
+                  documentoIdentidad: null,
+                })}
+              >
+                <SelectTrigger className="bg-muted/30 border-border">
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CI">Cédula de identidad</SelectItem>
+                  <SelectItem value="Pasaporte">Pasaporte</SelectItem>
+                  <SelectItem value="Otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {form.tipoDocumento && (
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">
+                {form.tipoDocumento === 'CI' ? 'Número de cédula' : 'Número de documento'}
+              </Label>
               <Input
                 value={form.documentoIdentidad || ''}
                 onChange={(e) => setForm({ ...form, documentoIdentidad: e.target.value || null })}
-                placeholder="1.234.567-8"
+                placeholder={form.tipoDocumento === 'CI' ? '12345678' : ''}
                 className="bg-muted/30 border-border"
               />
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">Fecha de nacimiento</Label>
@@ -173,8 +260,22 @@ export default function NuevoSocioPage() {
         {/* Plan y Acceso */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Plan y Acceso
+            Plan y acceso
           </h2>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Miembro desde</Label>
+            <Input
+              type="date"
+              value={form.fechaAlta || ''}
+              onChange={(e) => setForm({ ...form, fechaAlta: e.target.value || null })}
+              max={new Date().toISOString().split('T')[0]}
+              className="bg-muted/30 border-border"
+            />
+            <p className="text-xs text-muted-foreground">
+              Si no se selecciona, se usa la fecha de hoy.
+            </p>
+          </div>
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">Espacio asignado *</Label>
@@ -183,14 +284,14 @@ export default function NuevoSocioPage() {
                 <label
                   key={u.id}
                   className={`flex items-center gap-2.5 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
-                    form.unidadIds.includes(u.id)
+                    form.unidades.some(su => su.unidadId === u.id)
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/50'
                   }`}
                 >
                   <input
                     type="checkbox"
-                    checked={form.unidadIds.includes(u.id)}
+                    checked={form.unidades.some(su => su.unidadId === u.id)}
                     onChange={() => toggleUnidad(u.id)}
                     className="sr-only"
                   />
@@ -200,25 +301,22 @@ export default function NuevoSocioPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-muted-foreground">Plan</Label>
-            <Select
-              value={form.planId || 'none'}
-              onValueChange={(val) => setForm({ ...form, planId: !val || val === 'none' ? null : val })}
-            >
-              <SelectTrigger className="bg-muted/30 border-border">
-                <SelectValue placeholder="Seleccionar plan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sin plan</SelectItem>
-                {planes?.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.nombre} — ${p.precio}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {form.unidades.length > 0 && (
+            <div className="space-y-4">
+              {form.unidades.map((su) => {
+                const unidad = unidades?.find(u => u.id === su.unidadId)
+                return (
+                  <UnitPlanDropdown
+                    key={su.unidadId}
+                    unidadId={su.unidadId}
+                    unidadNombre={unidad?.nombre || ''}
+                    selectedPlanId={su.planId}
+                    onPlanChange={(planId) => updateUnitPlan(su.unidadId, planId)}
+                  />
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Consentimiento */}
@@ -265,7 +363,7 @@ export default function NuevoSocioPage() {
         <div className="flex gap-3">
           <Button type="submit" disabled={createMutation.isPending} className="cursor-pointer gap-2">
             <UserPlus className="h-4 w-4" />
-            {createMutation.isPending ? 'Registrando...' : 'Guardar Socio'}
+            {createMutation.isPending ? 'Registrando...' : 'Guardar socio'}
           </Button>
           <Button
             type="button"

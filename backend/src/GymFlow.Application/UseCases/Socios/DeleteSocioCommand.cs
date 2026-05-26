@@ -1,17 +1,20 @@
 using GymFlow.Application.Interfaces;
+using GymFlow.Domain.Enums;
 
 namespace GymFlow.Application.UseCases.Socios;
 
 public class DeleteSocioCommand
 {
     private readonly ISocioRepository _repository;
+    private readonly IAuditLogger _auditLogger;
 
-    public DeleteSocioCommand(ISocioRepository repository)
+    public DeleteSocioCommand(ISocioRepository repository, IAuditLogger auditLogger)
     {
         _repository = repository;
+        _auditLogger = auditLogger;
     }
 
-    public async Task ExecuteAsync(Guid socioId, string? motivo)
+    public async Task ExecuteAsync(Guid socioId, string? motivo, Guid usuarioId, string usuarioNombre)
     {
         var socio = await _repository.GetByIdAsync(socioId);
 
@@ -25,5 +28,13 @@ public class DeleteSocioCommand
         socio.DarDeBaja(motivo);
 
         await _repository.SaveChangesAsync();
+
+        await _auditLogger.LogAsync(
+            usuarioId,
+            usuarioNombre,
+            TipoAccionAuditoria.Baja,
+            "Socio",
+            socioId,
+            $"Se dio de baja al socio {socio.Nombre} {socio.Apellido}. Motivo: {motivo ?? "No especificado"}");
     }
 }

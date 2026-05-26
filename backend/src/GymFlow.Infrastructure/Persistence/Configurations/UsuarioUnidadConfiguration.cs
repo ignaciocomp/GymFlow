@@ -15,5 +15,10 @@ public class UsuarioUnidadConfiguration : IEntityTypeConfiguration<UsuarioUnidad
             .WithMany()
             .HasForeignKey(uu => uu.UnidadId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(uu => uu.Plan)
+            .WithMany()
+            .HasForeignKey(uu => uu.PlanId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

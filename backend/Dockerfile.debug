@@ -1,0 +1,31 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+WORKDIR /src
+
+# Restore dependencies (layer cache)
+COPY GymFlow.sln .
+COPY src/GymFlow.Domain/GymFlow.Domain.csproj src/GymFlow.Domain/
+COPY src/GymFlow.Application/GymFlow.Application.csproj src/GymFlow.Application/
+COPY src/GymFlow.Infrastructure/GymFlow.Infrastructure.csproj src/GymFlow.Infrastructure/
+COPY src/GymFlow.API/GymFlow.API.csproj src/GymFlow.API/
+COPY tests/GymFlow.Domain.Tests/GymFlow.Domain.Tests.csproj tests/GymFlow.Domain.Tests/
+COPY tests/GymFlow.Application.Tests/GymFlow.Application.Tests.csproj tests/GymFlow.Application.Tests/
+COPY tests/GymFlow.Infrastructure.Tests/GymFlow.Infrastructure.Tests.csproj tests/GymFlow.Infrastructure.Tests/
+
+RUN dotnet restore
+
+COPY . .
+
+# Build in Debug (keeps PDB files for breakpoints)
+RUN dotnet build src/GymFlow.API/GymFlow.API.csproj -c Debug -o /app/build
+
+# Install vsdbg (remote debugger)
+RUN apt-get update && apt-get install -y --no-install-recommends curl unzip \
+    && curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l /vsdbg \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app/build
+EXPOSE 8080
+EXPOSE 5005
+
+ENV ASPNETCORE_URLS=http://+:8080
+ENTRYPOINT ["dotnet", "GymFlow.API.dll"]

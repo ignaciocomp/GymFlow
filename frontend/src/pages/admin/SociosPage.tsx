@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sociosApi, unidadesApi, planesApi } from '@/services/api'
+import { formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -78,7 +79,7 @@ export default function SociosPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {isActiveTab ? 'Socios Activos' : 'Socios Inactivos'}
+              {isActiveTab ? 'Socios activos' : 'Socios inactivos'}
             </h1>
             <p className="text-sm text-muted-foreground">
               Gestiona los socios {isActiveTab ? 'activos' : 'inactivos'} del gimnasio
@@ -88,7 +89,7 @@ export default function SociosPage() {
         <Link to="/admin/socios/nuevo">
           <Button className="cursor-pointer gap-2">
             <UserPlus className="h-4 w-4" />
-            Nuevo Socio
+            Nuevo socio
           </Button>
         </Link>
       </div>
@@ -104,7 +105,7 @@ export default function SociosPage() {
           }`}
         >
           <Users className="h-4 w-4" />
-          Socios Activos
+          Socios activos
         </button>
         <button
           onClick={() => setSearchParams({ tab: 'inactivos' })}
@@ -115,7 +116,7 @@ export default function SociosPage() {
           }`}
         >
           <UserX className="h-4 w-4" />
-          Socios Inactivos
+          Socios inactivos
         </button>
       </div>
 
@@ -133,7 +134,11 @@ export default function SociosPage() {
 
         <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? 'all')}>
           <SelectTrigger className="w-[200px] bg-card border-border">
-            <SelectValue placeholder="Unidad" />
+            <SelectValue>
+              {unidadFilter === 'all'
+                ? 'Todas las unidades'
+                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Unidad'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las unidades</SelectItem>
@@ -145,12 +150,16 @@ export default function SociosPage() {
 
         <Select value={planFilter} onValueChange={(val) => setPlanFilter(val ?? 'all')}>
           <SelectTrigger className="w-[200px] bg-card border-border">
-            <SelectValue placeholder="Plan" />
+            <SelectValue>
+              {planFilter === 'all'
+                ? 'Todos los planes'
+                : planes?.find(p => p.id === planFilter)?.nombre || 'Plan'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos los planes</SelectItem>
             {planes?.map((p) => (
-              <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
+              <SelectItem key={p.id} value={p.id}>{p.nombre} — {p.unidadNombre}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -161,27 +170,26 @@ export default function SociosPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="text-muted-foreground">Nombre y Apellido</TableHead>
-              <TableHead className="text-muted-foreground">Doc. Identidad</TableHead>
+              <TableHead className="text-muted-foreground">Nombre y apellido</TableHead>
+              <TableHead className="text-muted-foreground">Doc. identidad</TableHead>
               <TableHead className="text-muted-foreground">Correo</TableHead>
-              <TableHead className="text-muted-foreground">Cel.</TableHead>
-              <TableHead className="text-muted-foreground">Plan</TableHead>
-              <TableHead className="text-muted-foreground">Unidades</TableHead>
-              <TableHead className="text-muted-foreground">Fecha Alta</TableHead>
+              <TableHead className="text-muted-foreground">Celular</TableHead>
+              <TableHead className="text-muted-foreground">Unidades / plan</TableHead>
+              <TableHead className="text-muted-foreground">Fecha alta</TableHead>
               <TableHead className="text-muted-foreground text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   Cargando...
                 </TableCell>
               </TableRow>
             )}
             {socios && socios.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center">
+                <TableCell colSpan={7} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <Users className="h-8 w-8 text-muted-foreground/50" />
                     <p className="text-muted-foreground">No se encontraron socios.</p>
@@ -189,7 +197,7 @@ export default function SociosPage() {
                       <Link to="/admin/socios/nuevo">
                         <Button variant="outline" size="sm" className="mt-2 cursor-pointer gap-2">
                           <UserPlus className="h-4 w-4" />
-                          Agregar Socio
+                          Agregar socio
                         </Button>
                       </Link>
                     )}
@@ -210,30 +218,31 @@ export default function SociosPage() {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {socio.documentoIdentidad || '-'}
+                  {socio.tipoDocumento && socio.documentoIdentidad
+                    ? `${socio.tipoDocumento}: ${socio.documentoIdentidad}`
+                    : socio.documentoIdentidad || '-'}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{socio.correo}</TableCell>
                 <TableCell className="text-muted-foreground">{socio.telefono || '-'}</TableCell>
                 <TableCell>
-                  {socio.planNombre ? (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
-                      {socio.planNombre}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
+                  <div className="flex flex-col gap-1">
                     {socio.unidades.map((u) => (
-                      <Badge key={u.id} variant="outline" className="border-border text-muted-foreground text-xs">
-                        {u.nombre}
-                      </Badge>
+                      <div key={u.id} className="flex items-center gap-1.5">
+                        <Badge variant="outline" className="border-border text-muted-foreground text-xs">
+                          {u.nombre}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {u.planNombre || 'Sin plan'}
+                        </span>
+                      </div>
                     ))}
+                    {socio.unidades.length === 0 && (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {new Date(socio.fechaAlta).toLocaleDateString('es-UY')}
+                  {formatDate(socio.fechaAlta)}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">

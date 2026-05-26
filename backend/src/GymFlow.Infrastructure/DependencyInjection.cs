@@ -1,6 +1,7 @@
 using GymFlow.Application.Interfaces;
 using GymFlow.Infrastructure.Persistence;
 using GymFlow.Infrastructure.Repositories;
+using GymFlow.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,20 @@ public static class DependencyInjection
         services.AddScoped<IUnidadRepository, UnidadRepository>();
         services.AddScoped<ISocioRepository, SocioRepository>();
         services.AddScoped<IPlanRepository, PlanRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<IRolRepository, RolRepository>();
+        services.AddScoped<IPermisoRepository, PermisoRepository>();
+        services.AddScoped<IPermisoCache, PermisoCache>();
+        services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+        services.AddScoped<ICuotaRepository, CuotaRepository>();
+        services.AddScoped<ICuotaGeneradorService, CuotaGeneradorService>();
+        services.AddScoped<IRecordatorioCuotaRepository, RecordatorioCuotaRepository>();
+        services.AddScoped<IClaseRepository, ClaseRepository>();
+        services.AddScoped<IHorarioClaseRepository, HorarioClaseRepository>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddMemoryCache();
 
         return services;
     }

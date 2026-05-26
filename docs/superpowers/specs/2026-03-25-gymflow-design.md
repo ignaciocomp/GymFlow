@@ -127,7 +127,7 @@ Usuario N:M Unidad (un socio/profesor puede pertenecer a ambas unidades)
 |---------|----------------------|
 | **Usuario** (base) | Id, Nombre, Apellido, Email, PasswordHash, Rol (Admin/Socio/Profesor), Estado, FechaCreacion, Unidades[] (N:M) |
 | **Profesor** | Hereda de Usuario, ClasesAsignadas[] |
-| **Socio** | Hereda de Usuario, PlanActivoId (FK a Plan), FechaAlta, ConsentimientoInformado, Cuotas[], Inscripciones[], Rutinas[], Asistencias[] |
+| **Socio** | Hereda de Usuario, FechaAlta, ConsentimientoInformado, TipoDocumento, DocumentoIdentidad, Telefono, FechaNacimiento, Cuotas[], Inscripciones[], Rutinas[], Asistencias[]. **Sin PlanId directo** — el plan se asigna por unidad en `UsuarioUnidad.PlanId` (RF-22). |
 | **Unidad** | Id, Nombre, Direccion |
 | **Clase** | Id, Nombre, Descripcion, CupoMaximo, Duracion, UnidadId, ProfesorId, Horarios[], EstaActiva (soft delete) |
 | **Horario** | Id, DiaSemana, HoraInicio, HoraFin, ClaseId |
@@ -156,7 +156,7 @@ Las entidades `Socio`, `Clase` y `Plan` usan soft delete (campo `EstaActivo` / `
 - Horario 1:N Inscripciones (cupo por horario)
 - Horario 1:N Asistencias
 - Profesor 1:N Clases
-- Usuario N:M Unidades (tabla intermedia UsuarioUnidad)
+- Usuario N:M Unidades (tabla intermedia `UsuarioUnidad` con `PlanId` nullable — el plan asignado a ese socio en esa unidad)
 - Unidad 1:N Clases, Planes
 - Rutina 1:N Ejercicios
 - Plan 1:N Cuotas
@@ -244,10 +244,10 @@ GET    /api/cuotas/pendientes
 PUT    /api/cuotas/{id}/pagar          (admin registra pago)
 POST   /api/cuotas/recordatorios
 
-GET    /api/planes
-POST   /api/planes
-PUT    /api/planes/{id}
-DELETE /api/planes/{id}               (soft delete)
+GET    /api/planes                    (soporta ?unidadId= para filtrar)
+POST   /api/planes                    (RF-21)
+PUT    /api/planes/{id}               (RF-21)
+DELETE /api/planes/{id}               (baja lógica, bloqueada si hay socios — RF-21)
 
 GET    /api/dashboard/resumen
 GET    /api/dashboard/socios-activos

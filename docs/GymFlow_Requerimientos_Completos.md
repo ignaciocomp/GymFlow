@@ -69,7 +69,7 @@ El negocio opera dos unidades bajo un mismo espacio físico:
 
 **Usuario** (base): id, nombre, apellido, correo, contraseña, rol, estado, espacioAsignado (FK Unidad), fechaCreacion.
 
-**Socio** (extiende Usuario): plan activo, fechaAlta, consentimientoInformado (bool + timestamp). Relaciones: Cuota (1:N), Inscripcion (1:N), Rutina (1:N).
+**Socio** (extiende Usuario): fechaAlta, consentimientoInformado (bool + timestamp), tipoDocumento, documentoIdentidad, telefono, fechaNacimiento. Relaciones: Cuota (1:N), Inscripcion (1:N), Rutina (1:N). **El plan ya no es un atributo directo del Socio** — cada Socio puede tener un Plan distinto por Unidad, almacenado en la tabla intermedia `UsuarioUnidad.PlanId` (ver RF-22).
 
 **Administrador** (extiende Usuario): acceso completo a ambas unidades.
 
@@ -77,7 +77,7 @@ El negocio opera dos unidades bajo un mismo espacio físico:
 
 **Unidad**: id, nombre ("Gimnasio Nuevo Malvín" / "Espacio Mora"), dirección. Pivote multi-espacio del sistema.
 
-**Clase**: id, nombre, descripción, cupoMaximo, duracion, unidad (FK), instructor (FK Profesor), horarios (colección de Horario, 1:N).
+**Clase**: id, nombre, descripción, cupoMaximo, duracion, unidad (FK), horarios (colección de Horario, 1:N).
 
 **Horario**: id, diaSemana, horaInicio, horaFin, clase (FK).
 
@@ -111,7 +111,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 | **RF-05** | Ver perfil del socio: el socio consulta sus datos, estado de cuota y plan activo. | N-02, N-05 | Gestión de Socios |
 | **RF-06** | Recordatorio de cuota: envío automático a socios con cuota próxima a vencer o vencida. | N-03 | Cuotas y Pagos |
 | **RF-07** | Control de estado de cuota: visualización de socios al día, próximos a vencer o vencidos. | N-02, N-03, N-04 | Cuotas y Pagos |
-| **RF-08** | Gestionar clases: crear, editar y eliminar clases/actividades con nombre, horario, cupo máximo e instructor. | N-01, N-06 | Clases y Horarios |
+| **RF-08** | Gestionar clases: crear, editar y eliminar clases/actividades con nombre, horario y cupo máximo. | N-01, N-06 | Clases y Horarios |
 | **RF-09** | Gestionar horarios: definir horarios semanales de clases contemplando ambos espacios. | N-05, N-06 | Clases y Horarios |
 | **RF-10** | Inscribirse a clase: socio se inscribe si hay cupo disponible y cuota al día. | N-05, N-06 | Clases y Horarios |
 | **RF-11** | Ver mis clases: socio visualiza clases a las que está inscripto. | N-05, N-06 | Clases y Horarios |
@@ -124,6 +124,8 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 | **RF-18** | Dashboard en tiempo real: panel con socios activos, cuotas pendientes, clases del día, inscripciones recientes, filtros por unidad. | N-01, N-04 | Dashboard |
 | **RF-19** | Sitio web público: página con info de Espacio Mora, fotos, horarios, planes, ubicación y formulario de contacto. | N-07 | Página Web Pública |
 | **RF-20** | Gestión unificada multi-espacio: administrar ambas unidades desde una plataforma con separación y filtrado por unidad. | N-01 | Multi-Espacio |
+| **RF-21** | Gestionar planes: CRUD de planes de membresía desde el panel de administración. Baja lógica bloqueada si el plan tiene socios asignados. | N-01, N-02 | Gestión de Planes |
+| **RF-22** | Plan por unidad de negocio: al registrar o modificar un socio, asignar un plan independiente por cada unidad seleccionada. Un socio con dos unidades puede tener planes distintos en cada una. | N-01, N-02 | Gestión de Socios |
 
 ---
 
@@ -131,7 +133,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 | Código | Descripción | Tipo |
 |--------|-------------|------|
-| **RNF-01** | Autenticación y autorización basada en roles. Cada usuario accede solo a funcionalidades de su perfil. | Seguridad |
+| **RNF-01** | Autenticación y autorización basada en roles. Cada usuario accede solo a funcionalidades de su perfil. Implementado en dos partes: It.2 (admin, profesor y otros roles internos vía email + password con BCrypt) e It.5 (socios vía Google OAuth). | Seguridad |
 | **RNF-02** | Dashboard actualiza en tiempo real sin recarga de página. | Rendimiento |
 | **RNF-03** | Plataforma responsive: móvil, tablet y escritorio. | Usabilidad |
 | **RNF-04** | Sitio público optimizado SEO: semántica HTML5, metaetiquetas, URLs amigables, carga rápida. | Rendimiento/Marketing |
@@ -171,7 +173,6 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 | RN-20 | JWT incluye rol y espacio; backend valida ambos en cada request. |
 | RN-21 | Tras 5 intentos fallidos de login se bloquea la cuenta por 15 minutos. |
 | RN-22 | Una clase pertenece a un único espacio. |
-| RN-23 | Un instructor no puede tener dos clases en el mismo horario. |
 | RN-24 | El cupo máximo no puede reducirse por debajo del número de inscripciones activas. |
 | RN-25 | Si se modifica el horario de una clase con socios inscriptos, se les notifica automáticamente. |
 | RN-26 | Un profesor solo puede gestionar las clases que tiene asignadas explícitamente. |
@@ -235,6 +236,16 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - CA-03: Socios dados de baja no aparecen en listado activo pero sí en vista de inactivos.
 - CA-04: Consentimiento informado es visible y obligatorio durante el alta.
 
+**Mejoras implementadas (iteración 1):**
+- `TipoDocumento` (enum requerido): CI | Pasaporte | Otro
+  - Si `TipoDocumento == CI`: `DocumentoIdentidad` es obligatorio y debe ser una cédula uruguaya válida (algoritmo de dígito verificador).
+  - Si `TipoDocumento == Pasaporte` u `Otro`: `DocumentoIdentidad` es opcional, sin validación de formato.
+
+**Mejoras implementadas (RF-22 — iteración 1):**
+- El formulario de alta y modificación de socio permite seleccionar un Plan por cada Unidad asignada.
+- Los planes disponibles en cada dropdown se filtran a los planes activos de esa Unidad.
+- El Plan ya no es un campo global del Socio; se almacena en `UsuarioUnidad.PlanId`.
+
 ---
 
 ### CU-02 — Inscripción a Clase
@@ -255,7 +266,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 #### Flujo Principal
 1. Socio accede a 'Clases y Horarios'.
-2. Sistema muestra listado con nombre, instructor, horario, espacio y cupos disponibles.
+2. Sistema muestra listado con nombre, horario, espacio y cupos disponibles.
 3. Socio puede filtrar por espacio (Gimnasio / Espacio Mora), día de la semana o tipo de actividad.
 4. Socio selecciona clase → 'Inscribirme'.
 5. Sistema verifica: (a) no inscripto previamente, (b) cupo disponible, (c) cuota al día.
@@ -342,7 +353,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
    - b. Socios con cuota al día / próxima a vencer / vencida.
    - c. Clases programadas para hoy con cupos disponibles.
    - d. Inscripciones en últimas 24 horas.
-   - e. Alertas activas (cuota vencida, clases sin instructor).
+   - e. Alertas activas (cuota vencida).
 3. Admin puede filtrar por espacio (Gimnasio Nuevo Malvín, Espacio Mora, ambos).
 4. Métricas se actualizan en tiempo real (polling cada 30 segundos) sin recarga.
 5. Clic en cualquier métrica navega al módulo correspondiente con filtro aplicado.
@@ -401,26 +412,26 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 **Precondiciones:**
 1. Admin autenticado con MFA.
-2. Existen al menos un espacio y un profesor registrados.
+2. Existe al menos un espacio registrado.
 
 #### Flujo Principal — Creación de Clase
 1. Admin → módulo 'Clases' → 'Nueva Clase'.
-2. Formulario: nombre, descripción, espacio (Gimnasio / Espacio Mora), instructor (selector de profesores), cupo máximo, duración en minutos.
+2. Formulario: nombre, descripción, espacio (Gimnasio / Espacio Mora), cupo máximo, duración en minutos.
 3. Admin completa y confirma.
-4. Sistema valida que no haya superposición de horario para el instructor en ese espacio.
+4. Sistema valida que no haya superposición de horario en ese espacio.
 5. Registra la clase → visible en calendario y portal de socios.
 
 #### Flujo Alternativo — Asignación de Horarios Semanales
 1. Admin accede al calendario semanal de la clase.
 2. Define días y horarios (ej: lunes y miércoles 18:00–19:00).
-3. Sistema verifica que no haya conflicto de sala o instructor.
+3. Sistema verifica que no haya conflicto de sala.
 4. Guarda horarios → muestra en calendario consolidado.
 
 #### Flujo Alternativo — Edición de Clase
 1. Admin selecciona clase → 'Editar'.
 2. Sistema carga datos actuales.
 3. Admin modifica campos.
-4. Si se modifica horario o instructor → re-valida conflictos.
+4. Si se modifica horario → re-valida conflictos de sala.
 5. Si hay socios inscriptos y cambia horario → notifica automáticamente a afectados.
 6. Guarda cambios y actualiza calendario.
 
@@ -430,13 +441,11 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 3. Cancela instancia, libera cupos, notifica socios inscriptos.
 
 #### Flujos de Excepción
-- **E1 — Conflicto horario (instructor):** "El instructor ya tiene una clase en ese horario." Bloquea guardado.
-- **E2 — Conflicto de sala:** "La sala ya está ocupada en ese horario." Bloquea guardado.
+- **E1 — Conflicto de sala:** "La sala ya está ocupada en ese horario." Bloquea guardado.
 - **E3 — Cupo máximo inválido:** Rechaza valores < 1 o no numéricos.
 
 #### Criterios de Aceptación
-- CA-25: Impide crear dos clases con mismo instructor en mismo horario.
-- CA-26: Clase aparece en portal de socios inmediatamente tras ser creada.
+- CA-25: Clase aparece en portal de socios inmediatamente tras ser creada.
 - CA-27: Al cancelar clase, todos los inscriptos reciben notificación.
 - CA-28: Cupo no puede quedar por debajo de inscripciones activas al editar.
 
@@ -513,6 +522,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-05 (Ver perfil del socio)
 - RF-06 (Recordatorios automáticos de cuota)
 - RF-07 (Control de estado de cuota)
+- RNF-01 (Autenticación y autorización por roles — parte interna: empleados con email+password, roles dinámicos)
 - RNF-03 (Responsive)
 - RNF-06 (Disponibilidad ≥ 95%)
 
@@ -530,7 +540,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-08 (Gestionar clases: crear, editar, eliminar)
 - RF-09 (Gestionar horarios semanales)
 
-**Resultado esperado:** Admin puede crear, editar y eliminar clases; definir horarios, cupos e instructores por espacio.
+**Resultado esperado:** Admin puede crear, editar y eliminar clases; definir horarios y cupos por espacio.
 
 **Dependencias:** Iteración 1.
 
@@ -689,7 +699,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 | CA-22 | Profesor no accede a vistas de administración. |
 | CA-23 | Bloqueo tras 5 intentos fallidos. |
 | CA-24 | JWT expirado rechazado, fuerza re-autenticación. |
-| CA-25 | Impide dos clases con mismo instructor en mismo horario. |
+| CA-25 | Clase visible en portal inmediatamente tras creación. |
 | CA-26 | Clase visible en portal inmediatamente tras creación. |
 | CA-27 | Al cancelar clase, inscriptos reciben notificación. |
 | CA-28 | Cupo no puede bajar de inscripciones activas. |

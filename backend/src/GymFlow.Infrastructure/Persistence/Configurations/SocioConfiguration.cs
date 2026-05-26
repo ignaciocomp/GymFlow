@@ -15,10 +15,5 @@ public class SocioConfiguration : IEntityTypeConfiguration<Socio>
         builder.Property(s => s.DocumentoIdentidad).HasMaxLength(50);
         builder.Property(s => s.FechaNacimiento);
         builder.Property(s => s.MotivoBaja).HasMaxLength(500);
-
-        builder.HasOne(s => s.Plan)
-            .WithMany()
-            .HasForeignKey(s => s.PlanId)
-            .OnDelete(DeleteBehavior.SetNull);
     }
 }

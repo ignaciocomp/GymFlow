@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { sociosApi, unidadesApi, planesApi } from '@/services/api'
-import type { UpdateSocioRequest } from '@/types'
+import type { UpdateSocioRequest, TipoDocumento } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,6 +11,49 @@ import {
 } from '@/components/ui/select'
 import { Pencil, ArrowLeft } from 'lucide-react'
 
+function UnitPlanDropdown({
+  unidadId,
+  unidadNombre,
+  selectedPlanId,
+  onPlanChange,
+}: {
+  unidadId: string
+  unidadNombre: string
+  selectedPlanId: string | null
+  onPlanChange: (planId: string | null) => void
+}) {
+  const { data: planes } = useQuery({
+    queryKey: ['planes', unidadId],
+    queryFn: () => planesApi.getAll(unidadId),
+  })
+
+  const selectedPlan = planes?.find(p => p.id === selectedPlanId)
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-muted-foreground">{unidadNombre} — Plan</Label>
+      <Select
+        value={selectedPlanId || 'none'}
+        onValueChange={(val) => onPlanChange(!val || val === 'none' ? null : val)}
+      >
+        <SelectTrigger className="bg-muted/30 border-border">
+          <SelectValue>
+            {selectedPlan ? `${selectedPlan.nombre} — $${selectedPlan.precio}` : 'Sin plan'}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Sin plan</SelectItem>
+          {planes?.map((p) => (
+            <SelectItem key={p.id} value={p.id}>
+              {p.nombre} — ${p.precio}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
 export default function EditSocioPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -18,8 +61,9 @@ export default function EditSocioPage() {
 
   const [form, setForm] = useState<UpdateSocioRequest>({
     nombre: '', apellido: '', correo: '',
-    telefono: null, documentoIdentidad: null, fechaNacimiento: null,
-    planId: null, unidadIds: [],
+    telefono: null, tipoDocumento: null, documentoIdentidad: null, fechaNacimiento: null,
+    unidades: [],
+    fechaAlta: null,
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -34,11 +78,6 @@ export default function EditSocioPage() {
     queryFn: unidadesApi.getAll,
   })
 
-  const { data: planes } = useQuery({
-    queryKey: ['planes'],
-    queryFn: () => planesApi.getAll(),
-  })
-
   useEffect(() => {
     if (socio) {
       setForm({
@@ -46,10 +85,11 @@ export default function EditSocioPage() {
         apellido: socio.apellido,
         correo: socio.correo,
         telefono: socio.telefono,
+        tipoDocumento: socio.tipoDocumento,
         documentoIdentidad: socio.documentoIdentidad,
         fechaNacimiento: socio.fechaNacimiento ? socio.fechaNacimiento.split('T')[0] : null,
-        planId: socio.planId,
-        unidadIds: socio.unidades.map((u) => u.id),
+        unidades: socio.unidades.map((u) => ({ unidadId: u.id, planId: u.planId })),
+        fechaAlta: socio.fechaAlta ? socio.fechaAlta.split('T')[0] : null,
       })
     }
   }, [socio])
@@ -71,6 +111,13 @@ export default function EditSocioPage() {
     },
   })
 
+  const buildPayload = (): UpdateSocioRequest => ({
+    ...form,
+    documentoIdentidad: form.tipoDocumento === 'CI' && form.documentoIdentidad
+      ? form.documentoIdentidad.replace(/[.\-]/g, '')
+      : form.documentoIdentidad,
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -78,19 +125,35 @@ export default function EditSocioPage() {
       setError('Nombre, apellido y correo son obligatorios.')
       return
     }
-    if (form.unidadIds.length === 0) {
+    if (!form.tipoDocumento) {
+      setError('El tipo de documento es obligatorio.')
+      return
+    }
+    if (form.unidades.length === 0) {
       setError('Debe seleccionar al menos una unidad.')
       return
     }
-    updateMutation.mutate(form)
+    updateMutation.mutate(buildPayload())
   }
 
   const toggleUnidad = (unidadId: string) => {
+    setForm((prev) => {
+      const exists = prev.unidades.some(u => u.unidadId === unidadId)
+      return {
+        ...prev,
+        unidades: exists
+          ? prev.unidades.filter(u => u.unidadId !== unidadId)
+          : [...prev.unidades, { unidadId, planId: null }],
+      }
+    })
+  }
+
+  const updateUnitPlan = (unidadId: string, planId: string | null) => {
     setForm((prev) => ({
       ...prev,
-      unidadIds: prev.unidadIds.includes(unidadId)
-        ? prev.unidadIds.filter((uid) => uid !== unidadId)
-        : [...prev.unidadIds, unidadId],
+      unidades: prev.unidades.map(u =>
+        u.unidadId === unidadId ? { ...u, planId } : u
+      ),
     }))
   }
 
@@ -109,7 +172,7 @@ export default function EditSocioPage() {
               <Pencil className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">Editar Socio</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Editar socio</h1>
               <p className="text-sm text-muted-foreground">Cargando datos del socio...</p>
             </div>
           </div>
@@ -136,7 +199,7 @@ export default function EditSocioPage() {
         <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6">
           <p className="text-sm text-destructive">No se pudo cargar el socio. Es posible que haya sido eliminado.</p>
           <Button variant="outline" className="mt-4 cursor-pointer" onClick={() => navigate('/admin/socios')}>
-            Volver a Socios
+            Volver a socios
           </Button>
         </div>
       </div>
@@ -171,10 +234,10 @@ export default function EditSocioPage() {
         {/* Informacion Personal */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Informacion Personal
+            Información personal
           </h2>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground">Nombre *</Label>
               <Input
@@ -196,7 +259,7 @@ export default function EditSocioPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-muted-foreground">Correo electronico *</Label>
+            <Label className="text-muted-foreground">Correo electrónico *</Label>
             <Input
               type="email"
               value={form.correo}
@@ -206,9 +269,9 @@ export default function EditSocioPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Telefono</Label>
+              <Label className="text-muted-foreground">Teléfono</Label>
               <Input
                 value={form.telefono || ''}
                 onChange={(e) => setForm({ ...form, telefono: e.target.value || null })}
@@ -217,15 +280,40 @@ export default function EditSocioPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Doc. Identidad (CI)</Label>
+              <Label className="text-muted-foreground">Tipo de documento *</Label>
+              <Select
+                value={form.tipoDocumento || ''}
+                onValueChange={(val) => setForm({
+                  ...form,
+                  tipoDocumento: val as TipoDocumento,
+                  documentoIdentidad: null,
+                })}
+              >
+                <SelectTrigger className="bg-muted/30 border-border">
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CI">Cédula de identidad</SelectItem>
+                  <SelectItem value="Pasaporte">Pasaporte</SelectItem>
+                  <SelectItem value="Otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {form.tipoDocumento && (
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">
+                {form.tipoDocumento === 'CI' ? 'Número de cédula' : 'Número de documento'}
+              </Label>
               <Input
                 value={form.documentoIdentidad || ''}
                 onChange={(e) => setForm({ ...form, documentoIdentidad: e.target.value || null })}
-                placeholder="1.234.567-8"
+                placeholder={form.tipoDocumento === 'CI' ? '12345678' : ''}
                 className="bg-muted/30 border-border"
               />
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">Fecha de nacimiento</Label>
@@ -241,8 +329,19 @@ export default function EditSocioPage() {
         {/* Plan y Acceso */}
         <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Plan y Acceso
+            Plan y acceso
           </h2>
+
+          <div className="space-y-2">
+            <Label className="text-muted-foreground">Miembro desde</Label>
+            <Input
+              type="date"
+              value={form.fechaAlta || ''}
+              onChange={(e) => setForm({ ...form, fechaAlta: e.target.value || null })}
+              max={new Date().toISOString().split('T')[0]}
+              className="bg-muted/30 border-border"
+            />
+          </div>
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">Espacio asignado *</Label>
@@ -251,14 +350,14 @@ export default function EditSocioPage() {
                 <label
                   key={u.id}
                   className={`flex items-center gap-2.5 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
-                    form.unidadIds.includes(u.id)
+                    form.unidades.some(su => su.unidadId === u.id)
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/50'
                   }`}
                 >
                   <input
                     type="checkbox"
-                    checked={form.unidadIds.includes(u.id)}
+                    checked={form.unidades.some(su => su.unidadId === u.id)}
                     onChange={() => toggleUnidad(u.id)}
                     className="sr-only"
                   />
@@ -268,25 +367,22 @@ export default function EditSocioPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-muted-foreground">Plan</Label>
-            <Select
-              value={form.planId || 'none'}
-              onValueChange={(val) => setForm({ ...form, planId: !val || val === 'none' ? null : val })}
-            >
-              <SelectTrigger className="bg-muted/30 border-border">
-                <SelectValue placeholder="Seleccionar plan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sin plan</SelectItem>
-                {planes?.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.nombre} — ${p.precio}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {form.unidades.length > 0 && (
+            <div className="space-y-4">
+              {form.unidades.map((su) => {
+                const unidad = unidades?.find(u => u.id === su.unidadId)
+                return (
+                  <UnitPlanDropdown
+                    key={su.unidadId}
+                    unidadId={su.unidadId}
+                    unidadNombre={unidad?.nombre || ''}
+                    selectedPlanId={su.planId}
+                    onPlanChange={(planId) => updateUnitPlan(su.unidadId, planId)}
+                  />
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Error */}
@@ -300,7 +396,7 @@ export default function EditSocioPage() {
         <div className="flex gap-3">
           <Button type="submit" disabled={updateMutation.isPending} className="cursor-pointer gap-2">
             <Pencil className="h-4 w-4" />
-            {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
+            {updateMutation.isPending ? 'Guardando...' : 'Guardar cambios'}
           </Button>
           <Button
             type="button"

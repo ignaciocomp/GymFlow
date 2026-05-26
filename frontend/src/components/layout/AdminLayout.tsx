@@ -8,7 +8,8 @@ import Topbar from './Topbar'
 export default function AdminLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [selectedUnidad, setSelectedUnidad] = useState('all')
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false)
+  const tieneAccesoAdmin = (user?.permisos?.length ?? 0) > 0
 
   if (isLoading) {
     return (
@@ -22,7 +23,11 @@ export default function AdminLayout() {
     return <Navigate to="/login" replace />
   }
 
-  if (user?.rol !== 'Admin') {
+  if (!tieneAccesoAdmin && user?.rolNombre === 'Socio') {
+    return <Navigate to="/portal" replace />
+  }
+
+  if (!tieneAccesoAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 text-center">
@@ -31,12 +36,10 @@ export default function AdminLayout() {
           </div>
           <h2 className="text-xl font-bold text-foreground">Acceso no disponible</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {user?.rol === 'Profesor'
-              ? 'El panel de profesores estará disponible próximamente.'
-              : 'El portal de socios estará disponible próximamente.'}
+            Tu rol actual no tiene acceso al panel administrativo.
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Sesión iniciada como <span className="text-primary">{user?.nombre} {user?.apellido}</span> ({user?.rol})
+            Sesión iniciada como <span className="text-primary">{user?.nombre} {user?.apellido}</span> ({user?.rolNombre})
           </p>
           <button
             onClick={logout}
@@ -51,19 +54,23 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar collapsed={sidebarCollapsed} />
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        mobileOpen={sidebarMobileOpen}
+        onMobileClose={() => setSidebarMobileOpen(false)}
+      />
       <div
         className={`transition-all duration-300 ${
-          sidebarCollapsed ? 'ml-16' : 'ml-64'
+          // En mobile sin margin (sidebar es overlay); en desktop según collapsed
+          sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
         }`}
       >
         <Topbar
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-          selectedUnidad={selectedUnidad}
-          onUnidadChange={setSelectedUnidad}
+          onOpenMobileSidebar={() => setSidebarMobileOpen(true)}
         />
-        <main className="p-6">
-          <Outlet context={{ selectedUnidad }} />
+        <main className="p-4 sm:p-6">
+          <Outlet />
         </main>
       </div>
     </div>

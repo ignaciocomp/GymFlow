@@ -42,7 +42,7 @@ export default function Login() {
             <Dumbbell className="h-8 w-8" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">GymFlow</h1>
-          <p className="text-sm text-muted-foreground">Sistema de Gestión para Gimnasios</p>
+          <p className="text-sm text-muted-foreground">Sistema de gestión para gimnasios</p>
         </div>
 
         {/* Login Card */}
@@ -105,17 +105,6 @@ export default function Login() {
             </Button>
           </form>
 
-          {/* Dev credentials hint */}
-          <div className="mt-6 rounded-lg border border-border bg-muted/30 p-4">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Usuarios de prueba
-            </p>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <p><span className="text-primary">Admin:</span> admin@gymflow.com / admin123</p>
-              <p><span className="text-primary">Profesor:</span> profesor@gymflow.com / profesor123</p>
-              <p><span className="text-primary">Socio:</span> socio@gymflow.com / socio123</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

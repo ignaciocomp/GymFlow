@@ -1,3 +1,5 @@
+using GymFlow.Domain.Enums;
+
 namespace GymFlow.Application.DTOs;
 
 public record UpdateSocioRequest(
@@ -5,7 +7,8 @@ public record UpdateSocioRequest(
     string Apellido,
     string Correo,
     string? Telefono,
+    TipoDocumento TipoDocumento,
     string? DocumentoIdentidad,
     DateTime? FechaNacimiento,
-    Guid? PlanId,
-    List<Guid> UnidadIds);
+    List<UnidadAsignacionDto> Unidades,
+    DateTime? FechaAlta = null);
