@@ -179,6 +179,18 @@ export interface UpdateHorarioClaseRequest {
   sala: string | null
 }
 
+export interface InscripcionClase {
+  id: string
+  claseId: string
+  claseNombre: string
+  instructor: string
+  unidadId: string
+  unidadNombre: string
+  capacidadMaxima: number
+  inscripcionesActivas: number
+  fechaInscripcion: string
+}
+
 export type EstadoGeneralCuotas = 'AlDia' | 'Pendiente' | 'Vencido'
 
 export interface SocioConEstadoCuotaDto {
