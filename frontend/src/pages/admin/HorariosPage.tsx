@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CalendarDays, Plus, Trash2, Pencil } from 'lucide-react'
-import type { HorarioClase, DiaSemana, CreateHorarioClaseRequest, UpdateHorarioClaseRequest } from '@/types'
+import type { HorarioClase, DiaSemana, UpdateHorarioClaseRequest } from '@/types'
 
 const DIAS: DiaSemana[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 const DIAS_LABEL: Record<DiaSemana, string> = {
@@ -62,10 +62,11 @@ export default function HorariosPage() {
 
   // Form state
   const [formClaseId, setFormClaseId] = useState<string | null>('')
-  const [formDia, setFormDia] = useState<DiaSemana>('Lunes')
+  const [formDias, setFormDias] = useState<DiaSemana[]>(['Lunes'])
   const [formInicio, setFormInicio] = useState('08:00')
   const [formFin, setFormFin] = useState('09:00')
   const [formSala, setFormSala] = useState('')
+  const [creating, setCreating] = useState(false)
 
   const { data: horarios, isLoading } = useQuery({
     queryKey: ['horarios', unidadFilter],
@@ -80,23 +81,6 @@ export default function HorariosPage() {
   const { data: clases } = useQuery({
     queryKey: ['clases-activas'],
     queryFn: () => clasesApi.getAll(undefined, false),
-  })
-
-  const createMutation = useMutation({
-    mutationFn: (req: CreateHorarioClaseRequest) => horariosApi.create(req),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['horarios'] })
-      setCreateDialog(false)
-      resetForm()
-    },
-    onError: (err: unknown) => {
-      if (err && typeof err === 'object' && 'response' in err) {
-        const axiosErr = err as { response?: { data?: { error?: string } } }
-        setFormError(axiosErr.response?.data?.error || 'Error al crear el horario.')
-      } else {
-        setFormError('Error al crear el horario.')
-      }
-    },
   })
 
   const updateMutation = useMutation({
@@ -134,7 +118,7 @@ export default function HorariosPage() {
 
   const resetForm = () => {
     setFormClaseId('')
-    setFormDia('Lunes')
+    setFormDias(['Lunes'])
     setFormInicio('08:00')
     setFormFin('09:00')
     setFormSala('')
@@ -148,7 +132,7 @@ export default function HorariosPage() {
 
   const openEdit = (h: HorarioClase) => {
     setFormClaseId(h.claseId)
-    setFormDia(h.diaSemana)
+    setFormDias([h.diaSemana])
     setFormInicio(h.horaInicio)
     setFormFin(h.horaFin)
     setFormSala(h.sala || '')
@@ -156,15 +140,31 @@ export default function HorariosPage() {
     setEditDialog(h)
   }
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!formClaseId) { setFormError('Selecciona una clase.'); return }
-    createMutation.mutate({
-      claseId: formClaseId,
-      diaSemana: formDia,
-      horaInicio: formInicio,
-      horaFin: formFin,
-      sala: formSala?.trim() || null,
-    })
+    if (formDias.length === 0) { setFormError('Selecciona al menos un día.'); return }
+    setFormError(null)
+    setCreating(true)
+    try {
+      for (const dia of formDias) {
+        await horariosApi.create({
+          claseId: formClaseId,
+          diaSemana: dia,
+          horaInicio: formInicio,
+          horaFin: formFin,
+          sala: formSala?.trim() || null,
+        })
+      }
+      queryClient.invalidateQueries({ queryKey: ['horarios'] })
+      setCreateDialog(false)
+      resetForm()
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      setFormError(axiosErr?.response?.data?.error || 'Error al crear el horario.')
+      queryClient.invalidateQueries({ queryKey: ['horarios'] })
+    } finally {
+      setCreating(false)
+    }
   }
 
   const handleUpdate = () => {
@@ -172,7 +172,7 @@ export default function HorariosPage() {
     updateMutation.mutate({
       id: editDialog.id,
       req: {
-        diaSemana: formDia,
+        diaSemana: formDias[0],
         horaInicio: formInicio,
         horaFin: formFin,
         sala: formSala?.trim() || null,
@@ -348,7 +348,11 @@ export default function HorariosPage() {
               <Label>Clase</Label>
               <Select value={formClaseId ?? undefined} onValueChange={setFormClaseId}>
                 <SelectTrigger className="bg-card border-border">
-                  <SelectValue placeholder="Seleccionar clase" />
+                  <SelectValue placeholder="Seleccionar clase">
+                    {formClaseId
+                      ? (() => { const c = clases?.find(cl => cl.id === formClaseId); return c ? `${c.nombre} (${c.unidadNombre})` : 'Seleccionar clase' })()
+                      : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {clases?.filter(c => c.estaActivo).map(c => (
@@ -361,17 +365,24 @@ export default function HorariosPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Dia de la semana</Label>
-              <Select value={formDia} onValueChange={(v) => setFormDia(v as DiaSemana)}>
-                <SelectTrigger className="bg-card border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DIAS.map(d => (
-                    <SelectItem key={d} value={d}>{DIAS_LABEL[d]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Días de la semana</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {DIAS.map(d => (
+                  <label key={d} className="flex items-center gap-2 cursor-pointer rounded-md border border-border px-3 py-2 hover:bg-muted/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formDias.includes(d)}
+                      onChange={() => {
+                        setFormDias(prev =>
+                          prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]
+                        )
+                      }}
+                      className="h-4 w-4 cursor-pointer"
+                    />
+                    <span className="text-sm">{DIAS_LABEL[d]}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -406,8 +417,8 @@ export default function HorariosPage() {
             <Button variant="outline" onClick={() => { setCreateDialog(false); resetForm() }} className="cursor-pointer">
               Cancelar
             </Button>
-            <Button onClick={handleCreate} disabled={createMutation.isPending} className="cursor-pointer">
-              {createMutation.isPending ? 'Creando...' : 'Crear horario'}
+            <Button onClick={handleCreate} disabled={creating} className="cursor-pointer">
+              {creating ? 'Creando...' : `Crear horario${formDias.length > 1 ? `s (${formDias.length})` : ''}`}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -430,7 +441,7 @@ export default function HorariosPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Dia de la semana</Label>
-              <Select value={formDia} onValueChange={(v) => setFormDia(v as DiaSemana)}>
+              <Select value={formDias[0]} onValueChange={(v) => setFormDias([v as DiaSemana])}>
                 <SelectTrigger className="bg-card border-border">
                   <SelectValue />
                 </SelectTrigger>

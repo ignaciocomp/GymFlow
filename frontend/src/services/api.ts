@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase } from '@/types'
 
 const api = axios.create({
   baseURL: '/api',
@@ -239,6 +239,22 @@ export const horariosApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/horarios/${id}`)
+  },
+}
+
+export const inscripcionesApi = {
+  inscribirse: async (claseId: string): Promise<InscripcionClase> => {
+    const { data } = await api.post<InscripcionClase>('/inscripciones', { claseId })
+    return data
+  },
+
+  getMisInscripciones: async (): Promise<InscripcionClase[]> => {
+    const { data } = await api.get<InscripcionClase[]>('/inscripciones/mis-inscripciones')
+    return data
+  },
+
+  cancelar: async (id: string): Promise<void> => {
+    await api.delete(`/inscripciones/${id}`)
   },
 }
 
