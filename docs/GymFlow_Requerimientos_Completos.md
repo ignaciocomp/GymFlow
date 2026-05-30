@@ -492,7 +492,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 ## 9. Plan de Iteraciones (Fase de Construcción)
 
 ### Iteración 1 — Base del Sistema, Seguridad, Multi-Espacio y Gestión Inicial de Socios
-**Fechas:** 23/03/2026 → 15/04/2026 (~36 horas)
+**Fechas:** 15/04/2026 → 29/04/2026 (~60 horas)
 **Prioridad:** OBLIGATORIO
 
 **Requerimientos:**
@@ -501,9 +501,8 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-03 (Editar socio con log de auditoría)
 - RF-04 (Baja lógica de socio)
 - RF-20 (Gestión unificada multi-espacio)
-- RNF-01 (Autenticación y autorización por roles)
+- RF-22 (Plan por unidad de negocio)
 - RNF-05 (Almacenamiento seguro, contraseñas cifradas)
-- RNF-07 (Compatibilidad navegadores)
 - RNF-08 (Arquitectura multi-unidad)
 - RNF-09 (Cumplimiento Ley 18.331)
 - RNF-11 (Log de auditoría)
@@ -515,7 +514,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 ---
 
 ### Iteración 2 — Portal Básico del Socio y Control de Cuotas
-**Fechas:** 16/04/2026 → 27/04/2026 (~45 horas)
+**Fechas:** 30/04/2026 → 14/05/2026 (~60 horas)
 **Prioridad:** OBLIGATORIO
 
 **Requerimientos:**
@@ -524,7 +523,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-07 (Control de estado de cuota)
 - RNF-01 (Autenticación y autorización por roles — parte interna: empleados con email+password, roles dinámicos)
 - RNF-03 (Responsive)
-- RNF-06 (Disponibilidad ≥ 95%)
+- RNF-07 (Compatibilidad navegadores)
 
 **Resultado esperado:** El socio puede ver su perfil; admin controla estado de cuota; sistema envía recordatorios automáticos por email.
 
@@ -533,7 +532,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 ---
 
 ### Iteración 3 — Gestión de Clases y Horarios
-**Fechas:** 28/04/2026 → 04/05/2026 (~30 horas)
+**Fechas:** 15/05/2026 → 29/05/2026 (~60 horas)
 **Prioridad:** OBLIGATORIO
 
 **Requerimientos:**
@@ -546,92 +545,73 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 ---
 
-### Iteración 4 — Inscripción del Socio a Clases
-**Fechas:** 14/05/2026 → 25/05/2026 (~40 horas)
+### Iteración 4 — Inscripción a Clases, Empleados y Profesores (unificada)
+**Fechas:** 30/05/2026 → 13/06/2026 (~60 horas)
 **Prioridad:** OBLIGATORIO
 
 **Requerimientos:**
 - RF-10 (Inscripción a clase con cupo + cuota)
 - RF-11 (Ver mis clases)
+- RF-12 (Gestionar empleados y profesores)
+- RF-13 (Profesor registra socios)
+- RF-14 (Profesor gestiona sus clases)
 - RNF-03 (Responsive)
+- RNF-10 (MFA para admin/profesor — parcial)
 
-**Resultado esperado:** Socio puede ver clases disponibles, inscribirse si hay cupo y cuota al día, y consultar sus inscripciones.
+**Nota:** La funcionalidad base de RF-10, RF-11, RF-12 y RF-13 fue implementada en iteraciones anteriores. Esta iteración se enfoca en mejoras, pulido de UX, testing, y completar RF-14 (vista filtrada de clases asignadas para el profesor).
+
+**Resultado esperado:** Módulos de inscripción a clases y gestión de empleados/profesores estabilizados, con mejoras de UX y validaciones. Profesor puede ver y gestionar únicamente sus clases asignadas.
 
 **Dependencias:** Iteraciones 2 y 3.
 
 ---
 
-### Iteración 5 — Empleados, Profesores y Operación por Rol Docente
-**Fechas:** 26/05/2026 → 08/06/2026 (~40 horas)
+### Iteración 5 — Autenticación Avanzada (MFA y OAuth)
+**Fechas:** 14/06/2026 → 28/06/2026 (~40 horas)
 **Prioridad:** DESEABLE/OPCIONAL
 
 **Requerimientos:**
-- RF-12 (Gestionar empleados y profesores)
-- RF-13 (Profesor registra socios)
-- RF-14 (Profesor gestiona sus clases)
-- RNF-10 (MFA para admin/profesor, OAuth 2.0 Google para socios)
+- RNF-10 (MFA TOTP para admin/profesor, OAuth 2.0 Google para socios)
+- RNF-01 (Autenticación y autorización por roles — parte socios: Google OAuth)
 
-**Resultado esperado:** Admin gestiona empleados/profesores; profesor registra socios con permisos limitados y administra solo sus clases. MFA y OAuth implementados.
+**Resultado esperado:** Admin y profesor requieren MFA (TOTP) para iniciar sesión. Socios se autentican con Google OAuth 2.0 sin gestionar contraseña propia.
 
-**Dependencias:** Iteraciones 1 y 3.
+**Dependencias:** Iteraciones 1 y 4.
 
 ---
 
-### Iteración 6 — Eventos y Notificaciones Integradas
-**Fechas:** 09/06/2026 → 18/06/2026 (~25 horas)
+### Iteración 6 — Eventos, Notificaciones, Rutinas y Sitio Web Público
+**Fechas:** 29/06/2026 → 13/07/2026 (~60 horas)
 **Prioridad:** DESEABLE
 
 **Requerimientos:**
 - RF-15 (Gestionar eventos)
 - RF-16 (Notificaciones al socio por email)
+- RF-17 (Crear rutinas de entrenamiento)
+- RF-19 (Sitio web público)
+- RNF-03 (Responsive)
+- RNF-04 (SEO: semántica, metaetiquetas, URLs amigables, carga rápida)
+- RNF-06 (Disponibilidad ≥ 95%)
+- RNF-07 (Compatibilidad navegadores)
 
-**Resultado esperado:** Admin crea eventos; sistema notifica socios por eventos, cambios de horario y recordatorios de cuota.
+**Resultado esperado:** Admin crea eventos; sistema notifica socios por eventos, cambios de horario y recordatorios de cuota. Socio puede crear rutinas. Sitio web público con info institucional, responsive y SEO.
 
 **Dependencias:** Iteraciones 2 y 3.
 
 ---
 
-### Iteración 7 — Rutinas Personalizadas del Socio
-**Fechas:** 19/06/2026 → 25/06/2026 (~15 horas)
-**Prioridad:** DESEABLE
-
-**Requerimientos:**
-- RF-17 (Crear rutinas de entrenamiento)
-
-**Resultado esperado:** Socio puede crear, guardar y consultar rutinas de entrenamiento personalizadas (ejercicios, series, repeticiones, peso).
-
-**Dependencias:** Iteración 2.
-
----
-
-### Iteración 8 — Dashboard Gerencial y Métricas en Tiempo Real
-**Fechas:** 26/06/2026 → 03/07/2026 (~20 horas)
+### Iteración 7 — Dashboard Gerencial, Métricas en Tiempo Real y Mercado Pago
+**Fechas:** 14/07/2026 → 28/07/2026 (~60 horas)
 **Prioridad:** OBLIGATORIO
 
 **Requerimientos:**
 - RF-18 (Dashboard en tiempo real multi-espacio)
+- RF-21 (Gestionar planes)
 - RNF-02 (Actualización sin recarga)
-- RNF-08 (Multi-unidad)
 
-**Resultado esperado:** Admin visualiza métricas clave con filtros por unidad y actualización automática (polling 30s).
+**Resultado esperado:** Admin visualiza métricas clave con filtros por unidad y actualización automática. Integración con Mercado Pago para gestión de pagos.
 
 **Dependencias:** Iteraciones 2, 3 y 4.
-
----
-
-### Iteración 9 — Sitio Web Público
-**Fechas:** 04/07/2026 → 16/07/2026 (~36 horas)
-**Prioridad:** OPCIONAL
-
-**Requerimientos:**
-- RF-19 (Sitio web público)
-- RNF-03 (Responsive)
-- RNF-04 (SEO: semántica, metaetiquetas, URLs amigables, carga rápida)
-- RNF-07 (Compatibilidad navegadores)
-
-**Resultado esperado:** Web pública adaptable a dispositivos, optimizada para buscadores, con información institucional (descripción, fotos, horarios, planes, ubicación, formulario de contacto).
-
-**Dependencias:** Puede desarrollarse en paralelo; si es secuencial, después de definir información comercial.
 
 ---
 
