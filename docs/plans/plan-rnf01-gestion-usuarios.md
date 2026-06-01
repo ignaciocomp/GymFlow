@@ -1,6 +1,17 @@
+---
+tags:
+  - plan
+requerimiento: RNF-01
+---
+
 # RNF-01 (parte 2) — Gestión de usuarios empleados — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Spec:** [[spec-rnf01-gestion-usuarios]]
+**Última actualización:** 2026-04-28
+**Historial:**
+- 2026-04-28 — Versión inicial
 
 **Goal:** Permitir que el administrador cree, edite y dé de baja usuarios internos del sistema (admin, profesor, custom) desde la UI, con login por email + password (BCrypt) leyendo de DB en lugar de la lista hardcodeada actual.
 

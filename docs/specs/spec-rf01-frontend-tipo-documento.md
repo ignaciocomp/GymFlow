@@ -1,7 +1,16 @@
+---
+tags:
+  - spec
+requerimiento: RF-01
+---
+
 # Spec: Frontend — TipoDocumento en formularios de socio
 
-**Fecha:** 2026-04-05
 **Rama:** feature/RF_01
+**Plan:** [[plan-rf01-frontend-tipo-documento]]
+**Última actualización:** 2026-04-05
+**Historial:**
+- 2026-04-05 — Versión inicial
 
 ## Contexto
 

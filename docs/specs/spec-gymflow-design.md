@@ -1,10 +1,19 @@
+---
+tags:
+  - spec
+requerimiento: proyecto
+---
+
 # GymFlow - Spec de Diseño
 
-**Fecha:** 2026-03-25
 **Proyecto:** Sistema Integrado de Gestión para Gimnasios
 **Cliente:** Espacio Mora (Maurice) - Montevideo, Uruguay
 **Equipo:** Ignacio Compan, Franco Notte, Sebastián Acuña
+**Plan:** [[plan-project-skeleton]]
 **Universidad:** ORT Uruguay - ATI 2026
+**Última actualización:** 2026-03-25
+**Historial:**
+- 2026-03-25 — Versión inicial
 
 ---
 

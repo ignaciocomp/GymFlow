@@ -1,6 +1,17 @@
+---
+tags:
+  - plan
+requerimiento: RF-02
+---
+
 # RF-02 — Fecha de Alta Seleccionable: Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Spec:** [[spec-rf02-fecha-alta-seleccionable]]
+**Última actualización:** 2026-05-10
+**Historial:**
+- 2026-05-10 — Versión inicial
 
 **Goal:** Permitir que el admin elija la fecha de ingreso (FechaAlta) al crear o editar un socio, en vez de usar siempre la fecha actual.
 

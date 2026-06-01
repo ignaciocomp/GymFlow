@@ -1,8 +1,17 @@
+---
+tags:
+  - spec
+requerimiento: RF-22
+---
+
 # RF_22 — Gestión de Planes y Plan por Unidad en Socio
 
-**Fecha:** 2026-04-06
 **Branch:** feature/RF_22
 **Estado:** Aprobado
+**Plan:** [[plan-rf22-planes-por-unidad]]
+**Última actualización:** 2026-04-06
+**Historial:**
+- 2026-04-06 — Versión inicial
 
 ---
 

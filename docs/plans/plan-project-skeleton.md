@@ -1,6 +1,17 @@
+---
+tags:
+  - plan
+requerimiento: proyecto
+---
+
 # GymFlow Project Skeleton — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Spec:** [[spec-gymflow-design]]
+**Última actualización:** 2026-03-25
+**Historial:**
+- 2026-03-25 — Versión inicial
 
 **Goal:** Create the full project skeleton — .NET Clean Architecture backend, React+Vite frontend, base domain entity (Unidad), end-to-end wiring, and CI/CD pipeline — so the team can start developing features immediately.
 

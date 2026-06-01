@@ -1,6 +1,17 @@
+---
+tags:
+  - plan
+requerimiento: RF-01
+---
+
 # Frontend TipoDocumento Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Spec:** [[spec-rf01-frontend-tipo-documento]]
+**Última actualización:** 2026-04-05
+**Historial:**
+- 2026-04-05 — Versión inicial
 
 **Goal:** Agregar el selector de TipoDocumento en los formularios de alta y edición de socios, normalizando CI antes de enviar al backend, y mostrando el tipo en la tabla.
 

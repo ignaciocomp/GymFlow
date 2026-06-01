@@ -95,3 +95,8 @@ docker-compose.override.yml
 # Claude Code
 # =========================
 .claude/
+
+# =========================
+# Obsidian
+# =========================
+docs/.obsidian/

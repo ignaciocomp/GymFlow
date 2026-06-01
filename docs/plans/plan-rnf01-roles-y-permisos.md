@@ -1,6 +1,17 @@
+---
+tags:
+  - plan
+requerimiento: RNF-01
+---
+
 # RF-23 — Gestión de Roles y Permisos — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Spec:** [[spec-rnf01-roles-y-permisos]]
+**Última actualización:** 2026-04-26
+**Historial:**
+- 2026-04-26 — Versión inicial
 
 **Goal:** Reemplazar el enum `Rol` por un sistema de roles dinámicos con permisos CRUD por módulo, permitiendo al admin crear roles personalizados desde la UI.
 

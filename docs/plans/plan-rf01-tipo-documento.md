@@ -1,6 +1,17 @@
+---
+tags:
+  - plan
+requerimiento: RF-01
+---
+
 # RF-01 Mejoras: Tipo de Documento y Validación de Cédula Uruguaya — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Spec:** [[spec-rf01-tipo-documento]]
+**Última actualización:** 2026-03-28
+**Historial:**
+- 2026-03-28 — Versión inicial
 
 **Goal:** Agregar el campo `TipoDocumento` (CI / Pasaporte / Otro) como obligatorio en `Socio`, con validación del algoritmo de dígito verificador uruguayo cuando el tipo es CI, tanto en creación como en actualización.
 

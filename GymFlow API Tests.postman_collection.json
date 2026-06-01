@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "e7995d47-4beb-466a-a83d-ef280ae8d08f",
     "name": "GymFlow API Tests",
-    "description": "**Nombre de la prueba**: Validación de endpoints API GymFlow\n\n**Tipo de prueba**:\n\n- Prueba funcional (caja negra)\n- Prueba de integración (nivel API)\n- Prueba de seguridad (RNF-01: control de acceso por roles)\n\n**Objetivo**:  \nVerificar que los endpoints de la API de GymFlow exponen los datos correctamente según los contratos definidos en los DTOs, y que el sistema de permisos por roles funciona correctamente.\n\n**Módulos cubiertos**:\n\n- Auth (login, perfil)\n- Socios (CRUD completo + reactivación)\n- Planes (CRUD completo)\n- Unidades (lectura)\n- Auditoría (consulta con filtros)\n- Roles y Permisos (RNF-01)\n- Empleados (RNF-01)\n\n**Criterios de éxito generales**:\n\n- Códigos HTTP correctos según operación\n- Estructura JSON conforme a DTOs\n- Tipos de datos correctos\n- Tiempo de respuesta < 500ms\n- Validaciones de negocio funcionando\n- Permisos denegados devuelven 403\n\n**Herramienta**: Postman  \n**Proyecto**: GymFlow — Sistema Integrado de Gestión para Gimnasios  \n**Equipo**: Ignacio Compan, Franco Notte, Sebastián Acuña",
+    "description": "**Nombre de la prueba**: Validación de endpoints API GymFlow\n\n**Tipo de prueba**:\n\n- Prueba funcional (caja negra)\n- Prueba de integración (nivel API)\n- Prueba de seguridad (RNF-01: control de acceso por roles)\n\n**Objetivo**:  \nVerificar que los endpoints de la API de GymFlow exponen los datos correctamente según los contratos definidos en los DTOs, y que el sistema de permisos por roles funciona correctamente.\n\n**Módulos cubiertos**:\n\n- Auth (login, perfil)\n- Socios (CRUD completo + reactivación)\n- Planes (CRUD completo)\n- Unidades (lectura)\n- Auditoría (consulta con filtros)\n- Roles y Permisos (RNF-01)\n- Empleados (RNF-01)\n- Clases RF-08 (CRUD + cancelación/reactivación)\n- Horarios RF-09 (CRUD + validación conflicto de sala)\n- Inscripciones RF-10/RF-11 (inscribir, listar, cancelar)\n\n**Criterios de éxito generales**:\n\n- Códigos HTTP correctos según operación\n- Estructura JSON conforme a DTOs\n- Tipos de datos correctos\n- Tiempo de respuesta < 500ms\n- Validaciones de negocio funcionando\n- Permisos denegados devuelven 403\n\n**Herramienta**: Postman  \n**Proyecto**: GymFlow — Sistema Integrado de Gestión para Gimnasios  \n**Equipo**: Ignacio Compan, Franco Notte, Sebastián Acuña",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "32928777",
     "_collection_link": "https://go.postman.co/collection/32928777-e7995d47-4beb-466a-a83d-ef280ae8d08f?source=collection_link"
@@ -2462,6 +2462,1272 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Clases (RF-08)",
+      "item": [
+        {
+          "name": "Create",
+          "item": [
+            {
+              "name": "201 - Crear Clase",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La clase creada tiene la estructura de ClaseDto\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.all.keys(",
+                      "        \"id\", \"nombre\", \"descripcion\", \"capacidadMaxima\", \"duracionMinutos\",",
+                      "        \"instructor\", \"unidadId\", \"unidadNombre\", \"estaActivo\", \"inscripcionesActivas\"",
+                      "    );",
+                      "    pm.expect(item.id).to.be.a(\"string\").and.to.have.lengthOf(36);",
+                      "    pm.expect(item.nombre).to.eql(\"Funcional Test Postman\");",
+                      "    pm.expect(item.capacidadMaxima).to.eql(20);",
+                      "    pm.expect(item.duracionMinutos).to.eql(60);",
+                      "    pm.expect(item.instructor).to.eql(\"Juan Pérez\");",
+                      "    pm.expect(item.estaActivo).to.be.true;",
+                      "    pm.expect(item.inscripcionesActivas).to.eql(0);",
+                      "});",
+                      "",
+                      "const item = pm.response.json();",
+                      "pm.collectionVariables.set(\"createdClaseId\", item.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Funcional Test Postman\",\n  \"descripcion\": \"Clase de entrenamiento funcional creada desde Postman\",\n  \"capacidadMaxima\": 20,\n  \"duracionMinutos\": 60,\n  \"instructor\": \"Juan Pérez\",\n  \"unidadId\": \"{{unidadId1}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/clases",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "400 - Crear Clase sin nombre",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"El error es descriptivo\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"\",\n  \"descripcion\": \"\",\n  \"capacidadMaxima\": 0,\n  \"duracionMinutos\": 0,\n  \"instructor\": \"\",\n  \"unidadId\": \"{{unidadId1}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/clases",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "GetAll",
+          "item": [
+            {
+              "name": "200 - Lista Clases",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta es un array con estructura de ClaseDto\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "    if (jsonData.length > 0) {",
+                      "        const item = jsonData[0];",
+                      "        pm.expect(item).to.have.all.keys(",
+                      "            \"id\", \"nombre\", \"descripcion\", \"capacidadMaxima\", \"duracionMinutos\",",
+                      "            \"instructor\", \"unidadId\", \"unidadNombre\", \"estaActivo\", \"inscripcionesActivas\"",
+                      "        );",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "200 - Lista Clases filtradas por unidad",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Todas las clases pertenecen a la unidad filtrada\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "    jsonData.forEach(function(item) {",
+                      "        pm.expect(item.unidadId).to.eql(pm.collectionVariables.get(\"unidadId1\"));",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases?unidadId={{unidadId1}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases"],
+                  "query": [{ "key": "unidadId", "value": "{{unidadId1}}" }]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "200 - Lista Clases incluyendo inactivas",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta es un array\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases?includeInactive=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases"],
+                  "query": [{ "key": "includeInactive", "value": "true" }]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "GetById",
+          "item": [
+            {
+              "name": "200 - Clase por ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta tiene la estructura de ClaseDto\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.all.keys(",
+                      "        \"id\", \"nombre\", \"descripcion\", \"capacidadMaxima\", \"duracionMinutos\",",
+                      "        \"instructor\", \"unidadId\", \"unidadNombre\", \"estaActivo\", \"inscripcionesActivas\"",
+                      "    );",
+                      "    pm.expect(item.id).to.eql(pm.collectionVariables.get(\"createdClaseId\"));",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases/{{createdClaseId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases", "{{createdClaseId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Clase no encontrada",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Update",
+          "item": [
+            {
+              "name": "200 - Actualizar Clase",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"La clase se actualizó correctamente\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item.nombre).to.eql(\"Funcional Avanzado\");",
+                      "    pm.expect(item.capacidadMaxima).to.eql(25);",
+                      "    pm.expect(item.duracionMinutos).to.eql(75);",
+                      "    pm.expect(item.instructor).to.eql(\"María García\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Funcional Avanzado\",\n  \"descripcion\": \"Clase de entrenamiento funcional nivel avanzado\",\n  \"capacidadMaxima\": 25,\n  \"duracionMinutos\": 75,\n  \"instructor\": \"María García\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/clases/{{createdClaseId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases", "{{createdClaseId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Actualizar Clase inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Fantasma\",\n  \"descripcion\": \"\",\n  \"capacidadMaxima\": 10,\n  \"duracionMinutos\": 30,\n  \"instructor\": \"Nadie\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/clases/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Cancel y Reactivar",
+          "item": [
+            {
+              "name": "204 - Cancelar Clase",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases/{{createdClaseId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases", "{{createdClaseId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "409 - Cancelar Clase ya cancelada",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"El error indica que ya está cancelada\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases/{{createdClaseId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases", "{{createdClaseId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "200 - Reactivar Clase",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"La clase está activa nuevamente\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item.estaActivo).to.be.true;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases/{{createdClaseId}}/reactivar",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases", "{{createdClaseId}}", "reactivar"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "409 - Reactivar Clase ya activa",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"El error indica que ya está activa\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clases/{{createdClaseId}}/reactivar",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["clases", "{{createdClaseId}}", "reactivar"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Horarios (RF-09)",
+      "item": [
+        {
+          "name": "Create",
+          "item": [
+            {
+              "name": "201 - Crear Horario (Lunes 18:00-19:00, Sala 1)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"El horario tiene la estructura de HorarioClaseDto\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.all.keys(",
+                      "        \"id\", \"claseId\", \"claseNombre\", \"instructor\", \"unidadId\",",
+                      "        \"unidadNombre\", \"diaSemana\", \"horaInicio\", \"horaFin\", \"sala\",",
+                      "        \"capacidadMaxima\", \"inscripcionesActivas\"",
+                      "    );",
+                      "    pm.expect(item.id).to.be.a(\"string\").and.to.have.lengthOf(36);",
+                      "    pm.expect(item.diaSemana).to.eql(\"Lunes\");",
+                      "    pm.expect(item.horaInicio).to.eql(\"18:00\");",
+                      "    pm.expect(item.horaFin).to.eql(\"19:00\");",
+                      "    pm.expect(item.sala).to.eql(\"Sala 1\");",
+                      "});",
+                      "",
+                      "const item = pm.response.json();",
+                      "pm.collectionVariables.set(\"createdHorarioId\", item.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 1,\n  \"horaInicio\": \"18:00\",\n  \"horaFin\": \"19:00\",\n  \"sala\": \"Sala 1\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/horarios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "409 - Crear Horario con conflicto de sala",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"El error indica conflicto de sala\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "    pm.expect(jsonData.error.toLowerCase()).to.include(\"sala\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 1,\n  \"horaInicio\": \"18:30\",\n  \"horaFin\": \"19:30\",\n  \"sala\": \"Sala 1\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/horarios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "400 - Crear Horario con hora fin antes de inicio",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"El error indica hora inválida\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 2,\n  \"horaInicio\": \"19:00\",\n  \"horaFin\": \"18:00\",\n  \"sala\": \"Sala 2\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/horarios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "201 - Crear Horario sin sala (válido)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Horario creado sin sala\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item.sala).to.be.null;",
+                      "    pm.expect(item.diaSemana).to.eql(\"Miercoles\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 3,\n  \"horaInicio\": \"10:00\",\n  \"horaFin\": \"11:00\",\n  \"sala\": null\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/horarios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "GetAll",
+          "item": [
+            {
+              "name": "200 - Lista Horarios",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta es un array con estructura de HorarioClaseDto\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "    if (jsonData.length > 0) {",
+                      "        const item = jsonData[0];",
+                      "        pm.expect(item).to.have.all.keys(",
+                      "            \"id\", \"claseId\", \"claseNombre\", \"instructor\", \"unidadId\",",
+                      "            \"unidadNombre\", \"diaSemana\", \"horaInicio\", \"horaFin\", \"sala\",",
+                      "            \"capacidadMaxima\", \"inscripcionesActivas\"",
+                      "        );",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/horarios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "200 - Lista Horarios filtrados por unidad",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Todos los horarios pertenecen a la unidad filtrada\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "    jsonData.forEach(function(item) {",
+                      "        pm.expect(item.unidadId).to.eql(pm.collectionVariables.get(\"unidadId1\"));",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/horarios?unidadId={{unidadId1}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios"],
+                  "query": [{ "key": "unidadId", "value": "{{unidadId1}}" }]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "GetById",
+          "item": [
+            {
+              "name": "200 - Horario por ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"El horario tiene la estructura correcta\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item.id).to.eql(pm.collectionVariables.get(\"createdHorarioId\"));",
+                      "    pm.expect(item).to.have.property(\"claseNombre\");",
+                      "    pm.expect(item).to.have.property(\"diaSemana\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/horarios/{{createdHorarioId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios", "{{createdHorarioId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Horario no encontrado",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/horarios/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Update",
+          "item": [
+            {
+              "name": "200 - Actualizar Horario",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"El horario se actualizó correctamente\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item.diaSemana).to.eql(\"Martes\");",
+                      "    pm.expect(item.horaInicio).to.eql(\"19:00\");",
+                      "    pm.expect(item.horaFin).to.eql(\"20:00\");",
+                      "    pm.expect(item.sala).to.eql(\"Sala 2\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"diaSemana\": 2,\n  \"horaInicio\": \"19:00\",\n  \"horaFin\": \"20:00\",\n  \"sala\": \"Sala 2\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/horarios/{{createdHorarioId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios", "{{createdHorarioId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Actualizar Horario inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"diaSemana\": 1,\n  \"horaInicio\": \"08:00\",\n  \"horaFin\": \"09:00\",\n  \"sala\": \"Sala X\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/horarios/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Delete",
+          "item": [
+            {
+              "name": "204 - Eliminar Horario",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/horarios/{{createdHorarioId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios", "{{createdHorarioId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Eliminar Horario inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/horarios/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["horarios", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inscripciones (RF-10/RF-11)",
+      "item": [
+        {
+          "name": "Setup - Login Socio",
+          "item": [
+            {
+              "name": "200 - Login como Socio",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Token JWT válido recibido\", function () {",
+                      "    const data = pm.response.json();",
+                      "    pm.expect(data).to.have.property(\"token\");",
+                      "    pm.expect(data.token.split(\".\").length).to.eql(3);",
+                      "});",
+                      "",
+                      "const data = pm.response.json();",
+                      "pm.collectionVariables.set(\"socioToken\", data.token);",
+                      "console.log(\"Token de socio guardado para tests de inscripciones\");"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"{{socioEmail}}\",\n  \"password\": \"{{socioPassword}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Inscribir",
+          "item": [
+            {
+              "name": "200 - Inscribir socio a clase",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La inscripción tiene la estructura de InscripcionClaseDto\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.all.keys(",
+                      "        \"id\", \"claseId\", \"claseNombre\", \"instructor\",",
+                      "        \"unidadId\", \"unidadNombre\", \"capacidadMaxima\",",
+                      "        \"inscripcionesActivas\", \"fechaInscripcion\"",
+                      "    );",
+                      "    pm.expect(item.id).to.be.a(\"string\").and.to.have.lengthOf(36);",
+                      "    pm.expect(item.claseId).to.eql(pm.collectionVariables.get(\"createdClaseId\"));",
+                      "    pm.expect(item.claseNombre).to.be.a(\"string\");",
+                      "    const regexISO = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/;",
+                      "    pm.expect(item.fechaInscripcion).to.match(regexISO);",
+                      "});",
+                      "",
+                      "const item = pm.response.json();",
+                      "pm.collectionVariables.set(\"inscripcionId\", item.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/inscripciones",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["inscripciones"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "409 - Inscripción duplicada",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 409\", function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test(\"El error indica inscripción duplicada\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"error\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/inscripciones",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["inscripciones"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Inscribir a clase inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"claseId\": \"00000000-0000-0000-0000-000000000000\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/inscripciones",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["inscripciones"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Mis Inscripciones",
+          "item": [
+            {
+              "name": "200 - Obtener mis inscripciones",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta es un array con inscripciones\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an(\"array\");",
+                      "    pm.expect(jsonData.length).to.be.at.least(1);",
+                      "});",
+                      "",
+                      "pm.test(\"Las inscripciones tienen la estructura de InscripcionClaseDto\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const item = jsonData[0];",
+                      "    pm.expect(item).to.have.all.keys(",
+                      "        \"id\", \"claseId\", \"claseNombre\", \"instructor\",",
+                      "        \"unidadId\", \"unidadNombre\", \"capacidadMaxima\",",
+                      "        \"inscripcionesActivas\", \"fechaInscripcion\"",
+                      "    );",
+                      "    pm.expect(item.claseNombre).to.be.a(\"string\");",
+                      "    pm.expect(item.instructor).to.be.a(\"string\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/inscripciones/mis-inscripciones",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["inscripciones", "mis-inscripciones"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "401 - Mis inscripciones sin autenticación",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/inscripciones/mis-inscripciones",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["inscripciones", "mis-inscripciones"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Cancelar Inscripción",
+          "item": [
+            {
+              "name": "204 - Cancelar inscripción",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 204\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/inscripciones/{{inscripcionId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["inscripciones", "{{inscripcionId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "404 - Cancelar inscripción inexistente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/inscripciones/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["inscripciones", "00000000-0000-0000-0000-000000000000"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
     }
   ],
   "auth": {
@@ -2576,6 +3842,30 @@
     {
       "key": "rnfRolNombre",
       "value": ""
+    },
+    {
+      "key": "createdClaseId",
+      "value": ""
+    },
+    {
+      "key": "createdHorarioId",
+      "value": ""
+    },
+    {
+      "key": "inscripcionId",
+      "value": ""
+    },
+    {
+      "key": "socioToken",
+      "value": ""
+    },
+    {
+      "key": "socioEmail",
+      "value": "socio@gymflow.com"
+    },
+    {
+      "key": "socioPassword",
+      "value": "socio123"
     }
   ]
 }
