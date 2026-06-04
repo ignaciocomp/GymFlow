@@ -626,7 +626,6 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-13 (Profesor registra socios)
 - RF-14 (Profesor gestiona sus clases)
 - RNF-03 (Responsive)
-- RNF-10 (MFA para admin/profesor — parcial)
 
 **Nota:** La funcionalidad base de RF-10, RF-11, RF-12 y RF-13 fue implementada en iteraciones anteriores. Esta iteración se enfoca en mejoras, pulido de UX, testing, y completar RF-14 (vista filtrada de clases asignadas para el profesor).
 
