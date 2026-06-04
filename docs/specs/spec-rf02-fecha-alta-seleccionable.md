@@ -1,4 +1,15 @@
+---
+tags:
+  - spec
+requerimiento: RF-02
+---
+
 # RF-02 — Fecha de Alta Seleccionable
+
+**Plan:** [[plan-rf02-fecha-alta-seleccionable]]
+**Última actualización:** 2026-05-10
+**Historial:**
+- 2026-05-10 — Versión inicial
 
 ## Resumen
 

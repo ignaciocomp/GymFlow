@@ -1,3 +1,12 @@
+---
+tags:
+  - diagrama
+requerimiento: RF-06
+related:
+  - "[[spec-rf06-recordatorios-cuota]]"
+---
+
+```plantuml
 @startuml Diagrama de Actividad - Recordatorios Automáticos (RF-06)
 
 title Proceso de Recordatorios Automáticos de Cuota (RF-06)
@@ -80,3 +89,6 @@ partition "Por cada cuota pendiente" {
 stop
 
 @enduml
+
+````
+

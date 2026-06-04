@@ -1,8 +1,20 @@
-# RF-07 — Gestión de Cuotas v2: Implementation Plan
+---
+tags:
+  - plan
+requerimiento: RF-07
+---
+
+# RF-07 — Gestión de Cuotas: Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Mejorar el sistema de cuotas con vencimiento mensual correcto, generación retroactiva, reversibilidad de acciones, y visibilidad de cuotas anuladas.
+**Spec:** [[spec-rf07-gestion-cuotas]]
+**Última actualización:** 2026-05-10
+**Historial:**
+- 2026-05-10 — v2: plan de mejoras (vencimiento mensual, retroactiva, reversibilidad, filtro anuladas)
+- 2026-05-10 — v1: plan inicial (entidad, CRUD, BackgroundService, frontend socio/admin)
+
+**Goal:** Implementar gestión completa de cuotas: generación automática, vistas socio/admin, pago/anulación con reversibilidad, vencimiento mensual y generación retroactiva.
 
 **Architecture:** Cambios en entidad `Cuota` (AddMonths, métodos de reversión), nuevo método en `CuotaGeneradorService` para generación retroactiva, nuevos commands/endpoints de reversión, filtro de anuladas en repositorio/frontend.
 

@@ -1,11 +1,20 @@
+---
+tags:
+  - spec
+requerimiento: RNF-01
+---
+
 # RNF-01 (parte 1) — Roles dinámicos y autorización por permisos
 
-**Fecha:** 2026-04-26
 **Iteración:** 2
 **Branch:** `feature/RNF_01`
 **Estado:** Implementado y mergeado a `develop`.
+**Plan:** [[plan-rnf01-roles-y-permisos]]
+**Última actualización:** 2026-04-26
+**Historial:**
+- 2026-04-26 — Versión inicial
 
-> **Nota sobre la reclasificación:** Este trabajo originalmente se documentó como "RF-23". Tras revisar el documento académico actualizado (ATI-268502-243233-309167), quedó claro que **no es un requerimiento funcional nuevo** sino la implementación técnica del **RNF-01** ("Autenticación y autorización basada en roles"). El documento académico explicita que RNF-01 se entrega en dos partes: **It.2** (admin, profesor y otros roles internos) y **It.5** (socios con OAuth). Este spec corresponde a la **parte 1 de It.2** (catálogo de roles + permisos + atributo de autorización). La **parte 2 de It.2** (gestión de usuarios empleados) está en un spec aparte: `2026-04-28-rnf-01-gestion-usuarios.md`.
+> **Nota sobre la reclasificación:** Este trabajo originalmente se documentó como "RF-23". Tras revisar el documento académico actualizado (ATI-268502-243233-309167), quedó claro que **no es un requerimiento funcional nuevo** sino la implementación técnica del **RNF-01** ("Autenticación y autorización basada en roles"). El documento académico explicita que RNF-01 se entrega en dos partes: **It.2** (admin, profesor y otros roles internos) y **It.5** (socios con OAuth). Este spec corresponde a la **parte 1 de It.2** (catálogo de roles + permisos + atributo de autorización). La **parte 2 de It.2** (gestión de usuarios empleados) está en un spec aparte: [[spec-rnf01-gestion-usuarios]].
 
 ---
 

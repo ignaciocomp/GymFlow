@@ -1,6 +1,17 @@
+---
+tags:
+  - plan
+requerimiento: RF-22
+---
+
 # RF-22: Gestión de Planes y Plan por Unidad — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Spec:** [[spec-rf22-planes-por-unidad]]
+**Última actualización:** 2026-04-06
+**Historial:**
+- 2026-04-06 — Versión inicial
 
 **Goal:** Add CRUD management for Plans and move plan assignment from Socio-level to per-Unidad-level (UsuarioUnidad).
 

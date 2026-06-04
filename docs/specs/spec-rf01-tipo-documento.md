@@ -1,8 +1,17 @@
+---
+tags:
+  - spec
+requerimiento: RF-01
+---
+
 # Diseño — Mejoras RF-01: Tipo de Documento y Validación de Cédula Uruguaya
 
-**Fecha:** 2026-03-28
 **Estado:** Aprobado
 **Alcance:** Backend únicamente (Domain, Application, Infrastructure)
+**Plan:** [[plan-rf01-tipo-documento]]
+**Última actualización:** 2026-03-28
+**Historial:**
+- 2026-03-28 — Versión inicial
 
 ---
 

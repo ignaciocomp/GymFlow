@@ -1,11 +1,20 @@
+---
+tags:
+  - spec
+requerimiento: RNF-01
+---
+
 # RNF-01 (parte 2) — Gestión de usuarios empleados
 
-**Fecha:** 2026-04-28
 **Iteración:** 2
 **Branch:** `feature/RNF_01` (continuación)
 **Estado:** Implementado y mergeado a `develop`.
+**Plan:** [[plan-rnf01-gestion-usuarios]]
+**Última actualización:** 2026-04-28
+**Historial:**
+- 2026-04-28 — Versión inicial
 
-> **Contexto:** este spec es la continuación de `2026-04-26-rnf-01-roles-y-permisos.md` (parte 1, ya implementada). Juntas, ambas partes cubren la entrega de **RNF-01** prevista para Iteración 2 según el documento académico actualizado.
+> **Contexto:** este spec es la continuación de [[spec-rnf01-roles-y-permisos]] (parte 1, ya implementada). Juntas, ambas partes cubren la entrega de **RNF-01** prevista para Iteración 2 según el documento académico actualizado.
 
 ---
 
