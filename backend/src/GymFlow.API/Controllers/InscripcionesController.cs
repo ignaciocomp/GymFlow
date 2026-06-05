@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GymFlow.API.Controllers;
 
+// Self-service del socio: este controller usa solo [Authorize] y no [RequierePermiso]
+// porque el socio opera exclusivamente sobre sus propios datos (sus inscripciones).
+// Los commands validan la ownership del recurso (que la inscripcion/clase pertenezca
+// al socio autenticado), por lo que no se requiere un permiso de modulo administrativo.
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -31,7 +35,10 @@ public class InscripcionesController : ControllerBase
         try
         {
             var socioId = GetSocioId();
-            var inscripcion = await _inscribirCommand.ExecuteAsync(socioId, request.ClaseId);
+            var (usuarioId, usuarioNombre) = GetCurrentUser();
+            // El socio actua sobre si mismo: socioId y usuarioId son el mismo valor,
+            // pero se pasan a ambos parametros para la auditoria del command.
+            var inscripcion = await _inscribirCommand.ExecuteAsync(socioId, request.ClaseId, usuarioId, usuarioNombre);
             return Ok(inscripcion);
         }
         catch (KeyNotFoundException ex)
@@ -58,7 +65,8 @@ public class InscripcionesController : ControllerBase
         try
         {
             var socioId = GetSocioId();
-            await _cancelarCommand.ExecuteAsync(id, socioId);
+            var (usuarioId, usuarioNombre) = GetCurrentUser();
+            await _cancelarCommand.ExecuteAsync(id, socioId, usuarioId, usuarioNombre);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
@@ -74,5 +82,18 @@ public class InscripcionesController : ControllerBase
     private Guid GetSocioId()
     {
         return Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+    }
+
+    private (Guid Id, string Nombre) GetCurrentUser()
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var nombre = User.FindFirst("nombre")?.Value ?? "";
+        var apellido = User.FindFirst("apellido")?.Value ?? "";
+        var fullName = $"{nombre} {apellido}".Trim();
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            fullName = User.FindFirst(ClaimTypes.Email)?.Value ?? "Socio";
+        }
+        return (userId, fullName);
     }
 }
