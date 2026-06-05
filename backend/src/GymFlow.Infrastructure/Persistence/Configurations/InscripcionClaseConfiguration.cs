@@ -12,6 +12,7 @@ public class InscripcionClaseConfiguration : IEntityTypeConfiguration<Inscripcio
         builder.HasKey(i => i.Id);
         builder.Property(i => i.FechaInscripcion).IsRequired();
         builder.Property(i => i.EstaActiva).IsRequired();
+        builder.Property(i => i.EsListaEspera).IsRequired().HasDefaultValue(false);
 
         builder.HasOne(i => i.Socio)
             .WithMany()
