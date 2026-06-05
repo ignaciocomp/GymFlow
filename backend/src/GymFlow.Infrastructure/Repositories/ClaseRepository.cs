@@ -45,7 +45,7 @@ public class ClaseRepository : IClaseRepository
     public async Task<int> GetInscripcionesActivasCountAsync(Guid claseId)
     {
         return await _context.InscripcionesClase
-            .CountAsync(i => i.ClaseId == claseId && i.EstaActiva);
+            .CountAsync(i => i.ClaseId == claseId && i.EstaActiva && !i.EsListaEspera);
     }
 
     public async Task<IEnumerable<InscripcionClase>> GetInscripcionesActivasAsync(Guid claseId)
