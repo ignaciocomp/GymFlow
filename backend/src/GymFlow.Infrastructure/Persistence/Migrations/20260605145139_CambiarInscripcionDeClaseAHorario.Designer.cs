@@ -149,11 +149,6 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("EsListaEspera")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
                     b.Property<bool>("EstaActiva")
                         .HasColumnType("boolean");
 

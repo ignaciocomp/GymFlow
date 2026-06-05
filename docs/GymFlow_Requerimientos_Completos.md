@@ -124,7 +124,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 | **RF-11** | Ver mis clases: socio visualiza clases a las que está inscripto. | N-05, N-06 | Clases y Horarios |
 | **RF-12** | Gestionar empleados/profesores: fichas con roles y permisos diferenciados. | N-08 | Empleados y Profesores |
 | **RF-13** | Profesor registra socios: alta de socios con permisos limitados y mismas validaciones que admin. | N-02, N-08 | Empleados y Profesores |
-| **RF-14** | Profesor gestiona sus clases: visualiza y administra solo clases asignadas. | N-06, N-08 | Empleados y Profesores |
+| **RF-14** | Profesor gestiona sus clases: contemplado por roles y permisos configurables desde interfaz. El administrador puede crear un rol Profesor y asignarle permisos por modulo. | N-06, N-08 | Empleados y Profesores |
 | **RF-15** | Gestionar eventos: crear eventos especiales (torneos, charlas, promociones) y notificar socios. | N-11 | Eventos y Notificaciones |
 | **RF-16** | Notificaciones: socio recibe avisos de eventos, recordatorios de cuota y cambios de horario por email y dentro del sistema. | N-03, N-05, N-11 | Eventos y Notificaciones |
 | **RF-17** | Crear rutinas: socio crea/guarda rutinas de entrenamiento con ejercicios, series, repeticiones y peso. | N-09 | Rutinas |
@@ -264,7 +264,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 ### CU-02 — Inscripción a Clase
 
-> **Actualizacion 2026-06-05:** este caso de uso se implementa por horario individual. El socio se inscribe desde `Horarios` a un `HorarioClaseId`; RN-09 impide duplicar la inscripcion al mismo horario, pero permite inscribirse a la misma clase en otros horarios. La vista `portal/clases` fue reemplazada por `portal/horarios`.
+> **Actualizacion 2026-06-05:** este caso de uso se implementa por horario individual. El socio se inscribe desde `Horarios` a un `HorarioClaseId`; RN-09 impide duplicar la inscripcion al mismo horario, pero permite inscribirse a la misma clase en otros horarios. La vista `portal/clases` fue reemplazada por `portal/horarios`. La lista de espera fue desestimada: si no hay cupo, se bloquea la inscripcion.
 
 **Actores:** Socio
 **RF:** RF-10, RF-11, RF-09
@@ -294,10 +294,8 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 2. Selecciona 'Cancelar inscripción'.
 3. Sistema solicita confirmación.
 4. Sistema elimina inscripción y libera cupo.
-5. Si existe lista de espera, notifica al siguiente socio.
-
 #### Flujos de Excepción
-- **E1 — Sin cupo:** "Esta clase no tiene cupos disponibles." Ofrece lista de espera.
+- **E1 — Sin cupo:** "Esta clase no tiene cupos disponibles." Bloquea la inscripcion.
 - **E2 — Inscripción duplicada:** "Ya estás inscripto en esta clase."
 - **E3 — Clase cancelada:** Notifica al socio y elimina inscripción automáticamente.
 
@@ -625,9 +623,9 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-14 (Profesor gestiona sus clases)
 - RNF-03 (Responsive)
 
-**Nota:** La funcionalidad base de RF-10, RF-11, RF-12 y RF-13 fue implementada en iteraciones anteriores. Esta iteración se enfoca en mejoras, pulido de UX, testing, y completar RF-14 (vista filtrada de clases asignadas para el profesor).
+**Nota:** La funcionalidad base de RF-10, RF-11, RF-12 y RF-13 fue implementada en iteraciones anteriores. RF-14 queda contemplado por roles y permisos configurables desde interfaz, permitiendo crear un rol Profesor con permisos especificos por modulo. Esta iteracion se enfoca en mejoras, pulido de UX y testing.
 
-**Resultado esperado:** Módulos de inscripción a clases y gestión de empleados/profesores estabilizados, con mejoras de UX y validaciones. Profesor puede ver y gestionar únicamente sus clases asignadas.
+**Resultado esperado:** Modulos de inscripcion a clases y gestion de empleados/profesores estabilizados, con mejoras de UX y validaciones. Los permisos del profesor se administran mediante roles configurables.
 
 **Dependencias:** Iteraciones 2 y 3.
 

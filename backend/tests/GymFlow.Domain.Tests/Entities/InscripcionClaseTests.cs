@@ -5,10 +5,9 @@ namespace GymFlow.Domain.Tests.Entities;
 public class InscripcionClaseTests
 {
     [Fact]
-    public void Constructor_PorDefecto_NoEsListaEspera()
+    public void Constructor_PorDefecto_EstaActiva()
     {
         var i = new InscripcionClase(Guid.NewGuid(), Guid.NewGuid());
-        Assert.False(i.EsListaEspera);
         Assert.True(i.EstaActiva);
     }
 
@@ -21,24 +20,10 @@ public class InscripcionClaseTests
     }
 
     [Fact]
-    public void Constructor_ConListaEspera_MarcaFlag()
-    {
-        var i = new InscripcionClase(Guid.NewGuid(), Guid.NewGuid(), esListaEspera: true);
-        Assert.True(i.EsListaEspera);
-    }
-
-    [Fact]
-    public void PromoverDeListaEspera_EnListaEspera_QuitaFlag()
-    {
-        var i = new InscripcionClase(Guid.NewGuid(), Guid.NewGuid(), esListaEspera: true);
-        i.PromoverDeListaEspera();
-        Assert.False(i.EsListaEspera);
-    }
-
-    [Fact]
-    public void PromoverDeListaEspera_NoEnListaEspera_LanzaExcepcion()
+    public void Cancelar_MarcaComoInactiva()
     {
         var i = new InscripcionClase(Guid.NewGuid(), Guid.NewGuid());
-        Assert.Throws<InvalidOperationException>(() => i.PromoverDeListaEspera());
+        i.Cancelar();
+        Assert.False(i.EstaActiva);
     }
 }

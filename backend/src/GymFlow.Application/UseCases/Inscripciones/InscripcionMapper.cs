@@ -5,12 +5,12 @@ namespace GymFlow.Application.UseCases.Inscripciones;
 
 internal static class InscripcionMapper
 {
-    public static InscripcionClaseDto ToDto(InscripcionClase i, int cuposOcupados, int? posicionListaEspera = null)
+    public static InscripcionClaseDto ToDto(InscripcionClase i, int cuposOcupados)
     {
-        return ToDto(i, i.HorarioClase, cuposOcupados, posicionListaEspera);
+        return ToDto(i, i.HorarioClase, cuposOcupados);
     }
 
-    public static InscripcionClaseDto ToDto(InscripcionClase i, HorarioClase horario, int cuposOcupados, int? posicionListaEspera = null)
+    public static InscripcionClaseDto ToDto(InscripcionClase i, HorarioClase horario, int cuposOcupados)
     {
         var clase = horario.Clase;
 
@@ -28,8 +28,6 @@ internal static class InscripcionMapper
             horario.Sala,
             clase.CapacidadMaxima,
             cuposOcupados,
-            i.FechaInscripcion,
-            i.EsListaEspera,
-            posicionListaEspera);
+            i.FechaInscripcion);
     }
 }

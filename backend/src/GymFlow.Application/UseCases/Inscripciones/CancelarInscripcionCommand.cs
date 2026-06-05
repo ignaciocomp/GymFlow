@@ -30,29 +30,8 @@ public class CancelarInscripcionCommand
         if (!inscripcion.EstaActiva)
             throw new InvalidOperationException("La inscripcion ya fue cancelada.");
 
-        var eraListaEspera = inscripcion.EsListaEspera;
-
         inscripcion.Cancelar();
         await _inscripcionRepo.SaveChangesAsync();
-
-        if (!eraListaEspera)
-        {
-            var primero = await _inscripcionRepo.GetPrimeroEnListaEsperaAsync(inscripcion.HorarioClaseId);
-            if (primero != null)
-            {
-                primero.PromoverDeListaEspera();
-                await _inscripcionRepo.SaveChangesAsync();
-
-                if (primero.HorarioClase != null && primero.Socio != null)
-                {
-                    var (asunto, cuerpo) = InscripcionEmailTemplates.CupoLiberado(primero.Socio, primero.HorarioClase);
-                    await _emailService.EnviarAsync(primero.Socio.Correo, asunto, cuerpo);
-                }
-
-                await _auditLogger.LogAsync(usuarioId, usuarioNombre, TipoAccionAuditoria.Modificacion,
-                    "Inscripcion", primero.Id, "Promovido de lista de espera por cupo liberado");
-            }
-        }
 
         await _auditLogger.LogAsync(usuarioId, usuarioNombre, TipoAccionAuditoria.Baja,
             "Inscripcion", inscripcion.Id, "Inscripcion cancelada");

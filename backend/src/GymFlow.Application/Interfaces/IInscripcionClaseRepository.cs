@@ -8,8 +8,6 @@ public interface IInscripcionClaseRepository
     Task<IEnumerable<InscripcionClase>> GetBySocioIdAsync(Guid socioId);
     Task<InscripcionClase?> GetActivaBySocioYHorarioAsync(Guid socioId, Guid horarioClaseId);
     Task<int> GetInscripcionesActivasCountAsync(Guid horarioClaseId);
-    Task<InscripcionClase?> GetPrimeroEnListaEsperaAsync(Guid horarioClaseId);
-    Task<int> GetPosicionEnListaEsperaAsync(Guid inscripcionId);
     Task<Dictionary<Guid, int>> GetConteoActivasPorHorariosAsync(IEnumerable<Guid> horarioClaseIds);
     Task<IEnumerable<InscripcionClase>> GetActivasByHorarioClaseIdAsync(Guid horarioClaseId);
     Task AddAsync(InscripcionClase inscripcion);

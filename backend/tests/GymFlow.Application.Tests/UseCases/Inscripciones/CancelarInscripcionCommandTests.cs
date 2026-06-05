@@ -44,37 +44,7 @@ public class CancelarInscripcionCommandTests
     }
 
     [Fact]
-    public async Task CancelaYPromueveListaEspera()
-    {
-        var socioId = Guid.NewGuid();
-        var clase = CrearClase();
-        var horario = CrearHorario(clase);
-        var inscripcion = new InscripcionClase(horario.Id, socioId);
-        typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(inscripcion, horario);
-
-        var socioFake = CrearSocio();
-        var enEspera = new InscripcionClase(horario.Id, socioFake.Id, esListaEspera: true);
-        typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(enEspera, horario);
-        typeof(InscripcionClase).GetProperty("Socio")!.SetValue(enEspera, socioFake);
-
-        _inscripcionRepo.Setup(r => r.GetByIdAsync(inscripcion.Id)).ReturnsAsync(inscripcion);
-        _inscripcionRepo.Setup(r => r.GetPrimeroEnListaEsperaAsync(horario.Id)).ReturnsAsync(enEspera);
-        _emailService.Setup(s => s.EnviarAsync(socioFake.Correo, It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(new EmailResultado(Exitoso: true));
-
-        await CrearCommand().ExecuteAsync(inscripcion.Id, socioId, Guid.NewGuid(), "Admin");
-
-        Assert.False(inscripcion.EstaActiva);
-        Assert.False(enEspera.EsListaEspera);
-        _emailService.Verify(s => s.EnviarAsync(socioFake.Correo, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        _auditLogger.Verify(a => a.LogAsync(It.IsAny<Guid>(), "Admin",
-            TipoAccionAuditoria.Modificacion, "Inscripcion", enEspera.Id, It.IsAny<string>(), null), Times.Once);
-        _auditLogger.Verify(a => a.LogAsync(It.IsAny<Guid>(), "Admin",
-            TipoAccionAuditoria.Baja, "Inscripcion", inscripcion.Id, It.IsAny<string>(), null), Times.Once);
-    }
-
-    [Fact]
-    public async Task CancelaSinListaEspera_SoloAudita()
+    public async Task CancelaInscripcion_AuditaBaja()
     {
         var socioId = Guid.NewGuid();
         var clase = CrearClase();
@@ -83,7 +53,6 @@ public class CancelarInscripcionCommandTests
         typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(inscripcion, horario);
 
         _inscripcionRepo.Setup(r => r.GetByIdAsync(inscripcion.Id)).ReturnsAsync(inscripcion);
-        _inscripcionRepo.Setup(r => r.GetPrimeroEnListaEsperaAsync(horario.Id)).ReturnsAsync((InscripcionClase?)null);
 
         await CrearCommand().ExecuteAsync(inscripcion.Id, socioId, Guid.NewGuid(), "Admin");
 

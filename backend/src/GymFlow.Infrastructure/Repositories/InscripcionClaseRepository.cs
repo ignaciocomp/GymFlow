@@ -44,32 +44,14 @@ public class InscripcionClaseRepository : IInscripcionClaseRepository
     public async Task<int> GetInscripcionesActivasCountAsync(Guid horarioClaseId)
     {
         return await _context.InscripcionesClase
-            .CountAsync(i => i.HorarioClaseId == horarioClaseId && i.EstaActiva && !i.EsListaEspera);
-    }
-
-    public async Task<InscripcionClase?> GetPrimeroEnListaEsperaAsync(Guid horarioClaseId) =>
-        await _context.InscripcionesClase
-            .Include(i => i.Socio)
-            .Include(i => i.HorarioClase)
-                .ThenInclude(h => h.Clase)
-            .Where(i => i.HorarioClaseId == horarioClaseId && i.EstaActiva && i.EsListaEspera)
-            .OrderBy(i => i.FechaInscripcion)
-            .FirstOrDefaultAsync();
-
-    public async Task<int> GetPosicionEnListaEsperaAsync(Guid inscripcionId)
-    {
-        var insc = await _context.InscripcionesClase.FindAsync(inscripcionId);
-        if (insc is null || !insc.EsListaEspera) return 0;
-        return await _context.InscripcionesClase.CountAsync(i =>
-            i.HorarioClaseId == insc.HorarioClaseId && i.EstaActiva && i.EsListaEspera &&
-            i.FechaInscripcion <= insc.FechaInscripcion);
+            .CountAsync(i => i.HorarioClaseId == horarioClaseId && i.EstaActiva);
     }
 
     public async Task<Dictionary<Guid, int>> GetConteoActivasPorHorariosAsync(IEnumerable<Guid> horarioClaseIds)
     {
         var ids = horarioClaseIds.Distinct().ToList();
         return await _context.InscripcionesClase
-            .Where(i => ids.Contains(i.HorarioClaseId) && i.EstaActiva && !i.EsListaEspera)
+            .Where(i => ids.Contains(i.HorarioClaseId) && i.EstaActiva)
             .GroupBy(i => i.HorarioClaseId)
             .Select(g => new { g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.Key, x => x.Count);

@@ -16,8 +16,6 @@ public record InscripcionClaseDto(
     string? Sala,
     int CapacidadMaxima,
     int InscripcionesActivas,
-    DateTime FechaInscripcion,
-    bool EnListaEspera,
-    int? PosicionListaEspera);
+    DateTime FechaInscripcion);
 
 public record InscribirSocioRequest(Guid HorarioClaseId);

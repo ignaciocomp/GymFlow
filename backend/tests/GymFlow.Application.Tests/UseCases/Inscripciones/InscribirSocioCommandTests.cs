@@ -48,17 +48,16 @@ public class InscribirSocioCommandTests
 
         var dto = await CrearCommand().ExecuteAsync(socio.Id, horario.Id, Guid.NewGuid(), "Admin");
 
-        Assert.False(dto.EnListaEspera);
         Assert.Equal(horario.Id, dto.HorarioClaseId);
         _inscripcionRepo.Verify(r => r.AddAsync(It.Is<InscripcionClase>(i =>
-            i.HorarioClaseId == horario.Id && i.EsListaEspera == false)), Times.Once);
+            i.HorarioClaseId == horario.Id)), Times.Once);
         _emailService.Verify(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         _auditLogger.Verify(a => a.LogAsync(It.IsAny<Guid>(), "Admin",
             TipoAccionAuditoria.Creacion, "Inscripcion", It.IsAny<Guid?>(), It.IsAny<string>(), null), Times.Once);
     }
 
     [Fact]
-    public async Task SinCupo_CreaEnListaEspera()
+    public async Task SinCupo_LanzaInvalidOperation()
     {
         var clase = CrearClase(capacidad: 5);
         var horario = CrearHorario(clase);
@@ -67,13 +66,12 @@ public class InscribirSocioCommandTests
         _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
         _inscripcionRepo.Setup(r => r.GetActivaBySocioYHorarioAsync(socio.Id, horario.Id)).ReturnsAsync((InscripcionClase?)null);
         _inscripcionRepo.Setup(r => r.GetInscripcionesActivasCountAsync(horario.Id)).ReturnsAsync(5);
-        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
-        _inscripcionRepo.Setup(r => r.GetPosicionEnListaEsperaAsync(It.IsAny<Guid>())).ReturnsAsync(1);
 
-        var dto = await CrearCommand().ExecuteAsync(socio.Id, horario.Id, Guid.NewGuid(), "Admin");
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CrearCommand().ExecuteAsync(socio.Id, horario.Id, Guid.NewGuid(), "Admin"));
 
-        Assert.True(dto.EnListaEspera);
-        _inscripcionRepo.Verify(r => r.AddAsync(It.Is<InscripcionClase>(i =>
-            i.HorarioClaseId == horario.Id && i.EsListaEspera == true)), Times.Once);
+        Assert.Equal("No hay cupos disponibles para este horario.", ex.Message);
+        _inscripcionRepo.Verify(r => r.AddAsync(It.IsAny<InscripcionClase>()), Times.Never);
+        _emailService.Verify(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 }

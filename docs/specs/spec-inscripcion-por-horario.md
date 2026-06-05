@@ -5,110 +5,71 @@ tags:
 requerimiento: RF-10, RF-11, RN-09
 ---
 
-# Inscripción por Horario — Spec de Cambio de Diseño
+# Inscripcion por Horario - Spec de Cambio de Diseno
 
-**Requerimientos:** [[GymFlow_Requerimientos_Completos]] — RF-10, RF-11, RF-09, RN-09, CU-02
-**Spec base:** [[spec-it4-inscripciones-empleados-horarios]] (§13)
-**Plan de implementación:** [[plan-inscripcion-por-horario]]
-**Última actualización:** 2026-06-05
-**Historial:**
-- 2026-06-05 — v1: spec inicial del cambio de modelo de inscripción
+**Requerimientos:** [[GymFlow_Requerimientos_Completos]] - RF-10, RF-11, RF-09, RN-09, CU-02
+**Spec base:** [[spec-it4-inscripciones-empleados-horarios]]
+**Plan de implementacion:** [[plan-inscripcion-por-horario]]
+**Ultima actualizacion:** 2026-06-05
 
 ## Resumen
 
-La inscripción a clases pasa de ser **por clase** (`InscripcionClase.ClaseId`) a ser **por horario** (`InscripcionClase.HorarioClaseId`). Un socio se inscribe a "Yoga los lunes de 8 a 10", no a "Yoga" genéricamente.
+La inscripcion a clases se realiza por `HorarioClaseId`. Un socio se inscribe a un horario concreto de una clase, no a la clase generica.
 
-**Motivación:** El modelo original permitía que un socio se inscribiera a una clase y quedara automáticamente anotado en todos sus horarios. En la práctica, un socio elige horarios específicos según su disponibilidad. La inscripción por horario es más natural y da control granular de cupo por franja horaria.
+Ejemplo: "Yoga, lunes 08:00-09:00" y "Yoga, miercoles 18:00-19:00" son inscripciones independientes.
 
-## Cambios al modelo de datos
+La lista de espera fue desestimada. Si no hay cupo disponible en un horario, el sistema rechaza la inscripcion.
 
-### Entidad `InscripcionClase`
+## Modelo de datos
 
-| Antes | Después |
-|-------|---------|
-| `ClaseId` (Guid, FK → Clase) | `HorarioClaseId` (Guid, FK → HorarioClase) |
-| `Clase` (navigation) | `HorarioClase` (navigation) |
+| Entidad | Estado vigente |
+|---------|----------------|
+| `InscripcionClase` | Tiene `HorarioClaseId`, `SocioId`, `FechaInscripcion`, `EstaActiva`. |
+| `HorarioClase` | Mantiene FK a `Clase`; desde aqui se obtiene nombre, instructor, unidad y capacidad. |
+| `Clase` | Mantiene `CapacidadMaxima`; no recibe inscripciones directas. |
 
-La clase se accede vía `InscripcionClase.HorarioClase.Clase`.
+No existe campo `EsListaEspera`.
 
-### Entidad `Clase`
+## API
 
-- Se **elimina** la colección `Inscripciones` (ya no hay FK directa).
-- `CapacidadMaxima` se **mantiene** en `Clase` — es la capacidad de la actividad, compartida por todos sus horarios.
+| Endpoint | Contrato |
+|----------|----------|
+| `POST /api/inscripciones` | `{ horarioClaseId }` |
+| `GET /api/inscripciones/mis-inscripciones` | DTO con `HorarioClaseId`, `ClaseId`, `DiaSemana`, `HoraInicio`, `HoraFin`, `Sala` |
+| `DELETE /api/inscripciones/{id}` | Cancela la inscripcion propia |
 
-### Entidad `HorarioClase`
+## Reglas de negocio
 
-Sin cambios.
+| Regla | Definicion vigente |
+|-------|--------------------|
+| RN-09 | Un socio no puede inscribirse dos veces al mismo horario. |
+| Mismo curso en otro horario | Permitido si el horario es distinto. |
+| Cupo | Se cuenta por `HorarioClaseId`. |
+| Sin cupo | Se rechaza la inscripcion; no se crea lista de espera. |
+| Clase cancelada | No permite nuevas inscripciones y cancela inscripciones activas existentes al cancelar la clase. |
 
-### Migración
+## Frontend
 
-- Eliminar columna `ClaseId` de tabla `InscripcionesClase`
-- Agregar columna `HorarioClaseId` (Guid, NOT NULL, FK → HorariosClase, CASCADE)
-
-## Cambios a la API
-
-| Endpoint | Antes | Después |
-|----------|-------|---------|
-| `POST /api/inscripciones` | `{ claseId }` | `{ horarioClaseId }` |
-| `GET /api/inscripciones/mis-inscripciones` | DTO con `ClaseId` | DTO con `HorarioClaseId` + `ClaseId` + `DiaSemana` + `HoraInicio` + `HoraFin` + `Sala` |
-| `DELETE /api/inscripciones/{id}` | Sin cambio de contrato | Sin cambio de contrato |
-
-### `InscripcionClaseDto` actualizado
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `HorarioClaseId` | Guid | **Nuevo** — FK al horario inscripto |
-| `ClaseId` | Guid | Derivado de `HorarioClase.ClaseId` |
-| `DiaSemana` | DiaSemana | **Nuevo** — día del horario |
-| `HoraInicio` | string | **Nuevo** — "HH:mm" |
-| `HoraFin` | string | **Nuevo** — "HH:mm" |
-| `Sala` | string? | **Nuevo** — sala del horario |
-| (resto) | — | Sin cambios |
-
-## Reglas de negocio actualizadas
-
-| Regla | Antes | Después |
-|-------|-------|---------|
-| RN-09 | "No puede inscribirse dos veces a la misma clase" | "No puede inscribirse dos veces al mismo horario" |
-| Cupo | Contado por `ClaseId` | Contado por `HorarioClaseId` |
-| Lista de espera | Por clase | Por horario |
-| Duplicado check | `GetActivaBySocioYClaseAsync` | `GetActivaBySocioYHorarioAsync` |
-
-Un socio **puede** inscribirse a la misma clase en **distintos horarios** (ej: Yoga lunes y Yoga miércoles son inscripciones independientes).
-
-## Cambios al frontend
-
-### Vista eliminada
-- `CatalogoClasesPage` (`portal/clases`) — redundante con la inscripción desde horarios.
-
-### Vista unificada
-- `HorariosPortalPage` (`portal/horarios`) — el socio ve la grilla semanal y se inscribe con un botón por horario.
-
-### Vista actualizada
-- `MisInscripcionesPage` — ahora muestra día, hora y sala de cada inscripción.
-
-### Navegación
-- Se elimina el tab "Clases" del `SocioLayout`.
+- `HorariosPortalPage` (`/portal/horarios`) es la vista de inscripcion.
+- `MisInscripcionesPage` muestra clase, sede, dia, hora y sala.
+- `CatalogoClasesPage` y `/portal/clases` se eliminaron por redundancia.
 
 ## Impacto en otros componentes
 
 | Componente | Impacto |
 |------------|---------|
-| `ClaseDto` | Se elimina `InscripcionesActivas` (ya no tiene sentido por clase) |
-| `GetClasesQuery` / `GetClaseByIdQuery` | Se simplifica — no consulta conteo de inscripciones |
-| `UpdateClaseCommand` | Validación de capacidad usa el máximo de inscripciones entre todos los horarios |
-| `CancelClaseCommand` | Cancela inscripciones de todos los horarios de la clase |
-| `GetHorariosQuery` | Conteo de inscripciones por `HorarioClaseId` (en vez de por `ClaseId`) |
-| Email templates | Incluyen día y hora del horario en el cuerpo |
+| `ClaseDto` | No expone `InscripcionesActivas`, porque el cupo no se mide por clase. |
+| `GetHorariosQuery` | Calcula inscripciones activas por `HorarioClaseId`. |
+| `UpdateClaseCommand` | Valida capacidad contra el maximo de inscripciones entre sus horarios. |
+| `CancelClaseCommand` | Cancela inscripciones activas de todos los horarios de la clase. |
+| Email templates | Incluyen dia, hora y sala. |
 
 ## Trazabilidad
 
 | Criterio (CU-02) | Estado |
-|-------------------|--------|
-| CA-05 (sin cupo) | ✅ Por horario |
-| CA-07 (cupo decrementa) | ✅ Por horario |
-| CA-08 (aparece en Mis Clases) | ✅ Con día/hora |
-| CA-09 (notificación) | ✅ Email con día/hora |
-| E1 (lista de espera) | ✅ Por horario |
-| E2 (duplicado) | ✅ Por horario |
-| RN-09 | ✅ Redefinido a "no duplicar al mismo horario" |
+|------------------|--------|
+| CA-05 (sin cupo) | Cubierto: bloquea la inscripcion. |
+| CA-07 (cupo decrementa) | Cubierto por conteo activo por horario. |
+| CA-08 (aparece en Mis Clases) | Cubierto con dia/hora/sala. |
+| CA-09 (notificacion) | Cubierto con email de confirmacion. |
+| RN-09 | Cubierto: no duplica el mismo horario. |

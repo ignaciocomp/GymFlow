@@ -41,31 +41,25 @@ public class InscribirSocioCommand
             throw new InvalidOperationException("Ya estas inscripto en este horario.");
 
         var ocupados = await _inscripcionRepo.GetInscripcionesActivasCountAsync(horarioClaseId);
-        var esListaEspera = ocupados >= clase.CapacidadMaxima;
+        if (ocupados >= clase.CapacidadMaxima)
+            throw new InvalidOperationException("No hay cupos disponibles para este horario.");
 
-        var inscripcion = new InscripcionClase(horarioClaseId, socioId, esListaEspera);
+        var inscripcion = new InscripcionClase(horarioClaseId, socioId);
         await _inscripcionRepo.AddAsync(inscripcion);
         await _inscripcionRepo.SaveChangesAsync();
 
         var socio = await _socioRepo.GetByIdAsync(socioId);
 
-        if (!esListaEspera && socio != null)
+        if (socio != null)
         {
             var (asunto, cuerpo) = InscripcionEmailTemplates.Confirmacion(socio, horario);
             await _emailService.EnviarAsync(socio.Correo, asunto, cuerpo);
         }
 
-        var descripcion = esListaEspera
-            ? $"Socio agregado a la lista de espera de la clase '{clase.Nombre}' en horario {horario.DiaSemana} {horario.HoraInicio:HH:mm}."
-            : $"Socio inscripto en la clase '{clase.Nombre}' en horario {horario.DiaSemana} {horario.HoraInicio:HH:mm}.";
-
         await _auditLogger.LogAsync(usuarioId, usuarioNombre, TipoAccionAuditoria.Creacion,
-            "Inscripcion", inscripcion.Id, descripcion);
+            "Inscripcion", inscripcion.Id,
+            $"Socio inscripto en la clase '{clase.Nombre}' en horario {horario.DiaSemana} {horario.HoraInicio:HH:mm}.");
 
-        var posicion = esListaEspera
-            ? await _inscripcionRepo.GetPosicionEnListaEsperaAsync(inscripcion.Id)
-            : (int?)null;
-
-        return InscripcionMapper.ToDto(inscripcion, horario, ocupados + (esListaEspera ? 0 : 1), posicion);
+        return InscripcionMapper.ToDto(inscripcion, horario, ocupados + 1);
     }
 }

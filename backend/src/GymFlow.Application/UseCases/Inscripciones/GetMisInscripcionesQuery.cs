@@ -21,7 +21,7 @@ public class GetMisInscripcionesQuery
         return inscripciones.Select(i =>
         {
             var ocupados = conteos.GetValueOrDefault(i.HorarioClaseId, 0);
-            return InscripcionMapper.ToDto(i, ocupados, posicionListaEspera: null);
+            return InscripcionMapper.ToDto(i, ocupados);
         });
     }
 }
