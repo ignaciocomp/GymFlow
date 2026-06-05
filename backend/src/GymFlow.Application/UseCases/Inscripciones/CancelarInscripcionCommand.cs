@@ -47,7 +47,9 @@ public class CancelarInscripcionCommand
                 await _inscripcionRepo.SaveChangesAsync();
 
                 var clase = await _claseRepo.GetByIdAsync(inscripcion.ClaseId);
-                if (clase != null)
+                // Defensa: primero.Socio viene del .Include() del repo, pero validamos por las dudas
+                // ante un eventual refactor que quite el Include.
+                if (clase != null && primero.Socio != null)
                 {
                     var (asunto, cuerpo) = InscripcionEmailTemplates.CupoLiberado(primero.Socio, clase);
                     await _emailService.EnviarAsync(primero.Socio.Correo, asunto, cuerpo);
