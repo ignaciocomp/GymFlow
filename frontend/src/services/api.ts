@@ -243,8 +243,8 @@ export const horariosApi = {
 }
 
 export const inscripcionesApi = {
-  inscribirse: async (claseId: string): Promise<InscripcionClase> => {
-    const { data } = await api.post<InscripcionClase>('/inscripciones', { claseId })
+  inscribirse: async (horarioClaseId: string): Promise<InscripcionClase> => {
+    const { data } = await api.post<InscripcionClase>('/inscripciones', { horarioClaseId })
     return data
   },
 

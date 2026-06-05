@@ -9,25 +9,30 @@ namespace GymFlow.Application.Tests.UseCases.Inscripciones;
 public class CancelarInscripcionCommandTests
 {
     private readonly Mock<IInscripcionClaseRepository> _inscripcionRepo = new();
-    private readonly Mock<IClaseRepository> _claseRepo = new();
     private readonly Mock<IEmailService> _emailService = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
 
     private CancelarInscripcionCommand CrearCommand() =>
-        new(_inscripcionRepo.Object, _claseRepo.Object, _emailService.Object, _auditLogger.Object);
+        new(_inscripcionRepo.Object, _emailService.Object, _auditLogger.Object);
 
     private static Socio CrearSocio() =>
-        new(Guid.NewGuid(), "Ana", "Pérez", "a@test.com", "h", DateTime.UtcNow,
+        new(Guid.NewGuid(), "Ana", "Perez", "a@test.com", "h", DateTime.UtcNow,
             true, TipoDocumento.CI, null, "12345672", null);
 
     private static Clase CrearClase() =>
         new("Yoga", "desc", 10, 60, "Laura", Guid.NewGuid());
 
-    [Fact]
-    public async Task NoEsDueño_LanzaInvalidOperation()
+    private static HorarioClase CrearHorario(Clase clase)
     {
-        var claseId = Guid.NewGuid();
-        var inscripcion = new InscripcionClase(claseId, Guid.NewGuid());
+        var horario = new HorarioClase(clase.Id, DiaSemana.Lunes, new TimeOnly(8, 0), new TimeOnly(9, 0), "Sala 1");
+        typeof(HorarioClase).GetProperty("Clase")!.SetValue(horario, clase);
+        return horario;
+    }
+
+    [Fact]
+    public async Task NoEsDueno_LanzaInvalidOperation()
+    {
+        var inscripcion = new InscripcionClase(Guid.NewGuid(), Guid.NewGuid());
         _inscripcionRepo.Setup(r => r.GetByIdAsync(inscripcion.Id)).ReturnsAsync(inscripcion);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -43,15 +48,17 @@ public class CancelarInscripcionCommandTests
     {
         var socioId = Guid.NewGuid();
         var clase = CrearClase();
-        var inscripcion = new InscripcionClase(clase.Id, socioId);
+        var horario = CrearHorario(clase);
+        var inscripcion = new InscripcionClase(horario.Id, socioId);
+        typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(inscripcion, horario);
 
         var socioFake = CrearSocio();
-        var enEspera = new InscripcionClase(clase.Id, socioFake.Id, esListaEspera: true);
+        var enEspera = new InscripcionClase(horario.Id, socioFake.Id, esListaEspera: true);
+        typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(enEspera, horario);
         typeof(InscripcionClase).GetProperty("Socio")!.SetValue(enEspera, socioFake);
 
         _inscripcionRepo.Setup(r => r.GetByIdAsync(inscripcion.Id)).ReturnsAsync(inscripcion);
-        _inscripcionRepo.Setup(r => r.GetPrimeroEnListaEsperaAsync(clase.Id)).ReturnsAsync(enEspera);
-        _claseRepo.Setup(r => r.GetByIdAsync(clase.Id)).ReturnsAsync(clase);
+        _inscripcionRepo.Setup(r => r.GetPrimeroEnListaEsperaAsync(horario.Id)).ReturnsAsync(enEspera);
         _emailService.Setup(s => s.EnviarAsync(socioFake.Correo, It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new EmailResultado(Exitoso: true));
 
@@ -71,10 +78,12 @@ public class CancelarInscripcionCommandTests
     {
         var socioId = Guid.NewGuid();
         var clase = CrearClase();
-        var inscripcion = new InscripcionClase(clase.Id, socioId);
+        var horario = CrearHorario(clase);
+        var inscripcion = new InscripcionClase(horario.Id, socioId);
+        typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(inscripcion, horario);
 
         _inscripcionRepo.Setup(r => r.GetByIdAsync(inscripcion.Id)).ReturnsAsync(inscripcion);
-        _inscripcionRepo.Setup(r => r.GetPrimeroEnListaEsperaAsync(clase.Id)).ReturnsAsync((InscripcionClase?)null);
+        _inscripcionRepo.Setup(r => r.GetPrimeroEnListaEsperaAsync(horario.Id)).ReturnsAsync((InscripcionClase?)null);
 
         await CrearCommand().ExecuteAsync(inscripcion.Id, socioId, Guid.NewGuid(), "Admin");
 

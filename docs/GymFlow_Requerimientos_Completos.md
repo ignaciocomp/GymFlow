@@ -88,7 +88,7 @@ El negocio opera dos unidades bajo un mismo espacio físico:
 
 **Horario**: id, diaSemana, horaInicio, horaFin, clase (FK).
 
-**Inscripcion**: id, fechaInscripcion, estado (activo / cancelado), clase (FK), socio (FK).
+**Inscripcion**: id, fechaInscripcion, estado (activo / cancelado), horario (FK), socio (FK). *(Cambio de diseño: la FK apunta a Horario, no a Clase — ver [[spec-inscripcion-por-horario]])*
 
 **Cuota**: id, fechaVencimiento, estado (alDia / proximaAVencer / vencida), plan (FK), socio (FK).
 
@@ -165,9 +165,8 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 | RN-04 | El consentimiento informado (Ley 18.331) queda registrado con timestamp al dar de alta un socio. |
 | RN-05 | El correo electrónico es único por socio en el sistema. |
 | RN-06 | Un socio solo puede inscribirse a clases del espacio al que pertenece, salvo que esté en ambos. |
-| RN-07 | No se puede inscribir a una clase si la cuota está vencida. |
 | RN-08 | El cupo máximo por clase es definido por el admin al crear la clase. |
-| RN-09 | Un socio no puede inscribirse dos veces a la misma clase en el mismo horario. |
+| RN-09 | Un socio no puede inscribirse dos veces al mismo horario. Puede inscribirse a la misma clase en distintos horarios. ([[spec-inscripcion-por-horario]]) |
 | RN-10 | Recordatorios automáticos: 5 días antes, 1 día antes y el día del vencimiento si no se registró pago. |
 | RN-11 | No más de un recordatorio del mismo tipo por socio por día. |
 | RN-12 | Estado de cuota ("Al día", "Próxima a vencer", "Vencida") se calcula dinámicamente según fecha del sistema. |
@@ -265,6 +264,8 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 ### CU-02 — Inscripción a Clase
 
+> **Actualizacion 2026-06-05:** este caso de uso se implementa por horario individual. El socio se inscribe desde `Horarios` a un `HorarioClaseId`; RN-09 impide duplicar la inscripcion al mismo horario, pero permite inscribirse a la misma clase en otros horarios. La vista `portal/clases` fue reemplazada por `portal/horarios`.
+
 **Actores:** Socio
 **RF:** RF-10, RF-11, RF-09
 **Necesidades:** N-05, N-06
@@ -296,14 +297,12 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 5. Si existe lista de espera, notifica al siguiente socio.
 
 #### Flujos de Excepción
-- **E1 — Cuota vencida:** Bloquea inscripción. "Tu cuota está vencida. Contactá al gimnasio."
-- **E2 — Sin cupo:** "Esta clase no tiene cupos disponibles." Ofrece lista de espera.
-- **E3 — Inscripción duplicada:** "Ya estás inscripto en esta clase."
-- **E4 — Clase cancelada:** Notifica al socio y elimina inscripción automáticamente.
+- **E1 — Sin cupo:** "Esta clase no tiene cupos disponibles." Ofrece lista de espera.
+- **E2 — Inscripción duplicada:** "Ya estás inscripto en esta clase."
+- **E3 — Clase cancelada:** Notifica al socio y elimina inscripción automáticamente.
 
 #### Criterios de Aceptación
-- CA-05: Bloquea inscripción si cuota vencida.
-- CA-06: Bloquea inscripción si sin cupo.
+- CA-05: Bloquea inscripción si sin cupo.
 - CA-07: Cupo se decrementa correctamente al inscribirse.
 - CA-08: Clase inscripta aparece en 'Mis clases' inmediatamente.
 - CA-09: Socio recibe notificación tras inscripción exitosa.
@@ -344,7 +343,6 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 #### Criterios de Aceptación
 - CA-10: Recordatorio automático a 5 días y 1 día antes del vencimiento.
 - CA-11: Estado cambia a 'Cuota vencida' automáticamente en la fecha de vencimiento sin pago.
-- CA-12: Socios con cuota vencida no pueden inscribirse a clases.
 - CA-13: Dashboard refleja en tiempo real socios por estado de cuota.
 - CA-14: No envía recordatorios duplicados del mismo tipo en el mismo día.
 

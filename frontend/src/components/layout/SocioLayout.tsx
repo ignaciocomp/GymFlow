@@ -1,6 +1,6 @@
 import { Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
-import { Dumbbell, LogOut, User, CreditCard, CalendarDays, BookOpen, Calendar } from 'lucide-react'
+import { Dumbbell, LogOut, User, CreditCard, CalendarDays, BookOpen } from 'lucide-react'
 
 export default function SocioLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
@@ -79,17 +79,6 @@ export default function SocioLayout() {
           >
             <CreditCard className="h-4 w-4" />
             Mis Cuotas
-          </Link>
-          <Link
-            to="/portal/clases"
-            className={`flex items-center gap-1.5 border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
-              location.pathname === '/portal/clases'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Calendar className="h-4 w-4" />
-            Clases
           </Link>
           <Link
             to="/portal/horarios"

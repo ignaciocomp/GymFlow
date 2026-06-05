@@ -18,13 +18,7 @@ public class GetClasesQuery
             ? await _repository.GetByUnidadIdAsync(unidadId.Value, includeInactive)
             : await _repository.GetAllAsync(includeInactive);
 
-        var result = new List<ClaseDto>();
-        foreach (var c in clases)
-        {
-            var inscripcionesActivas = await _repository.GetInscripcionesActivasCountAsync(c.Id);
-            result.Add(new ClaseDto(c.Id, c.Nombre, c.Descripcion, c.CapacidadMaxima, c.DuracionMinutos,
-                c.Instructor, c.UnidadId, c.Unidad?.Nombre ?? "", c.EstaActivo, inscripcionesActivas));
-        }
-        return result;
+        return clases.Select(c => new ClaseDto(c.Id, c.Nombre, c.Descripcion, c.CapacidadMaxima, c.DuracionMinutos,
+            c.Instructor, c.UnidadId, c.Unidad?.Nombre ?? "", c.EstaActivo));
     }
 }

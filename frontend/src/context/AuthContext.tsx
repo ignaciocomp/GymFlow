@@ -9,6 +9,7 @@ interface User {
   correo: string
   rolNombre: string
   permisos: Permiso[]
+  unidadIds: string[]
 }
 
 interface AuthContextType {
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`
       api.get('/auth/me')
-        .then(({ data }) => setUser(data))
+        .then(({ data }) => setUser({ ...data, unidadIds: data.unidadIds ?? [] }))
         .catch(() => logout())
         .finally(() => setIsLoading(false))
     } else {
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       correo: data.correo,
       rolNombre: data.rolNombre,
       permisos: data.permisos ?? [],
+      unidadIds: data.unidadIds ?? [],
     })
   }
 

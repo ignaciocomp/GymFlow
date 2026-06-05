@@ -1,4 +1,3 @@
-using System.Linq;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 
@@ -16,15 +15,13 @@ public class GetMisInscripcionesQuery
     public async Task<IEnumerable<InscripcionClaseDto>> ExecuteAsync(Guid socioId)
     {
         var inscripciones = (await _inscripcionRepo.GetBySocioIdAsync(socioId)).ToList();
-        var claseIds = inscripciones.Select(i => i.ClaseId).Distinct();
-        var conteos = await _inscripcionRepo.GetConteoActivasPorClasesAsync(claseIds);
+        var horarioIds = inscripciones.Select(i => i.HorarioClaseId).Distinct();
+        var conteos = await _inscripcionRepo.GetConteoActivasPorHorariosAsync(horarioIds);
 
         return inscripciones.Select(i =>
         {
-            var ocupados = conteos.GetValueOrDefault(i.ClaseId, 0);
-            // "Mis inscripciones" muestra solo el flag EnListaEspera, no la posición exacta
-            // (calcularla por inscripción reintroduciría N+1). Por eso pasamos null.
-            return InscripcionMapper.ToDto(i, i.Clase, ocupados, posicionListaEspera: null);
+            var ocupados = conteos.GetValueOrDefault(i.HorarioClaseId, 0);
+            return InscripcionMapper.ToDto(i, ocupados, posicionListaEspera: null);
         });
     }
 }

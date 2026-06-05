@@ -6,18 +6,15 @@ namespace GymFlow.Application.UseCases.Inscripciones;
 public class CancelarInscripcionCommand
 {
     private readonly IInscripcionClaseRepository _inscripcionRepo;
-    private readonly IClaseRepository _claseRepo;
     private readonly IEmailService _emailService;
     private readonly IAuditLogger _auditLogger;
 
     public CancelarInscripcionCommand(
         IInscripcionClaseRepository inscripcionRepo,
-        IClaseRepository claseRepo,
         IEmailService emailService,
         IAuditLogger auditLogger)
     {
         _inscripcionRepo = inscripcionRepo;
-        _claseRepo = claseRepo;
         _emailService = emailService;
         _auditLogger = auditLogger;
     }
@@ -25,13 +22,13 @@ public class CancelarInscripcionCommand
     public async Task ExecuteAsync(Guid inscripcionId, Guid socioId, Guid usuarioId, string usuarioNombre)
     {
         var inscripcion = await _inscripcionRepo.GetByIdAsync(inscripcionId)
-            ?? throw new KeyNotFoundException("La inscripción no existe.");
+            ?? throw new KeyNotFoundException("La inscripcion no existe.");
 
         if (inscripcion.SocioId != socioId)
-            throw new InvalidOperationException("No tenés permiso para cancelar esta inscripción.");
+            throw new InvalidOperationException("No tenes permiso para cancelar esta inscripcion.");
 
         if (!inscripcion.EstaActiva)
-            throw new InvalidOperationException("La inscripción ya fue cancelada.");
+            throw new InvalidOperationException("La inscripcion ya fue cancelada.");
 
         var eraListaEspera = inscripcion.EsListaEspera;
 
@@ -40,18 +37,15 @@ public class CancelarInscripcionCommand
 
         if (!eraListaEspera)
         {
-            var primero = await _inscripcionRepo.GetPrimeroEnListaEsperaAsync(inscripcion.ClaseId);
+            var primero = await _inscripcionRepo.GetPrimeroEnListaEsperaAsync(inscripcion.HorarioClaseId);
             if (primero != null)
             {
                 primero.PromoverDeListaEspera();
                 await _inscripcionRepo.SaveChangesAsync();
 
-                var clase = await _claseRepo.GetByIdAsync(inscripcion.ClaseId);
-                // Defensa: primero.Socio viene del .Include() del repo, pero validamos por las dudas
-                // ante un eventual refactor que quite el Include.
-                if (clase != null && primero.Socio != null)
+                if (primero.HorarioClase != null && primero.Socio != null)
                 {
-                    var (asunto, cuerpo) = InscripcionEmailTemplates.CupoLiberado(primero.Socio, clase);
+                    var (asunto, cuerpo) = InscripcionEmailTemplates.CupoLiberado(primero.Socio, primero.HorarioClase);
                     await _emailService.EnviarAsync(primero.Socio.Correo, asunto, cuerpo);
                 }
 
@@ -61,6 +55,6 @@ public class CancelarInscripcionCommand
         }
 
         await _auditLogger.LogAsync(usuarioId, usuarioNombre, TipoAccionAuditoria.Baja,
-            "Inscripcion", inscripcion.Id, "Inscripción cancelada");
+            "Inscripcion", inscripcion.Id, "Inscripcion cancelada");
     }
 }

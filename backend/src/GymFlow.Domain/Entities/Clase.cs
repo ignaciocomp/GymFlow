@@ -15,9 +15,6 @@ public class Clase
     public Unidad Unidad { get; private set; } = null!;
     public bool EstaActivo { get; private set; } = true;
 
-    private readonly List<InscripcionClase> _inscripciones = new();
-    public IReadOnlyCollection<InscripcionClase> Inscripciones => _inscripciones.AsReadOnly();
-
     private Clase() { } // EF Core
 
     public Clase(string nombre, string descripcion, int capacidadMaxima, int duracionMinutos, string instructor, Guid unidadId)

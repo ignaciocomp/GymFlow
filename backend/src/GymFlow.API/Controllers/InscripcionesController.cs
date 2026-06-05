@@ -38,7 +38,7 @@ public class InscripcionesController : ControllerBase
             var (usuarioId, usuarioNombre) = GetCurrentUser();
             // El socio actua sobre si mismo: socioId y usuarioId son el mismo valor,
             // pero se pasan a ambos parametros para la auditoria del command.
-            var inscripcion = await _inscribirCommand.ExecuteAsync(socioId, request.ClaseId, usuarioId, usuarioNombre);
+            var inscripcion = await _inscribirCommand.ExecuteAsync(socioId, request.HorarioClaseId, usuarioId, usuarioNombre);
             return Ok(inscripcion);
         }
         catch (KeyNotFoundException ex)

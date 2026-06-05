@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { horariosApi, unidadesApi, inscripcionesApi } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -38,17 +39,30 @@ function getColorForClase(claseId: string) {
 
 export default function HorariosPortalPage() {
   const queryClient = useQueryClient()
-  const [unidadFilter, setUnidadFilter] = useState<string>('all')
+  const { user } = useAuth()
+  const socioUnidadIds = user?.unidadIds ?? []
+  const [unidadFilter, setUnidadFilter] = useState<string>('')
   const [actionError, setActionError] = useState<string | null>(null)
-
-  const { data: horarios, isLoading } = useQuery({
-    queryKey: ['horarios-portal', unidadFilter],
-    queryFn: () => horariosApi.getAll(unidadFilter === 'all' ? undefined : unidadFilter),
-  })
 
   const { data: unidades } = useQuery({
     queryKey: ['unidades'],
     queryFn: unidadesApi.getAll,
+  })
+
+  const misUnidades = socioUnidadIds.length > 0
+    ? unidades?.filter(u => socioUnidadIds.includes(u.id))
+    : unidades
+
+  useEffect(() => {
+    if (!unidadFilter && misUnidades && misUnidades.length > 0) {
+      setUnidadFilter(misUnidades[0].id)
+    }
+  }, [misUnidades, unidadFilter])
+
+  const { data: horarios, isLoading } = useQuery({
+    queryKey: ['horarios-portal', unidadFilter],
+    queryFn: () => horariosApi.getAll(unidadFilter || undefined),
+    enabled: !!unidadFilter,
   })
 
   const { data: misInscripciones } = useQuery({
@@ -56,13 +70,13 @@ export default function HorariosPortalPage() {
     queryFn: inscripcionesApi.getMisInscripciones,
   })
 
-  const inscripcionPorClase = new Map<string, InscripcionClase>()
+  const inscripcionPorHorario = new Map<string, InscripcionClase>()
   misInscripciones?.forEach(i => {
-    inscripcionPorClase.set(i.claseId, i)
+    inscripcionPorHorario.set(i.horarioClaseId, i)
   })
 
   const inscribirseMutation = useMutation({
-    mutationFn: (claseId: string) => inscripcionesApi.inscribirse(claseId),
+    mutationFn: (horarioClaseId: string) => inscripcionesApi.inscribirse(horarioClaseId),
     onSuccess: () => {
       setActionError(null)
       queryClient.invalidateQueries({ queryKey: ['mis-inscripciones'] })
@@ -107,23 +121,22 @@ export default function HorariosPortalPage() {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Horarios de Clases</h1>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? 'all')}>
-          <SelectTrigger className="w-[220px] bg-card border-border">
-            <SelectValue>
-              {unidadFilter === 'all'
-                ? 'Todas las sedes'
-                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las sedes</SelectItem>
-            {unidades?.map((u) => (
-              <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {misUnidades && misUnidades.length > 1 && (
+        <div className="flex items-center gap-3">
+          <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? '')}>
+            <SelectTrigger className="w-[220px] bg-card border-border">
+              <SelectValue>
+                {misUnidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {misUnidades.map((u) => (
+                <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {actionError && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
@@ -149,11 +162,8 @@ export default function HorariosPortalPage() {
                 <div className="divide-y divide-border">
                   {diaHorarios.map(h => {
                     const colorClass = getColorForClase(h.claseId)
-                    const ocupacion = h.capacidadMaxima > 0
-                      ? Math.round((h.inscripcionesActivas / h.capacidadMaxima) * 100)
-                      : 0
                     const lleno = h.inscripcionesActivas >= h.capacidadMaxima
-                    const inscripcion = inscripcionPorClase.get(h.claseId)
+                    const inscripcion = inscripcionPorHorario.get(h.id)
                     const estaInscripto = !!inscripcion
                     const isBusy = inscribirseMutation.isPending || cancelarMutation.isPending
 
@@ -169,7 +179,7 @@ export default function HorariosPortalPage() {
                           <p className="text-xs text-muted-foreground">
                             {h.instructor}
                             {h.sala && <> &middot; {h.sala}</>}
-                            {unidadFilter === 'all' && <> &middot; {h.unidadNombre}</>}
+                            {misUnidades && misUnidades.length > 1 && <> &middot; {h.unidadNombre}</>}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
@@ -179,7 +189,7 @@ export default function HorariosPortalPage() {
                             </Badge>
                           ) : (
                             <Badge variant="secondary" className="bg-muted text-muted-foreground border-0 text-xs">
-                              {h.inscripcionesActivas}/{h.capacidadMaxima} ({ocupacion}%)
+                              {h.inscripcionesActivas}/{h.capacidadMaxima}
                             </Badge>
                           )}
                           {estaInscripto ? (
@@ -203,7 +213,7 @@ export default function HorariosPortalPage() {
                               size="sm"
                               className="h-7 text-xs cursor-pointer"
                               disabled={lleno || isBusy}
-                              onClick={() => inscribirseMutation.mutate(h.claseId)}
+                              onClick={() => inscribirseMutation.mutate(h.id)}
                             >
                               {inscribirseMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Inscribirme'}
                             </Button>

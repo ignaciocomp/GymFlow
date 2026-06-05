@@ -24,14 +24,13 @@ No incluye features nuevas de gran porte. **RF-13** queda cubierto por el sistem
 
 | # | Componente | Mapea a |
 |---|------------|---------|
-| 1 | Validación de cuota al día antes de inscribir | CA-05, CA-12, E1 (CU-02) |
-| 2 | Notificación por email + auditoría de inscripción/cancelación | CA-09 (CU-02), RNF-11 |
-| 3 | Lista de espera cuando no hay cupo | E2 (CU-02) |
-| 4 | Calidad: fix N+1 en `GetMisInscripciones`, `[RequierePermiso]` en controller | RNF, consistencia |
-| 5 | Catálogo de clases con filtros (espacio/día/tipo) en portal del socio | Flujo principal CU-02 |
-| 6 | Mejora de Horarios: filtro de sede obligatorio + split de clases solapadas | UX (RF-09) |
-| 7 | Credenciales temporales por email al crear empleado | CA-29 (CU-07) |
-| 8 | Tests de inscripciones + verificación responsive | RNF-03, calidad |
+| 1 | Notificación por email + auditoría de inscripción/cancelación | CA-09 (CU-02), RNF-11 |
+| 2 | Lista de espera cuando no hay cupo | E1 (CU-02) |
+| 3 | Calidad: fix N+1 en `GetMisInscripciones`, `[RequierePermiso]` en controller | RNF, consistencia |
+| 4 | Catálogo de clases con filtros (espacio/día/tipo) en portal del socio | Flujo principal CU-02 |
+| 5 | Mejora de Horarios: filtro de sede obligatorio + split de clases solapadas | UX (RF-09) |
+| 6 | Credenciales temporales por email al crear empleado | CA-29 (CU-07) |
+| 7 | Tests de inscripciones + verificación responsive | RNF-03, calidad |
 
 ### Fuera de alcance
 
@@ -43,7 +42,6 @@ No incluye features nuevas de gran porte. **RF-13** queda cubierto por el sistem
 
 ## Decisiones de diseño
 
-- **Validación de cuota por unidad** (no global): un socio puede estar al día en una sede y vencido en otra; solo se le bloquea la inscripción a clases de la unidad donde está vencido. Es la interpretación más justa de CA-12.
 - **Lista de espera como flag** (`EsListaEspera` en `InscripcionClase`), no entidad separada: menos tablas, ordenamiento por `FechaInscripcion`.
 - **Credenciales temporales:** el sistema autogenera un password aleatorio fuerte y lo envía por email. Si `Email:Habilitado=false` (dev/testing), el password se loguea (patrón `[EMAIL SIMULADO]`). El form de "Nuevo empleado" pierde el campo password manual.
 - **Split de horarios simple:** cuando N clases caen en franjas que se solapan el mismo día, la celda se divide en N columnas de igual ancho. No se maneja offset por solapamiento parcial.
@@ -52,63 +50,7 @@ No incluye features nuevas de gran porte. **RF-13** queda cubierto por el sistem
 
 ---
 
-## 1. Componente 1 — Validación de cuota al inscribir
-
-### Problema
-
-`InscribirSocioCommand` no verifica el estado de cuota del socio. Un socio con cuota vencida puede inscribirse a clases, violando CA-05 y CA-12.
-
-### Diseño
-
-- Inyectar `ICuotaRepository` en `InscribirSocioCommand`.
-- Antes de crear la inscripción, verificar que el socio **no tenga cuotas pendientes y vencidas en la unidad de la clase**.
-- Nueva firma de repositorio:
-
-```csharp
-// ICuotaRepository
-Task<bool> TieneCuotasVencidasEnUnidadAsync(Guid socioId, Guid unidadId);
-```
-
-Implementación (Infrastructure):
-
-```csharp
-public async Task<bool> TieneCuotasVencidasEnUnidadAsync(Guid socioId, Guid unidadId)
-{
-    var hoy = DateTime.UtcNow.Date;
-    return await _context.Cuotas.AnyAsync(c =>
-        c.SocioId == socioId &&
-        c.UnidadId == unidadId &&
-        c.Estado == EstadoCuota.Pendiente &&
-        c.FechaVencimiento.Date < hoy);
-}
-```
-
-- En el command, tras validar que la clase existe y está activa:
-
-```csharp
-if (await _cuotaRepo.TieneCuotasVencidasEnUnidadAsync(socioId, clase.UnidadId))
-    throw new InvalidOperationException(
-        "Tu cuota está vencida en esta sede. Regularizá tu pago para inscribirte.");
-```
-
-### Impacto en controller y DI
-
-`InscribirSocioCommand.ExecuteAsync` cambia de firma — pasa a recibir `usuarioId` y `usuarioNombre` (necesarios para auditoría del Componente 2). Hay que actualizar:
-- `InscripcionesController.Inscribirse` → extraer `usuarioId`/`usuarioNombre` del JWT (mismo patrón `GetCurrentUser()` de otros controllers) y pasarlos.
-- El constructor del command suma `ICuotaRepository`, `IEmailService`, `IAuditLogger`, `ISocioRepository` → ya están registrados en DI, no requiere cambios en `DependencyInjection` más allá de que el contenedor los resuelva.
-
-### Mapeo de excepción → HTTP
-
-El controller hoy mapea `InvalidOperationException → 409 Conflict`. La cuota vencida cae en esa categoría (operación no permitida por estado) → **409 Conflict** con `{ error: "Tu cuota está vencida..." }`. El frontend muestra el mensaje en un toast. Se mantiene 409 (no se introduce 422) para no romper el patrón de manejo de errores del resto de la app.
-
-### Criterios cubiertos
-- CA-05: bloquea inscripción si cuota vencida.
-- CA-12: socios con cuota vencida no pueden inscribirse a clases.
-- E1 (CU-02): mensaje claro de cuota vencida.
-
----
-
-## 2. Componente 2 — Notificación + auditoría de inscripción
+## 1. Componente 1 — Notificación + auditoría de inscripción
 
 ### Problema
 
@@ -148,7 +90,7 @@ await _auditLogger.LogAsync(usuarioId, usuarioNombre,
 
 ---
 
-## 3. Componente 3 — Lista de espera
+## 2. Componente 2 — Lista de espera
 
 ### Problema
 
@@ -220,7 +162,7 @@ Task<int> GetInscripcionesActivasCountAsync(Guid claseId);        // AJUSTAR: ex
 
 ---
 
-## 4. Componente 4 — Calidad y consistencia
+## 3. Componente 3 — Calidad y consistencia
 
 ### 4a. Fix N+1 en `GetMisInscripcionesQuery`
 
@@ -245,7 +187,7 @@ El query carga las inscripciones (1 query), arma la lista de claseIds, hace 1 qu
 
 ---
 
-## 5. Componente 5 — Catálogo de clases con filtros (portal socio)
+## 4. Componente 4 — Catálogo de clases con filtros (portal socio)
 
 ### Problema
 
@@ -258,7 +200,7 @@ Nueva página `frontend/src/pages/portal/CatalogoClasesPage.tsx`:
 - **Filtros:** por sede (Gimnasio / Espacio Mora / Todas), por día de la semana, por tipo/nombre de actividad (búsqueda de texto).
 - Botón "Inscribirme" por clase → llama `POST /api/inscripciones`.
 - Estados visuales: cupo disponible (verde), lleno → botón "Anotarme en lista de espera" (ámbar), ya inscripto (deshabilitado "Ya estás inscripto").
-- Manejo de errores: cuota vencida → toast con mensaje claro.
+- Manejo de errores: clase llena, inscripción duplicada → toast con mensaje claro.
 
 Endpoint de soporte (admin/portal): reutiliza `GET /api/clases?unidadId=&includeInactive=false`. `ClaseDto` ya expone `inscripcionesActivas`; el frontend calcula `cuposDisponibles = capacidadMaxima - inscripcionesActivas`. **Decisión:** no se agrega `cuposDisponibles` al DTO — se deriva en el frontend para no tocar mapper/DTO. (Recordar que `inscripcionesActivas` ahora excluye lista de espera, ver §3.)
 
@@ -267,7 +209,7 @@ Endpoint de soporte (admin/portal): reutiliza `GET /api/clases?unidadId=&include
 
 ---
 
-## 6. Componente 6 — Mejora de Horarios (admin)
+## 5. Componente 5 — Mejora de Horarios (admin)
 
 ### 6a. Filtro de sede obligatorio
 
@@ -314,7 +256,7 @@ para cada cluster:
 
 ---
 
-## 7. Componente 7 — Credenciales temporales por email (empleados)
+## 6. Componente 6 — Credenciales temporales por email (empleados)
 
 ### Problema
 
@@ -357,16 +299,15 @@ var resultado = await _emailService.EnviarAsync(empleado.Correo, asunto, cuerpo)
 
 ---
 
-## 8. Componente 8 — Tests + responsive
+## 7. Componente 7 — Tests + responsive
 
 ### Tests (cobertura objetivo)
 
 | Use case / lógica | Tests mínimos |
 |-------------------|---------------|
-| `InscribirSocioCommand` | happy path, clase no existe, clase cancelada, duplicado, sin cupo→lista espera, **cuota vencida bloquea** |
+| `InscribirSocioCommand` | happy path, clase no existe, clase cancelada, duplicado, sin cupo→lista espera |
 | `CancelarInscripcionCommand` | happy path, no es dueño, ya cancelada, **promueve lista de espera + email** |
 | `GetMisInscripcionesQuery` | retorna inscripciones, **no hace N+1** (verificación anti-regresión con mock) |
-| `ICuotaRepository.TieneCuotasVencidasEnUnidadAsync` | con/sin vencidas, por unidad correcta |
 | `CrearEmpleadoCommand` | autogenera password, envía email, correo duplicado |
 | `InscripcionClase` (dominio) | `Cancelar`, `PromoverDeListaEspera` (válido + inválido) |
 
@@ -377,7 +318,7 @@ var resultado = await _emailService.EnviarAsync(empleado.Correo, asunto, cuerpo)
 
 ---
 
-## 9. Cambios consolidados al modelo de datos
+## 8. Cambios consolidados al modelo de datos
 
 | Entidad | Cambio | Migración |
 |---------|--------|-----------|
@@ -387,11 +328,11 @@ var resultado = await _emailService.EnviarAsync(empleado.Correo, asunto, cuerpo)
 
 ---
 
-## 10. Cambios consolidados a la API
+## 9. Cambios consolidados a la API
 
 | Endpoint | Cambio |
 |----------|--------|
-| `POST /api/inscripciones` | Valida cuota vencida; soporta lista de espera; envía email; audita |
+| `POST /api/inscripciones` | Soporta lista de espera; envía email; audita |
 | `DELETE /api/inscripciones/{id}` | Promueve lista de espera; envía email; audita |
 | `GET /api/inscripciones/mis-inscripciones` | Indica `enListaEspera` y `posicionListaEspera` en el DTO |
 | `POST /api/empleados` | Quita `password` del request; autogenera y envía por email |
@@ -406,11 +347,10 @@ var resultado = await _emailService.EnviarAsync(empleado.Correo, asunto, cuerpo)
 
 ---
 
-## 11. Cambios consolidados a interfaces de repositorio
+## 10. Cambios consolidados a interfaces de repositorio
 
 | Interfaz | Método | Acción |
 |----------|--------|--------|
-| `ICuotaRepository` | `TieneCuotasVencidasEnUnidadAsync(socioId, unidadId)` | **Nuevo** |
 | `IInscripcionClaseRepository` | `GetInscripcionesActivasCountAsync(claseId)` | **Ajustar** — excluir `EsListaEspera` |
 | `IInscripcionClaseRepository` | `GetPrimeroEnListaEsperaAsync(claseId)` | **Nuevo** |
 | `IInscripcionClaseRepository` | `GetPosicionEnListaEsperaAsync(inscripcionId)` | **Nuevo** (1-based) |
@@ -423,29 +363,36 @@ Cada cambio de implementación va con su actualización en `InscripcionClaseConf
 
 ---
 
-## 12. Trazabilidad a criterios de aceptación
+## 11. Trazabilidad a criterios de aceptación
 
 | Criterio (CU) | Componente IT4 | Estado tras IT4 |
 |---------------|----------------|-----------------|
-| CA-05 / CA-12 / E1 (cuota vencida) | 1 | ✅ Cubierto |
-| CA-06 (sin cupo) | 3 | ✅ Ya estaba + lista de espera |
-| CA-07 (cupo decrementa) | — | ✅ Ya estaba |
-| CA-08 (aparece en Mis Clases) | — | ✅ Ya estaba |
-| CA-09 (notificación) | 2 | ✅ Cubierto |
-| E2 (lista de espera) | 3 | ✅ Cubierto |
-| E3 (duplicado) | — | ✅ Ya estaba |
-| E4 (clase cancelada) | — | ✅ Ya estaba (CancelClaseCommand) |
-| Filtros catálogo | 5 | ✅ Cubierto |
-| CA-29 (credenciales por email) | 7 | ✅ Cubierto |
-| RNF-11 (auditoría) | 2 | ✅ Cubierto |
-| RNF-03 (responsive) | 8 | ✅ Verificado |
+| CA-05 (sin cupo) | 2 | ✅ Ya estaba + lista de espera |
+| CA-06 (cupo decrementa) | — | ✅ Ya estaba |
+| CA-07 (aparece en Mis Clases) | — | ✅ Ya estaba |
+| CA-08 (notificación) | 1 | ✅ Cubierto |
+| E1 (lista de espera) | 2 | ✅ Cubierto |
+| E2 (duplicado) | — | ✅ Ya estaba |
+| E3 (clase cancelada) | — | ✅ Ya estaba (CancelClaseCommand) |
+| Filtros catálogo | 4 | ✅ Cubierto |
+| CA-29 (credenciales por email) | 6 | ✅ Cubierto |
+| RNF-11 (auditoría) | 1 | ✅ Cubierto |
+| RNF-03 (responsive) | 7 | ✅ Verificado |
 
 ---
 
-## 13. Fuera de alcance / deuda técnica
+## 12. Fuera de alcance / deuda técnica
 
 - **RF-14** (profesor↔clase): requiere convertir `Clase.Instructor` (string) en FK a `Empleado`. Se posterga.
 - **MFA TOTP (RNF-10)** y **OAuth socios (RNF-01)**: IT5.
 - **Solapamiento parcial estilo Teams** (offset escalonado): solo split simple en IT4.
 - **Forzar cambio de password en primer login** del empleado: flag `DebeCambiarPassword` futuro.
 - **Lista de espera con notificación a múltiples** (broadcast): solo se promueve y notifica al primero.
+
+---
+
+## 13. Cambio de diseño posterior: Inscripción por Horario
+
+> **Nota (2026-06-05):** Tras completar los componentes de IT4, se decidió cambiar el modelo de inscripción de "por clase" a "por horario individual". Esto afecta los componentes 1, 2, 4 y 7 de este spec (la lógica base se mantiene, pero la FK y los conteos cambian de `ClaseId` a `HorarioClaseId`).
+>
+> Spec y plan del cambio: [[spec-inscripcion-por-horario]] · [[plan-inscripcion-por-horario]]

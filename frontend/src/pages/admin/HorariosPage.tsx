@@ -338,20 +338,6 @@ export default function HorariosPage() {
                           <div className="flex items-start justify-between gap-1">
                             <div className="min-w-0 flex-1 overflow-hidden">
                               <p className="text-xs font-semibold truncate">{h.claseNombre}</p>
-                              {height >= 40 && (
-                                <p className="text-[10px] opacity-80 truncate">{h.instructor}</p>
-                              )}
-                              {height >= 55 && (
-                                <p className="text-[10px] opacity-70">
-                                  {h.horaInicio} - {h.horaFin}
-                                  {h.sala && ` | ${h.sala}`}
-                                </p>
-                              )}
-                              {height >= 70 && (
-                                <p className="text-[10px] opacity-60">
-                                  {h.inscripcionesActivas}/{h.capacidadMaxima}
-                                </p>
-                              )}
                             </div>
                             <button
                               className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-0.5 rounded hover:bg-white/10 transition-opacity cursor-pointer"

@@ -13,6 +13,14 @@ public class InscripcionClaseTests
     }
 
     [Fact]
+    public void Constructor_AsignaHorarioClaseId()
+    {
+        var horarioId = Guid.NewGuid();
+        var i = new InscripcionClase(horarioId, Guid.NewGuid());
+        Assert.Equal(horarioId, i.HorarioClaseId);
+    }
+
+    [Fact]
     public void Constructor_ConListaEspera_MarcaFlag()
     {
         var i = new InscripcionClase(Guid.NewGuid(), Guid.NewGuid(), esListaEspera: true);

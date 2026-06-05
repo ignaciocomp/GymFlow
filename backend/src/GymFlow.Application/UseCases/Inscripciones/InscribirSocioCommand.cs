@@ -8,47 +8,42 @@ namespace GymFlow.Application.UseCases.Inscripciones;
 public class InscribirSocioCommand
 {
     private readonly IInscripcionClaseRepository _inscripcionRepo;
-    private readonly IClaseRepository _claseRepo;
-    private readonly ICuotaRepository _cuotaRepo;
+    private readonly IHorarioClaseRepository _horarioRepo;
     private readonly ISocioRepository _socioRepo;
     private readonly IEmailService _emailService;
     private readonly IAuditLogger _auditLogger;
 
     public InscribirSocioCommand(
         IInscripcionClaseRepository inscripcionRepo,
-        IClaseRepository claseRepo,
-        ICuotaRepository cuotaRepo,
+        IHorarioClaseRepository horarioRepo,
         ISocioRepository socioRepo,
         IEmailService emailService,
         IAuditLogger auditLogger)
     {
         _inscripcionRepo = inscripcionRepo;
-        _claseRepo = claseRepo;
-        _cuotaRepo = cuotaRepo;
+        _horarioRepo = horarioRepo;
         _socioRepo = socioRepo;
         _emailService = emailService;
         _auditLogger = auditLogger;
     }
 
-    public async Task<InscripcionClaseDto> ExecuteAsync(Guid socioId, Guid claseId, Guid usuarioId, string usuarioNombre)
+    public async Task<InscripcionClaseDto> ExecuteAsync(Guid socioId, Guid horarioClaseId, Guid usuarioId, string usuarioNombre)
     {
-        var clase = await _claseRepo.GetByIdAsync(claseId)
-            ?? throw new KeyNotFoundException("La clase no existe.");
+        var horario = await _horarioRepo.GetByIdAsync(horarioClaseId)
+            ?? throw new KeyNotFoundException("El horario no existe.");
+        var clase = horario.Clase;
 
         if (!clase.EstaActivo)
             throw new InvalidOperationException("No se puede inscribir a una clase cancelada.");
 
-        if (await _cuotaRepo.TieneCuotasVencidasEnUnidadAsync(socioId, clase.UnidadId))
-            throw new InvalidOperationException("Tu cuota está vencida en esta sede. Regularizá tu pago para inscribirte.");
-
-        var existente = await _inscripcionRepo.GetActivaBySocioYClaseAsync(socioId, claseId);
+        var existente = await _inscripcionRepo.GetActivaBySocioYHorarioAsync(socioId, horarioClaseId);
         if (existente != null)
-            throw new InvalidOperationException("Ya estás inscripto en esta clase.");
+            throw new InvalidOperationException("Ya estas inscripto en este horario.");
 
-        var ocupados = await _inscripcionRepo.GetInscripcionesActivasCountAsync(claseId);
+        var ocupados = await _inscripcionRepo.GetInscripcionesActivasCountAsync(horarioClaseId);
         var esListaEspera = ocupados >= clase.CapacidadMaxima;
 
-        var inscripcion = new InscripcionClase(claseId, socioId, esListaEspera);
+        var inscripcion = new InscripcionClase(horarioClaseId, socioId, esListaEspera);
         await _inscripcionRepo.AddAsync(inscripcion);
         await _inscripcionRepo.SaveChangesAsync();
 
@@ -56,14 +51,13 @@ public class InscribirSocioCommand
 
         if (!esListaEspera && socio != null)
         {
-            var (asunto, cuerpo) = InscripcionEmailTemplates.Confirmacion(socio, clase);
-            // Best-effort: no se chequea el resultado del envío.
+            var (asunto, cuerpo) = InscripcionEmailTemplates.Confirmacion(socio, horario);
             await _emailService.EnviarAsync(socio.Correo, asunto, cuerpo);
         }
 
         var descripcion = esListaEspera
-            ? $"Socio agregado a la lista de espera de la clase '{clase.Nombre}'."
-            : $"Socio inscripto en la clase '{clase.Nombre}'.";
+            ? $"Socio agregado a la lista de espera de la clase '{clase.Nombre}' en horario {horario.DiaSemana} {horario.HoraInicio:HH:mm}."
+            : $"Socio inscripto en la clase '{clase.Nombre}' en horario {horario.DiaSemana} {horario.HoraInicio:HH:mm}.";
 
         await _auditLogger.LogAsync(usuarioId, usuarioNombre, TipoAccionAuditoria.Creacion,
             "Inscripcion", inscripcion.Id, descripcion);
@@ -72,6 +66,6 @@ public class InscribirSocioCommand
             ? await _inscripcionRepo.GetPosicionEnListaEsperaAsync(inscripcion.Id)
             : (int?)null;
 
-        return InscripcionMapper.ToDto(inscripcion, clase, ocupados + (esListaEspera ? 0 : 1), posicion);
+        return InscripcionMapper.ToDto(inscripcion, horario, ocupados + (esListaEspera ? 0 : 1), posicion);
     }
 }

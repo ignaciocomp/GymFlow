@@ -1,7 +1,5 @@
-using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.UseCases.Unidades;
-using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GymFlow.API.Controllers;
@@ -18,7 +16,6 @@ public class UnidadesController : ControllerBase
     }
 
     [HttpGet]
-    [RequierePermiso(Modulo.Unidades, Operacion.Lectura)]
     public async Task<ActionResult<IEnumerable<UnidadDto>>> GetAll()
     {
         var unidades = await _getUnidadesQuery.ExecuteAsync();

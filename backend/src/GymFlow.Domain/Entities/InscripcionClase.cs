@@ -3,8 +3,8 @@ namespace GymFlow.Domain.Entities;
 public class InscripcionClase
 {
     public Guid Id { get; private set; }
-    public Guid ClaseId { get; private set; }
-    public Clase Clase { get; private set; } = null!;
+    public Guid HorarioClaseId { get; private set; }
+    public HorarioClase HorarioClase { get; private set; } = null!;
     public Guid SocioId { get; private set; }
     public Socio Socio { get; private set; } = null!;
     public DateTime FechaInscripcion { get; private set; }
@@ -13,10 +13,10 @@ public class InscripcionClase
 
     private InscripcionClase() { } // EF Core
 
-    public InscripcionClase(Guid claseId, Guid socioId, bool esListaEspera = false)
+    public InscripcionClase(Guid horarioClaseId, Guid socioId, bool esListaEspera = false)
     {
         Id = Guid.NewGuid();
-        ClaseId = claseId;
+        HorarioClaseId = horarioClaseId;
         SocioId = socioId;
         FechaInscripcion = DateTime.UtcNow;
         EstaActiva = true;

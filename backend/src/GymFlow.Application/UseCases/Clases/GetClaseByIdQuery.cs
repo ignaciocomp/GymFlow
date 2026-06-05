@@ -17,9 +17,7 @@ public class GetClaseByIdQuery
         var clase = await _repository.GetByIdAsync(id)
             ?? throw new KeyNotFoundException("La clase no fue encontrada.");
 
-        var inscripcionesActivas = await _repository.GetInscripcionesActivasCountAsync(clase.Id);
-
         return new ClaseDto(clase.Id, clase.Nombre, clase.Descripcion, clase.CapacidadMaxima, clase.DuracionMinutos,
-            clase.Instructor, clase.UnidadId, clase.Unidad?.Nombre ?? "", clase.EstaActivo, inscripcionesActivas);
+            clase.Instructor, clase.UnidadId, clase.Unidad?.Nombre ?? "", clase.EstaActivo);
     }
 }

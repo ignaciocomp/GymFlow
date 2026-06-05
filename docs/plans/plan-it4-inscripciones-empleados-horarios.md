@@ -1,5 +1,7 @@
 # Iteración 4 — Plan de Implementación
 
+#plan 
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Cerrar los gaps de inscripción a clases (RF-10/11) y gestión de empleados (RF-12) detectados contra los criterios de aceptación CU-02/CU-07, más mejoras de UX en Horarios.
@@ -10,7 +12,9 @@
 
 **Spec:** [[spec-it4-inscripciones-empleados-horarios]]
 
-**Orden de dependencias:** Tareas 1-9 (backend inscripciones) → 10 (empleados) → 11-12 (frontend) → 13 (responsive). Cada tarea deja el repo compilando y con tests verdes.
+**Plan complementario:** [[plan-inscripcion-por-horario]] — cambio de diseño posterior que migra la inscripción de "por clase" a "por horario individual".
+
+**Orden de dependencias:** Tareas 1-6 (backend inscripciones) → 7 (empleados) → 8-10 (frontend) → 11 (responsive). Cada tarea deja el repo compilando y con tests verdes.
 
 ---
 
@@ -129,48 +133,7 @@ git commit -m "feat(it4): agregar EsListaEspera a InscripcionClase + migración"
 
 ---
 
-## Task 2: `ICuotaRepository.TieneCuotasVencidasEnUnidadAsync`
-
-**Files:**
-- Modify: `backend/src/GymFlow.Application/Interfaces/ICuotaRepository.cs`
-- Modify: `backend/src/GymFlow.Infrastructure/Repositories/CuotaRepository.cs`
-- Test: `backend/tests/GymFlow.Infrastructure.Tests/Repositories/CuotaRepositoryTests.cs` (crear si no existe; usar EF InMemory o SQLite)
-
-> Nota: si no hay infra de tests de repositorio con DB, validar este método indirectamente vía el test del command (Task 4) con un mock. En ese caso, saltear los steps 1-2 de DB acá y solo agregar interfaz+implementación (steps 3-4), verificando con `dotnet build`.
-
-- [ ] **Step 1: Agregar a la interfaz**
-
-En `ICuotaRepository.cs`:
-```csharp
-/// <summary>True si el socio tiene al menos una cuota Pendiente y vencida en esa unidad.</summary>
-Task<bool> TieneCuotasVencidasEnUnidadAsync(Guid socioId, Guid unidadId);
-```
-
-- [ ] **Step 2: Implementar en `CuotaRepository.cs`**
-
-```csharp
-public async Task<bool> TieneCuotasVencidasEnUnidadAsync(Guid socioId, Guid unidadId)
-{
-    var hoy = DateTime.UtcNow.Date;
-    return await _context.Cuotas.AnyAsync(c =>
-        c.SocioId == socioId &&
-        c.UnidadId == unidadId &&
-        c.Estado == EstadoCuota.Pendiente &&
-        c.FechaVencimiento.Date < hoy);
-}
-```
-
-- [ ] **Step 3: Build + commit**
-
-```bash
-dotnet build
-git add backend/src/GymFlow.Application/Interfaces/ICuotaRepository.cs backend/src/GymFlow.Infrastructure/Repositories/CuotaRepository.cs
-git commit -m "feat(it4): ICuotaRepository.TieneCuotasVencidasEnUnidadAsync"
-```
-
----
-
-## Task 3: Métodos de repositorio de inscripciones (lista de espera + conteo)
+## Task 2: Métodos de repositorio de inscripciones (lista de espera + conteo)
 
 **Files:**
 - Modify: `backend/src/GymFlow.Application/Interfaces/IInscripcionClaseRepository.cs`
@@ -241,7 +204,7 @@ git commit -m "feat(it4): repos de lista de espera y conteo excluyendo lista de 
 
 ---
 
-## Task 4: `InscribirSocioCommand` — cuota + lista de espera + email + auditoría
+## Task 3: `InscribirSocioCommand` — lista de espera + email + auditoría
 
 **Files:**
 - Create: `backend/src/GymFlow.Application/UseCases/Inscripciones/InscripcionEmailTemplates.cs`
@@ -307,13 +270,12 @@ public class InscribirSocioCommandTests
 {
     private readonly Mock<IInscripcionClaseRepository> _inscRepo = new();
     private readonly Mock<IClaseRepository> _claseRepo = new();
-    private readonly Mock<ICuotaRepository> _cuotaRepo = new();
     private readonly Mock<ISocioRepository> _socioRepo = new();
     private readonly Mock<IEmailService> _email = new();
     private readonly Mock<IAuditLogger> _audit = new();
 
     private InscribirSocioCommand Sut() => new(
-        _inscRepo.Object, _claseRepo.Object, _cuotaRepo.Object,
+        _inscRepo.Object, _claseRepo.Object,
         _socioRepo.Object, _email.Object, _audit.Object);
 
     private static Clase ClaseActiva(int capacidad = 10) =>
@@ -324,24 +286,11 @@ public class InscribirSocioCommandTests
             true, TipoDocumento.CI, null, "12345672", null);
 
     [Fact]
-    public async Task ConCuotaVencida_LanzaInvalidOperation()
-    {
-        var clase = ClaseActiva();
-        _claseRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(clase);
-        _cuotaRepo.Setup(r => r.TieneCuotasVencidasEnUnidadAsync(It.IsAny<Guid>(), clase.UnidadId))
-                  .ReturnsAsync(true);
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            Sut().ExecuteAsync(Guid.NewGuid(), clase.Id, Guid.NewGuid(), "María López"));
-    }
-
-    [Fact]
     public async Task ConCupo_InscribeNormalEnviaEmailYAudita()
     {
         var socio = SocioFake();
         var clase = ClaseActiva(capacidad: 10);
         _claseRepo.Setup(r => r.GetByIdAsync(clase.Id)).ReturnsAsync(clase);
-        _cuotaRepo.Setup(r => r.TieneCuotasVencidasEnUnidadAsync(socio.Id, clase.UnidadId)).ReturnsAsync(false);
         _inscRepo.Setup(r => r.GetActivaBySocioYClaseAsync(socio.Id, clase.Id)).ReturnsAsync((InscripcionClase?)null);
         _inscRepo.Setup(r => r.GetInscripcionesActivasCountAsync(clase.Id)).ReturnsAsync(3);
         _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
@@ -362,7 +311,6 @@ public class InscribirSocioCommandTests
         var socio = SocioFake();
         var clase = ClaseActiva(capacidad: 3);
         _claseRepo.Setup(r => r.GetByIdAsync(clase.Id)).ReturnsAsync(clase);
-        _cuotaRepo.Setup(r => r.TieneCuotasVencidasEnUnidadAsync(socio.Id, clase.UnidadId)).ReturnsAsync(false);
         _inscRepo.Setup(r => r.GetActivaBySocioYClaseAsync(socio.Id, clase.Id)).ReturnsAsync((InscripcionClase?)null);
         _inscRepo.Setup(r => r.GetInscripcionesActivasCountAsync(clase.Id)).ReturnsAsync(3); // lleno
         _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
@@ -394,7 +342,7 @@ public class InscribirSocioCommand
 
     public InscribirSocioCommand(
         IInscripcionClaseRepository inscripcionRepo, IClaseRepository claseRepo,
-        ICuotaRepository cuotaRepo, ISocioRepository socioRepo,
+        ISocioRepository socioRepo,
         IEmailService emailService, IAuditLogger auditLogger)
     { /* asignar todos */ }
 
@@ -404,9 +352,6 @@ public class InscribirSocioCommand
             ?? throw new KeyNotFoundException("La clase no existe.");
         if (!clase.EstaActivo)
             throw new InvalidOperationException("No se puede inscribir a una clase cancelada.");
-
-        if (await _cuotaRepo.TieneCuotasVencidasEnUnidadAsync(socioId, clase.UnidadId))
-            throw new InvalidOperationException("Tu cuota está vencida en esta sede. Regularizá tu pago para inscribirte.");
 
         if (await _inscripcionRepo.GetActivaBySocioYClaseAsync(socioId, claseId) != null)
             throw new InvalidOperationException("Ya estás inscripto en esta clase.");
@@ -466,7 +411,7 @@ git commit -m "feat(it4): InscribirSocioCommand con cuota, lista de espera, emai
 
 ---
 
-## Task 5: `CancelarInscripcionCommand` — auditoría + promover lista de espera
+## Task 4: `CancelarInscripcionCommand` — auditoría + promover lista de espera
 
 **Files:**
 - Modify: `backend/src/GymFlow.Application/UseCases/Inscripciones/CancelarInscripcionCommand.cs`
@@ -521,7 +466,7 @@ git commit -am "feat(it4): CancelarInscripcionCommand con auditoría y promoció
 
 ---
 
-## Task 6: Fix N+1 en `GetMisInscripcionesQuery`
+## Task 5: Fix N+1 en `GetMisInscripcionesQuery`
 
 **Files:**
 - Modify: `backend/src/GymFlow.Application/UseCases/Inscripciones/GetMisInscripcionesQuery.cs`
@@ -564,7 +509,7 @@ git commit -am "perf(it4): fix N+1 en GetMisInscripcionesQuery (2 queries en vez
 
 ---
 
-## Task 7: Controller + DI de inscripciones
+## Task 6: Controller + DI de inscripciones
 
 **Files:**
 - Modify: `backend/src/GymFlow.API/Controllers/InscripcionesController.cs`
@@ -588,7 +533,7 @@ git commit -am "feat(it4): controller de inscripciones pasa usuario para auditor
 
 ---
 
-## Task 8: Credenciales temporales por email para empleados
+## Task 7: Credenciales temporales por email para empleados
 
 **Files:**
 - Create: `backend/src/GymFlow.Application/Common/GeneradorPassword.cs`
@@ -644,7 +589,7 @@ git commit -am "feat(it4): credenciales temporales autogeneradas + email al crea
 
 ---
 
-## Task 9: Frontend — quitar campo password de Nuevo Empleado + DTO de inscripción
+## Task 8: Frontend — quitar campo password de Nuevo Empleado + DTO de inscripción
 
 **Files:**
 - Modify: `frontend/src/pages/admin/NuevoUsuarioPage.tsx` (quitar input password)
@@ -663,7 +608,9 @@ git commit -am "feat(it4): frontend sin password manual de empleado + tipos de l
 
 ---
 
-## Task 10: Frontend — Catálogo de clases con filtros (portal socio)
+## Task 9: Frontend — Catálogo de clases con filtros (portal socio)
+
+> **Reemplazado por [[plan-inscripcion-por-horario]] (2026-06-05):** la ruta `/portal/clases` y `CatalogoClasesPage` se eliminan. La inscripcion del socio se unifica en `/portal/horarios`, con un boton por horario especifico.
 
 **Files:**
 - Create: `frontend/src/pages/portal/CatalogoClasesPage.tsx`
@@ -676,7 +623,7 @@ git commit -am "feat(it4): frontend sin password manual de empleado + tipos de l
   - Filtros: sede (Select), día (Select), búsqueda por nombre (Input)
   - Por clase: nombre, instructor, sede, `cuposDisponibles = capacidadMaxima - inscripcionesActivas`
   - Botón "Inscribirme" → `POST /api/inscripciones`; si lleno → "Anotarme en lista de espera"; si ya inscripto → deshabilitado
-  - Toast de éxito + manejo de error 409 (cuota vencida) con el mensaje del backend
+  - Toast de éxito + manejo de errores 409 (clase llena, duplicado) con el mensaje del backend
   - Responsive: tabla en desktop, cards en mobile (patrón de las otras vistas del portal)
 
 - [ ] **Step 2: Ruta + link en SocioLayout** ("Clases").
@@ -690,7 +637,7 @@ git commit -am "feat(it4): catálogo de clases con filtros en portal del socio"
 
 ---
 
-## Task 11: Frontend — Horarios: filtro de sede obligatorio + split simple
+## Task 10: Frontend — Horarios: filtro de sede obligatorio + split simple
 
 **Files:**
 - Modify: `frontend/src/pages/admin/HorariosPage.tsx`
@@ -729,7 +676,7 @@ git commit -am "feat(it4): horarios con filtro de sede obligatorio y split de cl
 
 ---
 
-## Task 12: Verificación responsive + CI completo
+## Task 11: Verificación responsive + CI completo
 
 **Files:** ninguno (verificación)
 
@@ -755,8 +702,8 @@ gh pr create --base develop --title "feat: Iteración 4 — estabilización insc
 ## Resumen de archivos tocados
 
 **Backend — Domain:** `InscripcionClase.cs`
-**Backend — Application:** `ICuotaRepository`, `IInscripcionClaseRepository`, `IClaseRepository`, `InscribirSocioCommand`, `CancelarInscripcionCommand`, `GetMisInscripcionesQuery`, `InscripcionMapper`, `InscripcionClaseDtos`, `InscripcionEmailTemplates` (nuevo), `EmpleadoEmailTemplates` (nuevo), `CrearEmpleadoCommand`, `GeneradorPassword` (nuevo), `CrearEmpleadoRequest`
-**Backend — Infrastructure:** `CuotaRepository`, `InscripcionClaseRepository`, `ClaseRepository`, `InscripcionClaseConfiguration`, migración `AddListaEsperaInscripcion`
+**Backend — Application:** `IInscripcionClaseRepository`, `IClaseRepository`, `InscribirSocioCommand`, `CancelarInscripcionCommand`, `GetMisInscripcionesQuery`, `InscripcionMapper`, `InscripcionClaseDtos`, `InscripcionEmailTemplates` (nuevo), `EmpleadoEmailTemplates` (nuevo), `CrearEmpleadoCommand`, `GeneradorPassword` (nuevo), `CrearEmpleadoRequest`
+**Backend — Infrastructure:** `InscripcionClaseRepository`, `ClaseRepository`, `InscripcionClaseConfiguration`, migración `AddListaEsperaInscripcion`
 **Backend — API:** `InscripcionesController`
 **Backend — Tests:** `InscripcionClaseTests`, `InscribirSocioCommandTests`, `CancelarInscripcionCommandTests`, `GetMisInscripcionesQueryTests`, `GeneradorPasswordTests`, `CrearEmpleadoCommandTests` (actualizar)
 **Frontend:** `CatalogoClasesPage` (nuevo), `HorariosPage`, `NuevoUsuarioPage`, `App.tsx`, `SocioLayout.tsx`, types y services
