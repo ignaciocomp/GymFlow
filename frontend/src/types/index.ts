@@ -189,6 +189,8 @@ export interface InscripcionClase {
   capacidadMaxima: number
   inscripcionesActivas: number
   fechaInscripcion: string
+  enListaEspera: boolean
+  posicionListaEspera: number | null
 }
 
 export type EstadoGeneralCuotas = 'AlDia' | 'Pendiente' | 'Vencido'

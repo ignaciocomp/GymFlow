@@ -8,7 +8,7 @@ import type { Rol } from '@/types/permisos'
 export default function NuevoUsuarioPage() {
   const navigate = useNavigate()
   const [roles, setRoles] = useState<Rol[]>([])
-  const [form, setForm] = useState({ nombre: '', apellido: '', correo: '', password: '', rolId: '' })
+  const [form, setForm] = useState({ nombre: '', apellido: '', correo: '', rolId: '' })
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -47,10 +47,7 @@ export default function NuevoUsuarioPage() {
         <div>
           <label className="block text-sm mb-1">Correo</label>
           <input type="email" className="w-full rounded border px-3 py-2 bg-background" value={form.correo} onChange={e => setForm({ ...form, correo: e.target.value })} required />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Contraseña inicial (mínimo 8 caracteres)</label>
-          <input type="password" className="w-full rounded border px-3 py-2 bg-background" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} minLength={8} required />
+          <p className="mt-1 text-xs text-muted-foreground">Se enviará una contraseña temporal al correo del empleado.</p>
         </div>
         <div>
           <label className="block text-sm mb-1">Rol</label>

@@ -13,7 +13,6 @@ export interface CrearEmpleadoRequest {
   nombre: string
   apellido: string
   correo: string
-  password: string
   rolId: string
 }
 
