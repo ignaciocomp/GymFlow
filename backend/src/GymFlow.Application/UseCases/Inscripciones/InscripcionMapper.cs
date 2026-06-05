@@ -5,7 +5,7 @@ namespace GymFlow.Application.UseCases.Inscripciones;
 
 internal static class InscripcionMapper
 {
-    public static InscripcionClaseDto ToDto(InscripcionClase i, Clase clase, int inscripcionesActivas) =>
+    public static InscripcionClaseDto ToDto(InscripcionClase i, Clase clase, int cuposOcupados, int? posicionListaEspera = null) =>
         new(i.Id,
             i.ClaseId,
             clase.Nombre,
@@ -13,6 +13,8 @@ internal static class InscripcionMapper
             clase.UnidadId,
             clase.Unidad?.Nombre ?? "",
             clase.CapacidadMaxima,
-            inscripcionesActivas,
-            i.FechaInscripcion);
+            cuposOcupados,
+            i.FechaInscripcion,
+            i.EsListaEspera,
+            posicionListaEspera);
 }

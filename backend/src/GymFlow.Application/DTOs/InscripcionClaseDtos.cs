@@ -9,6 +9,8 @@ public record InscripcionClaseDto(
     string UnidadNombre,
     int CapacidadMaxima,
     int InscripcionesActivas,
-    DateTime FechaInscripcion);
+    DateTime FechaInscripcion,
+    bool EnListaEspera,
+    int? PosicionListaEspera);
 
 public record InscribirSocioRequest(Guid ClaseId);
