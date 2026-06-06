@@ -43,7 +43,8 @@ public class UpdateClaseCommand
             TipoAccionAuditoria.Modificacion, "Clase", clase.Id,
             $"Se actualizo la clase '{clase.Nombre}'");
 
+        var totalInscripciones = conteos.Values.Sum();
         return new ClaseDto(clase.Id, clase.Nombre, clase.Descripcion, clase.CapacidadMaxima, clase.DuracionMinutos,
-            clase.Instructor, clase.UnidadId, clase.Unidad?.Nombre ?? "", clase.EstaActivo);
+            clase.Instructor, clase.UnidadId, clase.Unidad?.Nombre ?? "", clase.EstaActivo, totalInscripciones);
     }
 }

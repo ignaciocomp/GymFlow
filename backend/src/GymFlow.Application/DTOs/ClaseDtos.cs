@@ -9,7 +9,8 @@ public record ClaseDto(
     string Instructor,
     Guid UnidadId,
     string UnidadNombre,
-    bool EstaActivo);
+    bool EstaActivo,
+    int InscripcionesActivas);
 
 public record CreateClaseRequest(
     string Nombre,

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "e7995d47-4beb-466a-a83d-ef280ae8d08f",
     "name": "GymFlow API Tests",
-    "description": "**Nombre de la prueba**: Validación de endpoints API GymFlow\n\n**Tipo de prueba**:\n\n- Prueba funcional (caja negra)\n- Prueba de integración (nivel API)\n- Prueba de seguridad (RNF-01: control de acceso por roles)\n\n**Objetivo**:  \nVerificar que los endpoints de la API de GymFlow exponen los datos correctamente según los contratos definidos en los DTOs, y que el sistema de permisos por roles funciona correctamente.\n\n**Módulos cubiertos**:\n\n- Auth (login, perfil)\n- Socios (CRUD completo + reactivación)\n- Planes (CRUD completo)\n- Unidades (lectura)\n- Auditoría (consulta con filtros)\n- Roles y Permisos (RNF-01)\n- Empleados (RNF-01)\n- Clases RF-08 (CRUD + cancelación/reactivación)\n- Horarios RF-09 (CRUD + validación conflicto de sala)\n- Inscripciones RF-10/RF-11 (inscribir, listar, cancelar)\n\n**Criterios de éxito generales**:\n\n- Códigos HTTP correctos según operación\n- Estructura JSON conforme a DTOs\n- Tipos de datos correctos\n- Tiempo de respuesta < 500ms\n- Validaciones de negocio funcionando\n- Permisos denegados devuelven 403\n\n**Herramienta**: Postman  \n**Proyecto**: GymFlow — Sistema Integrado de Gestión para Gimnasios  \n**Equipo**: Ignacio Compan, Franco Notte, Sebastián Acuña",
+    "description": "**Nombre de la prueba**: Validación de endpoints API GymFlow\n\n**Tipo de prueba**:\n\n- Prueba funcional (caja negra)\n- Prueba de integración (nivel API)\n- Prueba de seguridad (RNF-01: control de acceso por roles)\n\n**Objetivo**:  \nVerificar que los endpoints de la API de GymFlow exponen los datos correctamente según los contratos definidos en los DTOs, y que el sistema de permisos por roles funciona correctamente.\n\n**Módulos cubiertos**:\n\n- Auth (login, perfil)\n- Socios (CRUD completo + reactivación)\n- Planes (CRUD completo)\n- Unidades (lectura)\n- Auditoría (consulta con filtros)\n- Roles y Permisos (RNF-01)\n- Empleados (RNF-01)\n- Clases RF-08 (CRUD + cancelación/reactivación)\n- Horarios RF-09 (CRUD + validación conflicto de sala)\n- Inscripciones RF-10/RF-11 (inscribir por horario, listar con día/hora/sala, cancelar)\n- Empleados RF-12 (credenciales temporales sin password manual)\n\n**Criterios de éxito generales**:\n\n- Códigos HTTP correctos según operación\n- Estructura JSON conforme a DTOs\n- Tipos de datos correctos\n- Tiempo de respuesta < 500ms\n- Validaciones de negocio funcionando\n- Permisos denegados devuelven 403\n\n**Herramienta**: Postman  \n**Proyecto**: GymFlow — Sistema Integrado de Gestión para Gimnasios  \n**Equipo**: Ignacio Compan, Franco Notte, Sebastián Acuña",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "32928777",
     "_collection_link": "https://go.postman.co/collection/32928777-e7995d47-4beb-466a-a83d-ef280ae8d08f?source=collection_link"
@@ -40,6 +40,15 @@
                       "});",
                       "",
                       "const data = pm.response.json();",
+                      "",
+                      "pm.test(\"La respuesta contiene unidadIds (null para admin, array para socio)\", function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property(\"unidadIds\");",
+                      "    if (jsonData.unidadIds !== null) {",
+                      "        pm.expect(jsonData.unidadIds).to.be.an(\"array\");",
+                      "    }",
+                      "});",
+                      "",
                       "pm.collectionVariables.set(\"token\", data.token);",
                       "console.log(\"Token guardado exitosamente\");"
                     ],
@@ -50,18 +59,29 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -88,18 +108,35 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"correo\": \"noexiste@gymflow.com\",\n  \"password\": \"PasswordIncorrecta123\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -120,18 +157,29 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"correo\": \"\",\n  \"password\": \"\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -161,6 +209,14 @@
                       "    pm.expect(item).to.be.an(\"object\");",
                       "    pm.expect(item).to.have.property(\"correo\");",
                       "    pm.expect(item.correo).to.be.a(\"string\");",
+                      "});",
+                      "",
+                      "pm.test(\"La respuesta contiene unidadIds (null para admin, array para socio)\", function () {",
+                      "    const item = pm.response.json();",
+                      "    pm.expect(item).to.have.property(\"unidadIds\");",
+                      "    if (item.unidadIds !== null) {",
+                      "        pm.expect(item.unidadIds).to.be.an(\"array\");",
+                      "    }",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -174,8 +230,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/auth/me",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "me"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
                 }
               },
               "response": []
@@ -196,13 +257,20 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/auth/me",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "me"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
                 }
               },
               "response": []
@@ -264,8 +332,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/unidades",
-              "host": ["{{baseUrl}}"],
-              "path": ["unidades"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "unidades"
+              ]
             }
           },
           "response": []
@@ -330,8 +402,12 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes"
+                  ]
                 }
               },
               "response": []
@@ -371,8 +447,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes/{{planId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes", "{{planId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes",
+                    "{{planId}}"
+                  ]
                 }
               },
               "response": []
@@ -397,8 +478,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -446,12 +532,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Plan Test Postman\",\n  \"unidadId\": \"{{unidadId1}}\",\n  \"precio\": 1500,\n  \"descripcion\": \"Plan creado desde Postman para testing\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/planes",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes"
+                  ]
                 }
               },
               "response": []
@@ -485,12 +579,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"\",\n  \"unidadId\": {{unidadId1}},\n  \"precio\": 1500,\n  \"descripcion\": \"Plan sin nombre\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/planes",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes"
+                  ]
                 }
               },
               "response": []
@@ -516,12 +618,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Plan Fantasma\",\n  \"unidadId\": \"00000000-0000-0000-0000-000000000000\",\n  \"precio\": 1000,\n  \"descripcion\": \"Unidad que no existe\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/planes",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes"
+                  ]
                 }
               },
               "response": []
@@ -558,12 +668,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Plan Test Actualizado\",\n  \"precio\": 2000,\n  \"descripcion\": \"Plan actualizado desde Postman\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/planes/{{createdPlanId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes", "{{createdPlanId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes",
+                    "{{createdPlanId}}"
+                  ]
                 }
               },
               "response": []
@@ -593,8 +712,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes/{{createdPlanId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes", "{{createdPlanId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes",
+                    "{{createdPlanId}}"
+                  ]
                 }
               },
               "response": []
@@ -619,8 +743,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -686,8 +815,12 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -774,12 +907,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez Test\",\n  \"correo\": \"{{socioCorreoTest}}\",\n  \"telefono\": \"099123456\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"fechaNacimiento\": \"1995-06-15T00:00:00Z\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ],\n  \"consentimientoInformado\": true\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -837,12 +978,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"\",\n  \"apellido\": \"Sin Nombre\",\n  \"correo\": \"sinnombre@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ],\n  \"consentimientoInformado\": true\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -900,12 +1049,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"María\",\n  \"apellido\": \"Sin Consentimiento\",\n  \"correo\": \"maria.sincons@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ],\n  \"consentimientoInformado\": false\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -963,12 +1120,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez Duplicado\",\n  \"correo\": \"{{socioCorreoTest}}\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ],\n  \"consentimientoInformado\": true\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -1009,8 +1174,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/socios/{{createdSocioId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "{{createdSocioId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "{{createdSocioId}}"
+                  ]
                 }
               },
               "response": []
@@ -1035,8 +1205,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -1101,12 +1276,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Juan Actualizado\",\n  \"apellido\": \"Pérez Test\",\n  \"correo\": \"{{socioCorreoTest}}\",\n  \"telefono\": \"099999999\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"{{cedulaDinamica}}\",\n  \"fechaNacimiento\": \"1995-06-15T00:00:00Z\",\n  \"unidades\": [\n    {\n      \"unidadId\": \"{{unidadId1}}\",\n      \"planId\": \"{{planId}}\"\n    }\n  ]\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios/{{createdSocioId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "{{createdSocioId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "{{createdSocioId}}"
+                  ]
                 }
               },
               "response": []
@@ -1132,12 +1316,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Fantasma\",\n  \"apellido\": \"No Existe\",\n  \"correo\": \"fantasma@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"unidades\": []\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -1168,12 +1361,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"motivo\": \"Baja para testing desde Postman\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios/{{createdSocioId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "{{createdSocioId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "{{createdSocioId}}"
+                  ]
                 }
               },
               "response": []
@@ -1203,8 +1405,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/socios/{{createdSocioId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "{{createdSocioId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "{{createdSocioId}}"
+                  ]
                 }
               },
               "response": []
@@ -1239,8 +1446,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/socios/{{createdSocioId}}/reactivar",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "{{createdSocioId}}", "reactivar"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "{{createdSocioId}}",
+                    "reactivar"
+                  ]
                 }
               },
               "response": []
@@ -1265,8 +1478,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000000/reactivar",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "00000000-0000-0000-0000-000000000000", "reactivar"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "00000000-0000-0000-0000-000000000000",
+                    "reactivar"
+                  ]
                 }
               },
               "response": []
@@ -1326,8 +1545,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/auditoria",
-              "host": ["{{baseUrl}}"],
-              "path": ["auditoria"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auditoria"
+              ]
             }
           },
           "response": []
@@ -1362,9 +1585,18 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/auditoria?tipoAccion=Creacion",
-              "host": ["{{baseUrl}}"],
-              "path": ["auditoria"],
-              "query": [{ "key": "tipoAccion", "value": "Creacion" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auditoria"
+              ],
+              "query": [
+                {
+                  "key": "tipoAccion",
+                  "value": "Creacion"
+                }
+              ]
             }
           },
           "response": []
@@ -1394,11 +1626,21 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/auditoria?desde=2026-01-01&hasta=2026-12-31",
-              "host": ["{{baseUrl}}"],
-              "path": ["auditoria"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auditoria"
+              ],
               "query": [
-                { "key": "desde", "value": "2026-01-01" },
-                { "key": "hasta", "value": "2026-12-31" }
+                {
+                  "key": "desde",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-12-31"
+                }
               ]
             }
           },
@@ -1432,18 +1674,29 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -1503,8 +1756,12 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/permisos",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["permisos"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "permisos"
+                  ]
                 }
               },
               "response": []
@@ -1535,8 +1792,12 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/unidades",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["unidades"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "unidades"
+                  ]
                 }
               },
               "response": []
@@ -1593,12 +1854,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{{rnfRolBody}}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/roles",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["roles"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "roles"
+                  ]
                 }
               },
               "response": []
@@ -1647,13 +1916,62 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"nombre\": \"Test\",\n  \"apellido\": \"Recepcionista RNF01\",\n  \"correo\": \"{{rnfEmpleadoCorreo}}\",\n  \"password\": \"{{rnfEmpleadoPassword}}\",\n  \"rolId\": \"{{rnfRolId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "raw": "{\n  \"nombre\": \"Test\",\n  \"apellido\": \"Recepcionista RNF01\",\n  \"correo\": \"{{rnfEmpleadoCorreo}}\",\n  \"rolId\": \"{{rnfRolId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/empleados",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["empleados"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "empleados"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "5.5. Asignar password conocido al empleado (PATCH)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Password asignado exitosamente (204)\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nuevaPassword\": \"{{rnfEmpleadoPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/empleados/{{rnfEmpleadoId}}/password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "empleados",
+                    "{{rnfEmpleadoId}}",
+                    "password"
+                  ]
                 }
               },
               "response": []
@@ -1684,18 +2002,29 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"correo\": \"{{rnfEmpleadoCorreo}}\",\n  \"password\": \"{{rnfEmpleadoPassword}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -1732,14 +2061,24 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -1771,14 +2110,24 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes"
+                  ]
                 }
               },
               "response": []
@@ -1812,19 +2161,33 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Plan Creado por Recepcionista\",\n  \"unidadId\": \"{{unidadId1}}\",\n  \"precio\": 800,\n  \"descripcion\": \"Plan creado por usuario con rol restringido - test RNF-01\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/planes",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes"
+                  ]
                 }
               },
               "response": []
@@ -1856,19 +2219,33 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Intento\",\n  \"apellido\": \"Denegado\",\n  \"correo\": \"denegado@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"12345670\",\n  \"unidades\": [],\n  \"consentimientoInformado\": true\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -1895,19 +2272,34 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "PUT",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Intento Modificar\",\n  \"apellido\": \"Sin Permiso\",\n  \"correo\": \"sinpermiso@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"unidades\": []\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000001",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "00000000-0000-0000-0000-000000000001"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "00000000-0000-0000-0000-000000000001"
+                  ]
                 }
               },
               "response": []
@@ -1934,19 +2326,34 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "DELETE",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"motivo\": \"Intento de baja sin permiso\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios/00000000-0000-0000-0000-000000000001",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios", "00000000-0000-0000-0000-000000000001"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios",
+                    "00000000-0000-0000-0000-000000000001"
+                  ]
                 }
               },
               "response": []
@@ -1973,19 +2380,34 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "PUT",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Intento Modificar Plan\",\n  \"precio\": 9999,\n  \"descripcion\": \"No debería poder modificar\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/planes/{{rnfCreatedPlanId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes", "{{rnfCreatedPlanId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes",
+                    "{{rnfCreatedPlanId}}"
+                  ]
                 }
               },
               "response": []
@@ -2012,14 +2434,25 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "DELETE",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes/{{rnfCreatedPlanId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes", "{{rnfCreatedPlanId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes",
+                    "{{rnfCreatedPlanId}}"
+                  ]
                 }
               },
               "response": []
@@ -2046,14 +2479,24 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/auditoria",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auditoria"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auditoria"
+                  ]
                 }
               },
               "response": []
@@ -2080,14 +2523,24 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/empleados",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["empleados"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "empleados"
+                  ]
                 }
               },
               "response": []
@@ -2114,14 +2567,24 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/unidades",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["unidades"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "unidades"
+                  ]
                 }
               },
               "response": []
@@ -2148,19 +2611,33 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Rol Intruso\",\n  \"permisoIds\": []\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/roles",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["roles"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "roles"
+                  ]
                 }
               },
               "response": []
@@ -2187,19 +2664,33 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{restrictedToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{restrictedToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Intruso\",\n  \"apellido\": \"Sin Permiso\",\n  \"correo\": \"intruso@gymflow.com\",\n  \"password\": \"Password123!\",\n  \"rolId\": \"{{rnfRolId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/empleados",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["empleados"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "empleados"
+                  ]
                 }
               },
               "response": []
@@ -2229,13 +2720,19 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -2260,13 +2757,19 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes"
+                  ]
                 }
               },
               "response": []
@@ -2293,19 +2796,33 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "token.invalido.falso", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "token.invalido.falso",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Hacker\",\n  \"apellido\": \"Intruso\",\n  \"correo\": \"hacker@gymflow.com\",\n  \"tipoDocumento\": \"CI\",\n  \"documentoIdentidad\": \"12345670\",\n  \"unidades\": [],\n  \"consentimientoInformado\": true\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/socios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["socios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "socios"
+                  ]
                 }
               },
               "response": []
@@ -2334,18 +2851,29 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -2370,8 +2898,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/planes/{{rnfCreatedPlanId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["planes", "{{rnfCreatedPlanId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "planes",
+                    "{{rnfCreatedPlanId}}"
+                  ]
                 }
               },
               "response": []
@@ -2397,12 +2930,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Test\",\n  \"apellido\": \"Recepcionista RNF01\",\n  \"correo\": \"{{rnfEmpleadoCorreo}}\",\n  \"rolId\": \"11111111-1111-1111-1111-111111111111\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/empleados/{{rnfEmpleadoId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["empleados", "{{rnfEmpleadoId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "empleados",
+                    "{{rnfEmpleadoId}}"
+                  ]
                 }
               },
               "response": []
@@ -2427,8 +2969,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/empleados/{{rnfEmpleadoId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["empleados", "{{rnfEmpleadoId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "empleados",
+                    "{{rnfEmpleadoId}}"
+                  ]
                 }
               },
               "response": []
@@ -2453,8 +3000,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/roles/{{rnfRolId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["roles", "{{rnfRolId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "roles",
+                    "{{rnfRolId}}"
+                  ]
                 }
               },
               "response": []
@@ -2512,12 +3064,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Funcional Test Postman\",\n  \"descripcion\": \"Clase de entrenamiento funcional creada desde Postman\",\n  \"capacidadMaxima\": 20,\n  \"duracionMinutos\": 60,\n  \"instructor\": \"Juan Pérez\",\n  \"unidadId\": \"{{unidadId1}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/clases",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases"
+                  ]
                 }
               },
               "response": []
@@ -2548,12 +3108,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"\",\n  \"descripcion\": \"\",\n  \"capacidadMaxima\": 0,\n  \"duracionMinutos\": 0,\n  \"instructor\": \"\",\n  \"unidadId\": \"{{unidadId1}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/clases",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases"
+                  ]
                 }
               },
               "response": []
@@ -2599,8 +3167,12 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases"
+                  ]
                 }
               },
               "response": []
@@ -2633,9 +3205,18 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases?unidadId={{unidadId1}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases"],
-                  "query": [{ "key": "unidadId", "value": "{{unidadId1}}" }]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases"
+                  ],
+                  "query": [
+                    {
+                      "key": "unidadId",
+                      "value": "{{unidadId1}}"
+                    }
+                  ]
                 }
               },
               "response": []
@@ -2665,9 +3246,18 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases?includeInactive=true",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases"],
-                  "query": [{ "key": "includeInactive", "value": "true" }]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases"
+                  ],
+                  "query": [
+                    {
+                      "key": "includeInactive",
+                      "value": "true"
+                    }
+                  ]
                 }
               },
               "response": []
@@ -2706,8 +3296,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases/{{createdClaseId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases", "{{createdClaseId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases",
+                    "{{createdClaseId}}"
+                  ]
                 }
               },
               "response": []
@@ -2732,8 +3327,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -2772,12 +3372,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Funcional Avanzado\",\n  \"descripcion\": \"Clase de entrenamiento funcional nivel avanzado\",\n  \"capacidadMaxima\": 25,\n  \"duracionMinutos\": 75,\n  \"instructor\": \"María García\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/clases/{{createdClaseId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases", "{{createdClaseId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases",
+                    "{{createdClaseId}}"
+                  ]
                 }
               },
               "response": []
@@ -2803,12 +3412,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"nombre\": \"Fantasma\",\n  \"descripcion\": \"\",\n  \"capacidadMaxima\": 10,\n  \"duracionMinutos\": 30,\n  \"instructor\": \"Nadie\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/clases/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -2838,8 +3456,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases/{{createdClaseId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases", "{{createdClaseId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases",
+                    "{{createdClaseId}}"
+                  ]
                 }
               },
               "response": []
@@ -2869,8 +3492,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases/{{createdClaseId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases", "{{createdClaseId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases",
+                    "{{createdClaseId}}"
+                  ]
                 }
               },
               "response": []
@@ -2900,8 +3528,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases/{{createdClaseId}}/reactivar",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases", "{{createdClaseId}}", "reactivar"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases",
+                    "{{createdClaseId}}",
+                    "reactivar"
+                  ]
                 }
               },
               "response": []
@@ -2931,8 +3565,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/clases/{{createdClaseId}}/reactivar",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["clases", "{{createdClaseId}}", "reactivar"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clases",
+                    "{{createdClaseId}}",
+                    "reactivar"
+                  ]
                 }
               },
               "response": []
@@ -2989,12 +3629,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 1,\n  \"horaInicio\": \"18:00\",\n  \"horaFin\": \"19:00\",\n  \"sala\": \"Sala 1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/horarios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios"
+                  ]
                 }
               },
               "response": []
@@ -3026,12 +3674,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 1,\n  \"horaInicio\": \"18:30\",\n  \"horaFin\": \"19:30\",\n  \"sala\": \"Sala 1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/horarios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios"
+                  ]
                 }
               },
               "response": []
@@ -3062,12 +3718,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 2,\n  \"horaInicio\": \"19:00\",\n  \"horaFin\": \"18:00\",\n  \"sala\": \"Sala 2\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/horarios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios"
+                  ]
                 }
               },
               "response": []
@@ -3099,12 +3763,20 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 3,\n  \"horaInicio\": \"10:00\",\n  \"horaFin\": \"11:00\",\n  \"sala\": null\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/horarios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios"
+                  ]
                 }
               },
               "response": []
@@ -3151,8 +3823,12 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/horarios",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios"
+                  ]
                 }
               },
               "response": []
@@ -3185,9 +3861,18 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/horarios?unidadId={{unidadId1}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios"],
-                  "query": [{ "key": "unidadId", "value": "{{unidadId1}}" }]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios"
+                  ],
+                  "query": [
+                    {
+                      "key": "unidadId",
+                      "value": "{{unidadId1}}"
+                    }
+                  ]
                 }
               },
               "response": []
@@ -3224,8 +3909,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/horarios/{{createdHorarioId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios", "{{createdHorarioId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios",
+                    "{{createdHorarioId}}"
+                  ]
                 }
               },
               "response": []
@@ -3250,8 +3940,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/horarios/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -3290,12 +3985,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"diaSemana\": 2,\n  \"horaInicio\": \"19:00\",\n  \"horaFin\": \"20:00\",\n  \"sala\": \"Sala 2\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/horarios/{{createdHorarioId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios", "{{createdHorarioId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios",
+                    "{{createdHorarioId}}"
+                  ]
                 }
               },
               "response": []
@@ -3321,12 +4025,21 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"diaSemana\": 1,\n  \"horaInicio\": \"08:00\",\n  \"horaFin\": \"09:00\",\n  \"sala\": \"Sala X\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/horarios/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -3356,8 +4069,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/horarios/{{createdHorarioId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios", "{{createdHorarioId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios",
+                    "{{createdHorarioId}}"
+                  ]
                 }
               },
               "response": []
@@ -3382,8 +4100,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/horarios/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["horarios", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
@@ -3396,10 +4119,99 @@
       "name": "Inscripciones (RF-10/RF-11)",
       "item": [
         {
-          "name": "Setup - Login Socio",
+          "name": "Setup",
           "item": [
             {
-              "name": "200 - Login como Socio",
+              "name": "1. Login Admin (crear horario para test)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Login admin exitoso\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const data = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", data.token);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2. Crear Horario para test de inscripciones",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Horario creado para inscripciones (201)\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "const item = pm.response.json();",
+                      "pm.collectionVariables.set(\"inscripcionHorarioId\", item.id);",
+                      "console.log(\"Horario para inscripciones creado: \" + item.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\",\n  \"diaSemana\": 5,\n  \"horaInicio\": \"08:00\",\n  \"horaFin\": \"09:00\",\n  \"sala\": \"Sala Test Inscripciones\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/horarios",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3. Login como Socio",
               "event": [
                 {
                   "listen": "test",
@@ -3415,6 +4227,14 @@
                       "    pm.expect(data.token.split(\".\").length).to.eql(3);",
                       "});",
                       "",
+                      "pm.test(\"La respuesta contiene unidadIds\", function () {",
+                      "    const data = pm.response.json();",
+                      "    pm.expect(data).to.have.property(\"unidadIds\");",
+                      "    if (data.unidadIds !== null) {",
+                      "        pm.expect(data.unidadIds).to.be.an(\"array\");",
+                      "    }",
+                      "});",
+                      "",
                       "const data = pm.response.json();",
                       "pm.collectionVariables.set(\"socioToken\", data.token);",
                       "console.log(\"Token de socio guardado para tests de inscripciones\");"
@@ -3424,18 +4244,29 @@
                 }
               ],
               "request": {
-                "auth": { "type": "noauth" },
+                "auth": {
+                  "type": "noauth"
+                },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"correo\": \"{{socioEmail}}\",\n  \"password\": \"{{socioPassword}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/auth/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 }
               },
               "response": []
@@ -3446,7 +4277,7 @@
           "name": "Inscribir",
           "item": [
             {
-              "name": "200 - Inscribir socio a clase",
+              "name": "200 - Inscribir socio a horario",
               "event": [
                 {
                   "listen": "test",
@@ -3462,14 +4293,23 @@
                       "",
                       "pm.test(\"La inscripción tiene la estructura de InscripcionClaseDto\", function () {",
                       "    const item = pm.response.json();",
-                      "    pm.expect(item).to.have.all.keys(",
-                      "        \"id\", \"claseId\", \"claseNombre\", \"instructor\",",
-                      "        \"unidadId\", \"unidadNombre\", \"capacidadMaxima\",",
-                      "        \"inscripcionesActivas\", \"fechaInscripcion\"",
-                      "    );",
+                      "    pm.expect(item).to.have.property(\"id\");",
                       "    pm.expect(item.id).to.be.a(\"string\").and.to.have.lengthOf(36);",
-                      "    pm.expect(item.claseId).to.eql(pm.collectionVariables.get(\"createdClaseId\"));",
+                      "    pm.expect(item).to.have.property(\"horarioClaseId\");",
+                      "    pm.expect(item).to.have.property(\"claseNombre\");",
+                      "    pm.expect(item).to.have.property(\"instructor\");",
+                      "    pm.expect(item).to.have.property(\"unidadId\");",
+                      "    pm.expect(item).to.have.property(\"unidadNombre\");",
+                      "    pm.expect(item).to.have.property(\"diaSemana\");",
+                      "    pm.expect(item).to.have.property(\"horaInicio\");",
+                      "    pm.expect(item).to.have.property(\"horaFin\");",
+                      "    pm.expect(item).to.have.property(\"sala\");",
+                      "    pm.expect(item).to.have.property(\"capacidadMaxima\");",
+                      "    pm.expect(item).to.have.property(\"inscripcionesActivas\");",
+                      "    pm.expect(item).to.have.property(\"fechaInscripcion\");",
                       "    pm.expect(item.claseNombre).to.be.a(\"string\");",
+                      "    pm.expect(item.diaSemana).to.be.a(\"string\");",
+                      "    pm.expect(item.horaInicio).to.be.a(\"string\");",
                       "    const regexISO = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/;",
                       "    pm.expect(item.fechaInscripcion).to.match(regexISO);",
                       "});",
@@ -3484,25 +4324,39 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{socioToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "raw": "{\n  \"horarioClaseId\": \"{{inscripcionHorarioId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/inscripciones",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["inscripciones"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "inscripciones"
+                  ]
                 }
               },
               "response": []
             },
             {
-              "name": "409 - Inscripción duplicada",
+              "name": "409 - Inscripción duplicada al mismo horario",
               "event": [
                 {
                   "listen": "test",
@@ -3524,25 +4378,39 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{socioToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"claseId\": \"{{createdClaseId}}\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "raw": "{\n  \"horarioClaseId\": \"{{inscripcionHorarioId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/inscripciones",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["inscripciones"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "inscripciones"
+                  ]
                 }
               },
               "response": []
             },
             {
-              "name": "404 - Inscribir a clase inexistente",
+              "name": "404 - Inscribir a horario inexistente",
               "event": [
                 {
                   "listen": "test",
@@ -3559,19 +4427,33 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{socioToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "POST",
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"claseId\": \"00000000-0000-0000-0000-000000000000\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "raw": "{\n  \"horarioClaseId\": \"00000000-0000-0000-0000-000000000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
                 "url": {
                   "raw": "{{baseUrl}}/inscripciones",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["inscripciones"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "inscripciones"
+                  ]
                 }
               },
               "response": []
@@ -3582,7 +4464,7 @@
           "name": "Mis Inscripciones",
           "item": [
             {
-              "name": "200 - Obtener mis inscripciones",
+              "name": "200 - Obtener mis inscripciones con día/hora/sala",
               "event": [
                 {
                   "listen": "test",
@@ -3602,16 +4484,26 @@
                       "    pm.expect(jsonData.length).to.be.at.least(1);",
                       "});",
                       "",
-                      "pm.test(\"Las inscripciones tienen la estructura de InscripcionClaseDto\", function () {",
+                      "pm.test(\"Las inscripciones incluyen día, hora, sala y datos del horario\", function () {",
                       "    const jsonData = pm.response.json();",
                       "    const item = jsonData[0];",
-                      "    pm.expect(item).to.have.all.keys(",
-                      "        \"id\", \"claseId\", \"claseNombre\", \"instructor\",",
-                      "        \"unidadId\", \"unidadNombre\", \"capacidadMaxima\",",
-                      "        \"inscripcionesActivas\", \"fechaInscripcion\"",
-                      "    );",
+                      "    pm.expect(item).to.have.property(\"id\");",
+                      "    pm.expect(item).to.have.property(\"horarioClaseId\");",
+                      "    pm.expect(item).to.have.property(\"claseNombre\");",
                       "    pm.expect(item.claseNombre).to.be.a(\"string\");",
-                      "    pm.expect(item.instructor).to.be.a(\"string\");",
+                      "    pm.expect(item).to.have.property(\"instructor\");",
+                      "    pm.expect(item).to.have.property(\"unidadId\");",
+                      "    pm.expect(item).to.have.property(\"unidadNombre\");",
+                      "    pm.expect(item).to.have.property(\"diaSemana\");",
+                      "    pm.expect(item.diaSemana).to.be.a(\"string\");",
+                      "    pm.expect(item).to.have.property(\"horaInicio\");",
+                      "    pm.expect(item.horaInicio).to.be.a(\"string\");",
+                      "    pm.expect(item).to.have.property(\"horaFin\");",
+                      "    pm.expect(item.horaFin).to.be.a(\"string\");",
+                      "    pm.expect(item).to.have.property(\"sala\");",
+                      "    pm.expect(item).to.have.property(\"capacidadMaxima\");",
+                      "    pm.expect(item).to.have.property(\"inscripcionesActivas\");",
+                      "    pm.expect(item).to.have.property(\"fechaInscripcion\");",
                       "});"
                     ],
                     "type": "text/javascript"
@@ -3621,41 +4513,25 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{socioToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "GET",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/inscripciones/mis-inscripciones",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["inscripciones", "mis-inscripciones"]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "401 - Mis inscripciones sin autenticación",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Status code is 401\", function () {",
-                      "    pm.response.to.have.status(401);",
-                      "});"
-                    ],
-                    "type": "text/javascript"
-                  }
-                }
-              ],
-              "request": {
-                "auth": { "type": "noauth" },
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/inscripciones/mis-inscripciones",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["inscripciones", "mis-inscripciones"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "inscripciones",
+                    "mis-inscripciones"
+                  ]
                 }
               },
               "response": []
@@ -3683,14 +4559,25 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{socioToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "DELETE",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/inscripciones/{{inscripcionId}}",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["inscripciones", "{{inscripcionId}}"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "inscripciones",
+                    "{{inscripcionId}}"
+                  ]
                 }
               },
               "response": []
@@ -3713,19 +4600,386 @@
               "request": {
                 "auth": {
                   "type": "bearer",
-                  "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{socioToken}}",
+                      "type": "string"
+                    }
+                  ]
                 },
                 "method": "DELETE",
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/inscripciones/00000000-0000-0000-0000-000000000000",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["inscripciones", "00000000-0000-0000-0000-000000000000"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "inscripciones",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
                 }
               },
               "response": []
             }
           ]
+        },
+        {
+          "name": "Cleanup",
+          "item": [
+            {
+              "name": "1. Login Admin para cleanup",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Login admin para cleanup\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const data = pm.response.json();",
+                      "pm.collectionVariables.set(\"token\", data.token);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2. Eliminar Horario de test inscripciones",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Horario de test eliminado (204)\", function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/horarios/{{inscripcionHorarioId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "horarios",
+                    "{{inscripcionHorarioId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empleados (RF-12)",
+      "item": [
+        {
+          "name": "0. Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Login admin exitoso\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "201 - Crear empleado sin password",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const correo = `empleado.test.${Date.now()}@gymflow.com`;",
+                  "pm.collectionVariables.set(\"empleadoTestCorreo\", correo);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"El empleado fue creado sin password en request\", function () {",
+                  "    const item = pm.response.json();",
+                  "    pm.expect(item).to.have.property(\"id\");",
+                  "    pm.expect(item.id).to.be.a(\"string\").and.to.have.lengthOf(36);",
+                  "    pm.expect(item).to.have.property(\"nombre\", \"Test\");",
+                  "    pm.expect(item).to.have.property(\"apellido\", \"Empleado Postman RF12\");",
+                  "    pm.expect(item).to.have.property(\"estaActivo\", true);",
+                  "    pm.expect(item).to.have.property(\"rolNombre\");",
+                  "});",
+                  "",
+                  "const item = pm.response.json();",
+                  "pm.collectionVariables.set(\"empleadoTestId\", item.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Test\",\n  \"apellido\": \"Empleado Postman RF12\",\n  \"correo\": \"{{empleadoTestCorreo}}\",\n  \"telefono\": \"099111222\",\n  \"rolId\": \"11111111-1111-1111-1111-111111111111\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/empleados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "409 - Crear empleado con correo duplicado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test(\"El error indica correo duplicado\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"error\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Test\",\n  \"apellido\": \"Duplicado RF12\",\n  \"correo\": \"{{empleadoTestCorreo}}\",\n  \"telefono\": \"099111222\",\n  \"rolId\": \"11111111-1111-1111-1111-111111111111\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/empleados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Listar empleados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test(\"La respuesta es un array de empleados\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    pm.expect(jsonData.length).to.be.at.least(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/empleados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Crear empleado sin autenticación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sin Auth\",\n  \"apellido\": \"No Debería\",\n  \"correo\": \"sinauth@gymflow.com\",\n  \"telefono\": \"099000000\",\n  \"rolId\": \"11111111-1111-1111-1111-111111111111\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/empleados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup - Eliminar empleado test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Empleado de test eliminado (200 o 204)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/empleados/{{empleadoTestId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados",
+                "{{empleadoTestId}}"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }
@@ -3866,6 +5120,18 @@
     {
       "key": "socioPassword",
       "value": "socio123"
+    },
+    {
+      "key": "inscripcionHorarioId",
+      "value": ""
+    },
+    {
+      "key": "empleadoTestId",
+      "value": ""
+    },
+    {
+      "key": "empleadoTestCorreo",
+      "value": ""
     }
   ]
 }
