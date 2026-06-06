@@ -84,7 +84,8 @@ public class AuthController : ControllerBase
                 TipoAccionAuditoria.InicioSesion, "Sesion", null,
                 $"Inicio de sesión de {socio.Nombre} {socio.Apellido} ({rolNombre})");
 
-            return Ok(new LoginResponse(token, socio.Nombre, socio.Apellido, socio.Correo, rolNombre, permisosDto));
+            var unidadIds = socio.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+            return Ok(new LoginResponse(token, socio.Nombre, socio.Apellido, socio.Correo, rolNombre, permisosDto, unidadIds));
         }
 
         return Unauthorized(new { error = "Correo o contraseña incorrectos." });
@@ -115,13 +116,20 @@ public class AuthController : ControllerBase
             var permisos = await _permisoCache.ObtenerPermisosAsync(rolId);
             var permisosDto = permisos.Select(p => new PermisoDto(Guid.Empty, p.Modulo, p.Operacion)).ToList();
 
+            var correo = principal.FindFirst(ClaimTypes.Email)?.Value;
+            List<Guid>? unidadIds = null;
+            var socio = await _socioRepository.GetByCorreoAsync(correo ?? "");
+            if (socio != null)
+                unidadIds = socio.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+
             return Ok(new
             {
                 nombre = principal.FindFirst("nombre")?.Value,
                 apellido = principal.FindFirst("apellido")?.Value,
-                correo = principal.FindFirst(ClaimTypes.Email)?.Value,
+                correo,
                 rolNombre = principal.FindFirst("rolNombre")?.Value,
-                permisos = permisosDto
+                permisos = permisosDto,
+                unidadIds
             });
         }
         catch
@@ -153,4 +161,4 @@ public class AuthController : ControllerBase
 }
 
 public record LoginRequest(string Correo, string Password);
-public record LoginResponse(string Token, string Nombre, string Apellido, string Correo, string RolNombre, IReadOnlyList<PermisoDto> Permisos);
+public record LoginResponse(string Token, string Nombre, string Apellido, string Correo, string RolNombre, IReadOnlyList<PermisoDto> Permisos, IReadOnlyList<Guid>? UnidadIds = null);

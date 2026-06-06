@@ -13,6 +13,11 @@ public class InscripcionClaseConfiguration : IEntityTypeConfiguration<Inscripcio
         builder.Property(i => i.FechaInscripcion).IsRequired();
         builder.Property(i => i.EstaActiva).IsRequired();
 
+        builder.HasOne(i => i.HorarioClase)
+            .WithMany()
+            .HasForeignKey(i => i.HorarioClaseId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne(i => i.Socio)
             .WithMany()
             .HasForeignKey(i => i.SocioId)

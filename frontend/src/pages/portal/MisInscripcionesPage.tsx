@@ -54,6 +54,10 @@ export default function MisInscripcionesPage() {
                   <p className="text-xs text-muted-foreground">
                     {i.instructor} &middot; {i.unidadNombre}
                   </p>
+                  <p className="text-xs text-muted-foreground">
+                    {i.diaSemana} {i.horaInicio} - {i.horaFin}
+                    {i.sala && <> &middot; {i.sala}</>}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Inscripto el {new Date(i.fechaInscripcion).toLocaleDateString('es-UY')}
                   </p>

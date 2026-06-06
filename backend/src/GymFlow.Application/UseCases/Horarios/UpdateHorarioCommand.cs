@@ -1,4 +1,3 @@
-using System.Net;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 using GymFlow.Domain.Entities;
@@ -9,18 +8,18 @@ namespace GymFlow.Application.UseCases.Horarios;
 public class UpdateHorarioCommand
 {
     private readonly IHorarioClaseRepository _horarioRepo;
-    private readonly IClaseRepository _claseRepo;
+    private readonly IInscripcionClaseRepository _inscripcionRepo;
     private readonly IAuditLogger _auditLogger;
     private readonly IEmailService _emailService;
 
     public UpdateHorarioCommand(
         IHorarioClaseRepository horarioRepo,
-        IClaseRepository claseRepo,
+        IInscripcionClaseRepository inscripcionRepo,
         IAuditLogger auditLogger,
         IEmailService emailService)
     {
         _horarioRepo = horarioRepo;
-        _claseRepo = claseRepo;
+        _inscripcionRepo = inscripcionRepo;
         _auditLogger = auditLogger;
         _emailService = emailService;
     }
@@ -31,9 +30,9 @@ public class UpdateHorarioCommand
             ?? throw new KeyNotFoundException("El horario no fue encontrado.");
 
         if (!TimeOnly.TryParse(request.HoraInicio, out var horaInicio))
-            throw new ArgumentException("La hora de inicio no es válida. Use formato HH:mm.");
+            throw new ArgumentException("La hora de inicio no es valida. Use formato HH:mm.");
         if (!TimeOnly.TryParse(request.HoraFin, out var horaFin))
-            throw new ArgumentException("La hora de fin no es válida. Use formato HH:mm.");
+            throw new ArgumentException("La hora de fin no es valida. Use formato HH:mm.");
 
         var diaAnterior = horario.DiaSemana;
         var inicioAnterior = horario.HoraInicio;
@@ -41,13 +40,11 @@ public class UpdateHorarioCommand
 
         horario.Actualizar(request.DiaSemana, horaInicio, horaFin, request.Sala);
 
-        // Validar conflicto de sala
         await ValidarConflictoSala(horario, horario.Clase.UnidadId);
 
         await _horarioRepo.SaveChangesAsync();
 
-        // Notificar inscriptos si el horario cambió
-        var inscripciones = await _claseRepo.GetInscripcionesActivasAsync(horario.ClaseId);
+        var inscripciones = await _inscripcionRepo.GetActivasByHorarioClaseIdAsync(horario.Id);
         var inscripcionesActivas = inscripciones.Count();
 
         if (inscripcionesActivas > 0)
@@ -64,8 +61,8 @@ public class UpdateHorarioCommand
             var fallidos = resultados.Length - enviados;
 
             var detalle = fallidos > 0
-                ? $"Se modificó horario de '{horario.Clase.Nombre}'. Se notificaron {enviados} de {resultados.Length} socios ({fallidos} fallaron)."
-                : $"Se modificó horario de '{horario.Clase.Nombre}'. Se notificaron {enviados} socios inscriptos.";
+                ? $"Se modifico horario de '{horario.Clase.Nombre}'. Se notificaron {enviados} de {resultados.Length} socios ({fallidos} fallaron)."
+                : $"Se modifico horario de '{horario.Clase.Nombre}'. Se notificaron {enviados} socios inscriptos.";
 
             await _auditLogger.LogAsync(usuarioId, usuarioNombre,
                 TipoAccionAuditoria.Modificacion, "Horario", horario.Id, detalle);
@@ -74,7 +71,7 @@ public class UpdateHorarioCommand
         {
             await _auditLogger.LogAsync(usuarioId, usuarioNombre,
                 TipoAccionAuditoria.Modificacion, "Horario", horario.Id,
-                $"Se modificó horario de '{horario.Clase.Nombre}': {request.DiaSemana} {request.HoraInicio}-{request.HoraFin}");
+                $"Se modifico horario de '{horario.Clase.Nombre}': {request.DiaSemana} {request.HoraInicio}-{request.HoraFin}");
         }
 
         return HorarioMapper.ToDto(horario, inscripcionesActivas);
@@ -91,7 +88,7 @@ public class UpdateHorarioCommand
             if (horario.SeSolapaCon(existente))
             {
                 throw new InvalidOperationException(
-                    $"Conflicto de sala: la sala '{horario.Sala}' ya está ocupada el {horario.DiaSemana} " +
+                    $"Conflicto de sala: la sala '{horario.Sala}' ya esta ocupada el {horario.DiaSemana} " +
                     $"de {existente.HoraInicio:HH:mm} a {existente.HoraFin:HH:mm} por la clase '{existente.Clase?.Nombre}'.");
             }
         }

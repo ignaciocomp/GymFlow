@@ -14,15 +14,14 @@ public class GetMisInscripcionesQuery
 
     public async Task<IEnumerable<InscripcionClaseDto>> ExecuteAsync(Guid socioId)
     {
-        var inscripciones = await _inscripcionRepo.GetBySocioIdAsync(socioId);
-        var result = new List<InscripcionClaseDto>();
+        var inscripciones = (await _inscripcionRepo.GetBySocioIdAsync(socioId)).ToList();
+        var horarioIds = inscripciones.Select(i => i.HorarioClaseId).Distinct();
+        var conteos = await _inscripcionRepo.GetConteoActivasPorHorariosAsync(horarioIds);
 
-        foreach (var i in inscripciones)
+        return inscripciones.Select(i =>
         {
-            var count = await _inscripcionRepo.GetInscripcionesActivasCountAsync(i.ClaseId);
-            result.Add(InscripcionMapper.ToDto(i, i.Clase, count));
-        }
-
-        return result;
+            var ocupados = conteos.GetValueOrDefault(i.HorarioClaseId, 0);
+            return InscripcionMapper.ToDto(i, ocupados);
+        });
     }
 }

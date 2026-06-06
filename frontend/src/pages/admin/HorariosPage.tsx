@@ -52,9 +52,21 @@ function timeToMinutes(time: string): number {
   return h * 60 + m
 }
 
+function clustersDeSolapamiento(horarios: HorarioClase[]): HorarioClase[][] {
+  const ordenados = [...horarios].sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
+  const clusters: HorarioClase[][] = []
+  for (const h of ordenados) {
+    const ultimo = clusters[clusters.length - 1]
+    const solapa = ultimo?.some(x => x.horaInicio < h.horaFin && h.horaInicio < x.horaFin)
+    if (solapa) ultimo.push(h)
+    else clusters.push([h])
+  }
+  return clusters
+}
+
 export default function HorariosPage() {
   const queryClient = useQueryClient()
-  const [unidadFilter, setUnidadFilter] = useState<string>('all')
+  const [unidadFilter, setUnidadFilter] = useState<string>('')
   const [createDialog, setCreateDialog] = useState(false)
   const [editDialog, setEditDialog] = useState<HorarioClase | null>(null)
   const [deleteDialog, setDeleteDialog] = useState<HorarioClase | null>(null)
@@ -70,7 +82,8 @@ export default function HorariosPage() {
 
   const { data: horarios, isLoading } = useQuery({
     queryKey: ['horarios', unidadFilter],
-    queryFn: () => horariosApi.getAll(unidadFilter === 'all' ? undefined : unidadFilter),
+    queryFn: () => horariosApi.getAll(unidadFilter),
+    enabled: !!unidadFilter,
   })
 
   const { data: unidades } = useQuery({
@@ -217,22 +230,21 @@ export default function HorariosPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? 'all')}>
+        <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? '')}>
           <SelectTrigger className="w-[200px] bg-card border-border">
-            <SelectValue>
-              {unidadFilter === 'all'
-                ? 'Todas las sedes'
-                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'}
+            <SelectValue placeholder="Seleccionar sede">
+              {unidadFilter
+                ? unidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'
+                : undefined}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas las sedes</SelectItem>
             {unidades?.map((u) => (
               <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {horarios && (
+        {unidadFilter && horarios && (
           <span className="text-sm text-muted-foreground">
             {horarios.length} horario{horarios.length !== 1 ? 's' : ''} programado{horarios.length !== 1 ? 's' : ''}
           </span>
@@ -240,7 +252,25 @@ export default function HorariosPage() {
       </div>
 
       {/* Weekly Calendar Grid */}
-      {isLoading ? (
+      {!unidadFilter ? (
+        <div className="flex h-64 flex-col items-center justify-center gap-5 rounded-xl border border-border bg-card text-center">
+          <p className="text-lg font-medium text-foreground">
+            📅 Seleccioná una sede para ver los horarios
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {unidades?.map((u) => (
+              <Button
+                key={u.id}
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => setUnidadFilter(u.id)}
+              >
+                {u.nombre}
+              </Button>
+            ))}
+          </div>
+        </div>
+      ) : isLoading ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">
           Cargando horarios...
         </div>
@@ -284,48 +314,43 @@ export default function HorariosPage() {
                     />
                   ))}
 
-                  {/* Horario blocks */}
-                  {horariosByDay[dia].map(h => {
-                    const top = timeToMinutes(h.horaInicio) - gridStartHour * 60
-                    const height = timeToMinutes(h.horaFin) - timeToMinutes(h.horaInicio)
-                    const colorClass = getColorForClase(h.claseId)
+                  {/* Horario blocks (split de clases solapadas lado a lado) */}
+                  {clustersDeSolapamiento(horariosByDay[dia]).flatMap(cluster =>
+                    cluster.map((h, indiceEnCluster) => {
+                      const top = timeToMinutes(h.horaInicio) - gridStartHour * 60
+                      const height = timeToMinutes(h.horaFin) - timeToMinutes(h.horaInicio)
+                      const colorClass = getColorForClase(h.claseId)
+                      const width = 100 / cluster.length
+                      const left = width * indiceEnCluster
 
-                    return (
-                      <div
-                        key={h.id}
-                        className={`absolute left-1 right-1 rounded-md border px-2 py-1 cursor-pointer hover:opacity-80 transition-opacity group ${colorClass}`}
-                        style={{ top: `${top}px`, height: `${Math.max(height, 30)}px` }}
-                        onClick={() => openEdit(h)}
-                      >
-                        <div className="flex items-start justify-between gap-1">
-                          <div className="min-w-0 flex-1 overflow-hidden">
-                            <p className="text-xs font-semibold truncate">{h.claseNombre}</p>
-                            {height >= 40 && (
-                              <p className="text-[10px] opacity-80 truncate">{h.instructor}</p>
-                            )}
-                            {height >= 55 && (
-                              <p className="text-[10px] opacity-70">
-                                {h.horaInicio} - {h.horaFin}
-                                {h.sala && ` | ${h.sala}`}
-                              </p>
-                            )}
-                            {height >= 70 && (
-                              <p className="text-[10px] opacity-60">
-                                {h.inscripcionesActivas}/{h.capacidadMaxima}
-                              </p>
-                            )}
+                      return (
+                        <div
+                          key={h.id}
+                          className={`absolute rounded-md border px-2 py-1 cursor-pointer hover:opacity-80 transition-opacity group ${colorClass}`}
+                          style={{
+                            top: `${top}px`,
+                            height: `${Math.max(height, 30)}px`,
+                            left: `calc(${left}% + 2px)`,
+                            width: `calc(${width}% - 4px)`,
+                          }}
+                          onClick={() => openEdit(h)}
+                        >
+                          <div className="flex items-start justify-between gap-1">
+                            <div className="min-w-0 flex-1 overflow-hidden">
+                              <p className="text-xs font-semibold truncate">{h.claseNombre}</p>
+                            </div>
+                            <button
+                              className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-0.5 rounded hover:bg-white/10 transition-opacity cursor-pointer"
+                              title="Eliminar"
+                              onClick={(e) => { e.stopPropagation(); setDeleteDialog(h); setFormError(null) }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
                           </div>
-                          <button
-                            className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-0.5 rounded hover:bg-white/10 transition-opacity cursor-pointer"
-                            title="Eliminar"
-                            onClick={(e) => { e.stopPropagation(); setDeleteDialog(h); setFormError(null) }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  )}
                 </div>
               ))}
             </div>

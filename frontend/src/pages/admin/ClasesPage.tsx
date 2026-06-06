@@ -162,9 +162,7 @@ export default function ClasesPage() {
                     {clase.unidadNombre}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {clase.inscripcionesActivas}/{clase.capacidadMaxima}
-                </TableCell>
+                <TableCell className="text-muted-foreground">{clase.capacidadMaxima}</TableCell>
                 <TableCell className="text-muted-foreground">
                   {clase.duracionMinutos} min
                 </TableCell>

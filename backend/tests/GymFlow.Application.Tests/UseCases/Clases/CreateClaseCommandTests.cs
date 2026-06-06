@@ -32,7 +32,6 @@ public class CreateClaseCommandTests
         Assert.Equal(20, result.CapacidadMaxima);
         Assert.Equal("Espacio Mora", result.UnidadNombre);
         Assert.True(result.EstaActivo);
-        Assert.Equal(0, result.InscripcionesActivas);
 
         _claseRepo.Verify(r => r.AddAsync(It.IsAny<Clase>()), Times.Once);
         _claseRepo.Verify(r => r.SaveChangesAsync(), Times.Once);

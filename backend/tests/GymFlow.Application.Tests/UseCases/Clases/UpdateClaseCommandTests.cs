@@ -10,23 +10,31 @@ namespace GymFlow.Application.Tests.UseCases.Clases;
 public class UpdateClaseCommandTests
 {
     private readonly Mock<IClaseRepository> _claseRepo = new();
+    private readonly Mock<IHorarioClaseRepository> _horarioRepo = new();
+    private readonly Mock<IInscripcionClaseRepository> _inscripcionRepo = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
 
     private UpdateClaseCommand CrearCommand() =>
-        new(_claseRepo.Object, _auditLogger.Object);
+        new(_claseRepo.Object, _horarioRepo.Object, _inscripcionRepo.Object, _auditLogger.Object);
 
     private static Clase CrearClase() =>
-        new("Yoga", "Clase de yoga", 20, 60, "Laura García", Guid.NewGuid());
+        new("Yoga", "Clase de yoga", 20, 60, "Laura Garcia", Guid.NewGuid());
+
+    private static HorarioClase CrearHorario(Clase clase) =>
+        new(clase.Id, DiaSemana.Lunes, new TimeOnly(8, 0), new TimeOnly(9, 0), "Sala 1");
 
     [Fact]
     public async Task ExecuteAsync_ConDatosValidos_ActualizaClaseYRegistraAuditoria()
     {
         var clase = CrearClase();
+        var horario = CrearHorario(clase);
         _claseRepo.Setup(r => r.GetByIdAsync(clase.Id)).ReturnsAsync(clase);
-        _claseRepo.Setup(r => r.GetInscripcionesActivasCountAsync(clase.Id)).ReturnsAsync(0);
+        _horarioRepo.Setup(r => r.GetByClaseIdAsync(clase.Id)).ReturnsAsync(new[] { horario });
+        _inscripcionRepo.Setup(r => r.GetConteoActivasPorHorariosAsync(It.IsAny<IEnumerable<Guid>>()))
+            .ReturnsAsync(new Dictionary<Guid, int> { [horario.Id] = 0 });
         _claseRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
-        var request = new UpdateClaseRequest("Pilates", "Clase de pilates", 15, 45, "María López");
+        var request = new UpdateClaseRequest("Pilates", "Clase de pilates", 15, 45, "Maria Lopez");
         var result = await CrearCommand().ExecuteAsync(clase.Id, request, Guid.NewGuid(), "Admin Test");
 
         Assert.Equal("Pilates", result.Nombre);
@@ -50,13 +58,16 @@ public class UpdateClaseCommandTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ReducirCapacidadPorDebajoDeInscripciones_LanzaInvalidOperationException()
+    public async Task ExecuteAsync_ReducirCapacidadPorDebajoDelMaximoDeHorarios_LanzaInvalidOperationException()
     {
-        var clase = CrearClase(); // capacidad 20
+        var clase = CrearClase();
+        var horario = CrearHorario(clase);
         _claseRepo.Setup(r => r.GetByIdAsync(clase.Id)).ReturnsAsync(clase);
-        _claseRepo.Setup(r => r.GetInscripcionesActivasCountAsync(clase.Id)).ReturnsAsync(15);
+        _horarioRepo.Setup(r => r.GetByClaseIdAsync(clase.Id)).ReturnsAsync(new[] { horario });
+        _inscripcionRepo.Setup(r => r.GetConteoActivasPorHorariosAsync(It.IsAny<IEnumerable<Guid>>()))
+            .ReturnsAsync(new Dictionary<Guid, int> { [horario.Id] = 15 });
 
-        var request = new UpdateClaseRequest("Yoga", "Desc", 10, 60, "Instructor"); // 10 < 15
+        var request = new UpdateClaseRequest("Yoga", "Desc", 10, 60, "Instructor");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             CrearCommand().ExecuteAsync(clase.Id, request, Guid.NewGuid(), "Admin"));
