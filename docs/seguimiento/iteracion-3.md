@@ -65,7 +65,7 @@ Requerimientos no funcionales implementados:
 
 **Pantalla Listado de Clases (Admin)**
 
-![Listado de Clases](capturas/admin-clases-listado.png)
+*(captura de pantalla)*
 
 **Ruta:** /admin/clases
 
@@ -73,7 +73,7 @@ Requerimientos no funcionales implementados:
 
 **Pantalla Nueva Clase (Admin)**
 
-![Nueva Clase](capturas/admin-clases-nueva.png)
+*(captura de pantalla)*
 
 **Ruta:** /admin/clases/nueva
 
@@ -81,7 +81,7 @@ Requerimientos no funcionales implementados:
 
 **Pantalla Editar Clase (Admin)**
 
-![Editar Clase](capturas/admin-clases-editar.png)
+*(captura de pantalla)*
 
 **Ruta:** /admin/clases/:id/editar
 
@@ -89,7 +89,7 @@ Requerimientos no funcionales implementados:
 
 **Pantalla Calendario de Horarios (Admin)**
 
-![Calendario Horarios](capturas/admin-horarios-calendario.png)
+*(captura de pantalla)*
 
 **Ruta:** /admin/horarios
 
@@ -97,7 +97,7 @@ Requerimientos no funcionales implementados:
 
 **Pantalla Horarios Portal (Socio)**
 
-![Horarios Portal](capturas/portal-horarios.png)
+*(captura de pantalla)*
 
 **Ruta:** /portal/horarios
 
@@ -105,7 +105,7 @@ Requerimientos no funcionales implementados:
 
 **Pantalla Mis Inscripciones (Socio)**
 
-![Mis Inscripciones](capturas/portal-mis-inscripciones.png)
+*(captura de pantalla)*
 
 **Ruta:** /portal/mis-inscripciones
 
@@ -288,7 +288,7 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 
 ### Prueba 3.1 --- Crear clase desde panel de administración
 
-![Crear clase](capturas/prueba-crear-clase.png)
+*(captura de pantalla)*
 
 **Pasos:**
 
@@ -303,7 +303,7 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 
 ### Prueba 3.2 --- Cancelar clase con socios inscriptos
 
-![Cancelar clase](capturas/prueba-cancelar-clase.png)
+*(captura de pantalla)*
 
 **Pasos:**
 
@@ -317,7 +317,7 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 
 ### Prueba 3.3 --- Crear horario con validación de conflicto de sala
 
-![Conflicto de sala](capturas/prueba-conflicto-sala.png)
+*(captura de pantalla)*
 
 **Pasos:**
 
@@ -332,7 +332,7 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 
 ### Prueba 3.4 --- Crear horario en múltiples días simultáneamente
 
-![Horario múltiples días](capturas/prueba-horario-multiples-dias.png)
+*(captura de pantalla)*
 
 **Pasos:**
 
@@ -347,7 +347,7 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 
 ### Prueba 3.5 --- Inscripción a clase desde portal del socio
 
-![Inscripción portal](capturas/prueba-inscripcion-portal.png)
+*(captura de pantalla)*
 
 **Pasos:**
 
@@ -361,7 +361,7 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 
 ### Prueba 3.6 --- Cancelar inscripción desde Mis Inscripciones
 
-![Cancelar inscripción](capturas/prueba-cancelar-inscripcion.png)
+*(captura de pantalla)*
 
 **Pasos:**
 
@@ -375,7 +375,7 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 
 ### Prueba 3.7 --- Reducir capacidad por debajo de inscripciones activas
 
-![Capacidad inválida](capturas/prueba-capacidad-invalida.png)
+*(captura de pantalla)*
 
 **Pasos:**
 

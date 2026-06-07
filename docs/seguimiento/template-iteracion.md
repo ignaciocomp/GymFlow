@@ -50,7 +50,7 @@ Requerimientos no funcionales implementados:
 
 **Pantalla {{NombrePantalla}}**
 
-![{{NombrePantalla}}](capturas/{{archivo_captura}})
+*(captura de pantalla)*
 
 **Ruta:** /{{ruta}}
 
@@ -99,7 +99,7 @@ Sugerencias y ajustes solicitados:
 
 {{PRUEBAS_POSTMAN}}
 
-<!-- Agregar capturas de ejecución de Postman aquí -->
+<!-- Agregar capturas de ejecución de Postman aquí si corresponde -->
 
 ## Pruebas funcionales de frontend
 
@@ -107,7 +107,7 @@ Sugerencias y ajustes solicitados:
 
 ### Prueba {{X.Y}} --- {{Nombre de la prueba}}
 
-![{{nombre_prueba}}](capturas/{{archivo_prueba}})
+*(captura de pantalla)*
 
 **Pasos:**
 

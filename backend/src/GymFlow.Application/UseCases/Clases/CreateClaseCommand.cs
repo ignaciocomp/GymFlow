@@ -35,6 +35,6 @@ public class CreateClaseCommand
             $"Se creó la clase '{request.Nombre}' en {unidad.Nombre}");
 
         return new ClaseDto(clase.Id, clase.Nombre, clase.Descripcion, clase.CapacidadMaxima, clase.DuracionMinutos,
-            clase.Instructor, clase.UnidadId, unidad.Nombre, clase.EstaActivo);
+            clase.Instructor, clase.UnidadId, unidad.Nombre, clase.EstaActivo, 0);
     }
 }

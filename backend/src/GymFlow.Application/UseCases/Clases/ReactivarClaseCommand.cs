@@ -29,6 +29,6 @@ public class ReactivarClaseCommand
             $"Se reactivó la clase '{clase.Nombre}'");
 
         return new ClaseDto(clase.Id, clase.Nombre, clase.Descripcion, clase.CapacidadMaxima, clase.DuracionMinutos,
-            clase.Instructor, clase.UnidadId, clase.Unidad?.Nombre ?? "", clase.EstaActivo);
+            clase.Instructor, clase.UnidadId, clase.Unidad?.Nombre ?? "", clase.EstaActivo, 0);
     }
 }
