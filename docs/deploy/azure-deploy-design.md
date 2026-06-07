@@ -771,6 +771,14 @@ Container Apps mantiene historial de revisiones por default — se puede volver 
 
 > **Tip:** usar **tag con SHA** (`gymflow:abc1234`) en vez de `:latest` en producción permite reproducir cualquier revision con `az containerapp update --image ...sha`. El workflow ya lo hace.
 
+### Valores reales para GitHub Variables (deploy actual)
+| Variable | Valor |
+|----------|-------|
+| AZURE_RG | rg-gymflow |
+| AZURE_ACR_NAME | acrgymflow42543 |
+| AZURE_ACR_LOGIN_SERVER | acrgymflow42543.azurecr.io |
+| AZURE_ACA_APP | ca-gymflow |
+
 ---
 
 ## 14. Cleanup completo
