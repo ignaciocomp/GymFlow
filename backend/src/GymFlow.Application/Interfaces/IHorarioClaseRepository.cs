@@ -8,6 +8,7 @@ public interface IHorarioClaseRepository
     Task<IEnumerable<HorarioClase>> GetAllAsync(Guid? unidadId = null);
     Task<HorarioClase?> GetByIdAsync(Guid id);
     Task<IEnumerable<HorarioClase>> GetByClaseIdAsync(Guid claseId);
+    Task<Dictionary<Guid, List<HorarioClase>>> GetByClaseIdsAsync(IEnumerable<Guid> claseIds);
     Task<IEnumerable<HorarioClase>> GetByUnidadYDiaAsync(Guid unidadId, DiaSemana dia);
     Task AddAsync(HorarioClase horario);
     void Remove(HorarioClase horario);

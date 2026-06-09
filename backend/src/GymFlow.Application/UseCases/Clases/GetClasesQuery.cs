@@ -1,5 +1,6 @@
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
+using GymFlow.Domain.Entities;
 
 namespace GymFlow.Application.UseCases.Clases;
 
@@ -22,14 +23,14 @@ public class GetClasesQuery
             ? await _repository.GetByUnidadIdAsync(unidadId.Value, includeInactive)
             : await _repository.GetAllAsync(includeInactive)).ToList();
 
-        var allHorarios = new List<Guid>();
-        var claseHorarioIds = new Dictionary<Guid, List<Guid>>();
-        foreach (var c in clases)
-        {
-            var horarios = (await _horarioRepo.GetByClaseIdAsync(c.Id)).Select(h => h.Id).ToList();
-            claseHorarioIds[c.Id] = horarios;
-            allHorarios.AddRange(horarios);
-        }
+        var horariosPorClase = clases.Count > 0
+            ? await _horarioRepo.GetByClaseIdsAsync(clases.Select(c => c.Id))
+            : new Dictionary<Guid, List<HorarioClase>>();
+
+        var claseHorarioIds = horariosPorClase.ToDictionary(
+            kv => kv.Key,
+            kv => kv.Value.Select(h => h.Id).ToList());
+        var allHorarios = claseHorarioIds.Values.SelectMany(ids => ids).ToList();
 
         var conteos = allHorarios.Count > 0
             ? await _inscripcionRepo.GetConteoActivasPorHorariosAsync(allHorarios)

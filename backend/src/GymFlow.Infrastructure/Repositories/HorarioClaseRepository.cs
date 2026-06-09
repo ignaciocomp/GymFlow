@@ -47,6 +47,18 @@ public class HorarioClaseRepository : IHorarioClaseRepository
             .ToListAsync();
     }
 
+    public async Task<Dictionary<Guid, List<HorarioClase>>> GetByClaseIdsAsync(IEnumerable<Guid> claseIds)
+    {
+        var ids = claseIds.ToList();
+        var horarios = await _context.HorariosClase
+            .Where(h => ids.Contains(h.ClaseId))
+            .ToListAsync();
+
+        return horarios
+            .GroupBy(h => h.ClaseId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+    }
+
     public async Task<IEnumerable<HorarioClase>> GetByUnidadYDiaAsync(Guid unidadId, DiaSemana dia)
     {
         return await _context.HorariosClase
