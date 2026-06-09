@@ -39,12 +39,12 @@ public class InscribirSocioCommand
         if (!clase.EstaActivo)
             throw new InvalidOperationException("No se puede inscribir a una clase cancelada.");
 
-        if (await _cuotaRepo.TieneCuotasVencidasEnUnidadAsync(socioId, clase.UnidadId))
-            throw new InvalidOperationException("No podés inscribirte con cuota vencida en esta sede.");
-
         var existente = await _inscripcionRepo.GetActivaBySocioYHorarioAsync(socioId, horarioClaseId);
         if (existente != null)
             throw new InvalidOperationException("Ya estas inscripto en este horario.");
+
+        if (await _cuotaRepo.TieneCuotasVencidasEnUnidadAsync(socioId, clase.UnidadId))
+            throw new InvalidOperationException("No podés inscribirte con cuota vencida en esta sede.");
 
         var ocupados = await _inscripcionRepo.GetInscripcionesActivasCountAsync(horarioClaseId);
         if (ocupados >= clase.CapacidadMaxima)

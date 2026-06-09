@@ -8,6 +8,10 @@ public interface IHorarioClaseRepository
     Task<IEnumerable<HorarioClase>> GetAllAsync(Guid? unidadId = null);
     Task<HorarioClase?> GetByIdAsync(Guid id);
     Task<IEnumerable<HorarioClase>> GetByClaseIdAsync(Guid claseId);
+    /// <summary>
+    /// Horarios de varias clases en una sola query, agrupados por ClaseId.
+    /// No carga navegaciones ni ordena; las clases sin horarios no tienen entrada en el diccionario.
+    /// </summary>
     Task<Dictionary<Guid, List<HorarioClase>>> GetByClaseIdsAsync(IEnumerable<Guid> claseIds);
     Task<IEnumerable<HorarioClase>> GetByUnidadYDiaAsync(Guid unidadId, DiaSemana dia);
     Task AddAsync(HorarioClase horario);

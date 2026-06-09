@@ -95,6 +95,49 @@ public class InscribirSocioCommandTests
     }
 
     [Fact]
+    public async Task YaInscriptoYConCuotaVencida_LanzaYaInscripto()
+    {
+        var clase = CrearClase(capacidad: 10);
+        var horario = CrearHorario(clase);
+        var socio = CrearSocio();
+
+        _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
+        _cuotaRepo.Setup(r => r.TieneCuotasVencidasEnUnidadAsync(socio.Id, clase.UnidadId)).ReturnsAsync(true);
+        _inscripcionRepo.Setup(r => r.GetActivaBySocioYHorarioAsync(socio.Id, horario.Id))
+            .ReturnsAsync(new InscripcionClase(horario.Id, socio.Id));
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CrearCommand().ExecuteAsync(socio.Id, horario.Id, Guid.NewGuid(), "Admin"));
+
+        Assert.Equal("Ya estas inscripto en este horario.", ex.Message);
+        _inscripcionRepo.Verify(r => r.AddAsync(It.IsAny<InscripcionClase>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConCuotaVencidaEnOtraUnidad_NoBloquea()
+    {
+        var clase = CrearClase(capacidad: 10);
+        var horario = CrearHorario(clase);
+        var socio = CrearSocio();
+        var otraUnidadId = Guid.NewGuid();
+
+        _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
+        _cuotaRepo.Setup(r => r.TieneCuotasVencidasEnUnidadAsync(socio.Id, otraUnidadId)).ReturnsAsync(true);
+        _cuotaRepo.Setup(r => r.TieneCuotasVencidasEnUnidadAsync(socio.Id, clase.UnidadId)).ReturnsAsync(false);
+        _inscripcionRepo.Setup(r => r.GetActivaBySocioYHorarioAsync(socio.Id, horario.Id)).ReturnsAsync((InscripcionClase?)null);
+        _inscripcionRepo.Setup(r => r.GetInscripcionesActivasCountAsync(horario.Id)).ReturnsAsync(0);
+        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+
+        var dto = await CrearCommand().ExecuteAsync(socio.Id, horario.Id, Guid.NewGuid(), "Admin");
+
+        Assert.Equal(horario.Id, dto.HorarioClaseId);
+        _cuotaRepo.Verify(r => r.TieneCuotasVencidasEnUnidadAsync(socio.Id, clase.UnidadId), Times.Once);
+        _inscripcionRepo.Verify(r => r.AddAsync(It.IsAny<InscripcionClase>()), Times.Once);
+    }
+
+    [Fact]
     public async Task ConCuotaVencidaEnUnidad_LanzaInvalidOperationYNoInscribe()
     {
         var clase = CrearClase(capacidad: 10);
