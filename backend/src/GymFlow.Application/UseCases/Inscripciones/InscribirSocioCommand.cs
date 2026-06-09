@@ -9,6 +9,7 @@ public class InscribirSocioCommand
 {
     private readonly IInscripcionClaseRepository _inscripcionRepo;
     private readonly IHorarioClaseRepository _horarioRepo;
+    private readonly ICuotaRepository _cuotaRepo;
     private readonly ISocioRepository _socioRepo;
     private readonly IEmailService _emailService;
     private readonly IAuditLogger _auditLogger;
@@ -16,12 +17,14 @@ public class InscribirSocioCommand
     public InscribirSocioCommand(
         IInscripcionClaseRepository inscripcionRepo,
         IHorarioClaseRepository horarioRepo,
+        ICuotaRepository cuotaRepo,
         ISocioRepository socioRepo,
         IEmailService emailService,
         IAuditLogger auditLogger)
     {
         _inscripcionRepo = inscripcionRepo;
         _horarioRepo = horarioRepo;
+        _cuotaRepo = cuotaRepo;
         _socioRepo = socioRepo;
         _emailService = emailService;
         _auditLogger = auditLogger;
@@ -35,6 +38,9 @@ public class InscribirSocioCommand
 
         if (!clase.EstaActivo)
             throw new InvalidOperationException("No se puede inscribir a una clase cancelada.");
+
+        if (await _cuotaRepo.TieneCuotasVencidasEnUnidadAsync(socioId, clase.UnidadId))
+            throw new InvalidOperationException("No podés inscribirte con cuota vencida en esta sede.");
 
         var existente = await _inscripcionRepo.GetActivaBySocioYHorarioAsync(socioId, horarioClaseId);
         if (existente != null)
