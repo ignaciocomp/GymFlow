@@ -13,16 +13,7 @@ jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: gymflow_test
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    # Sin servicio de Postgres: los tests usan mocks (Moq), no acceden a una DB real.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -57,6 +48,16 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Capturar imagen actual (para rollback)
+        id: current
+        run: |
+          IMG=$(az containerapp show \
+            --name ${{ vars.AZURE_ACA_APP }} \
+            --resource-group ${{ vars.AZURE_RG }} \
+            --query "properties.template.containers[0].image" -o tsv)
+          echo "image=$IMG" >> "$GITHUB_OUTPUT"
+          echo "Imagen actual (para rollback): $IMG"
 
       - name: Build & push image to ACR (tag con SHA + latest)
         run: |
@@ -96,6 +97,16 @@ jobs:
           done
           echo "App no respondio 200 despues de 30 intentos"
           exit 1
+
+      - name: Rollback si el deploy/smoke fallo
+        if: failure() && steps.current.outputs.image != ''
+        run: |
+          echo "Deploy fallido — revirtiendo a la imagen anterior: ${{ steps.current.outputs.image }}"
+          az containerapp update \
+            --name ${{ vars.AZURE_ACA_APP }} \
+            --resource-group ${{ vars.AZURE_RG }} \
+            --image ${{ steps.current.outputs.image }}
+          echo "Rollback completado. La revision anterior vuelve a servir trafico."
 
       - name: Resumen
         if: always()
