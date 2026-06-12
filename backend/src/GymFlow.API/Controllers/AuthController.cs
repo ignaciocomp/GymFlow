@@ -105,7 +105,7 @@ public class AuthController : ControllerBase
         {
             var socio = await _loginConGoogleCommand.ExecuteAsync(request.IdToken);
 
-            var rolId = socio.RolId ?? Guid.Empty;
+            var rolId = socio.RolId!.Value;
             var rol = await _rolRepository.GetByIdAsync(rolId);
             var rolNombre = rol?.Nombre ?? "Socio";
 

@@ -21,7 +21,7 @@ public class LoginConGoogleCommand
             throw new UnauthorizedAccessException("Token de Google inválido.");
 
         var socio = await _socioRepository.GetByCorreoAsync(payload.Email);
-        if (socio is null || !socio.EstaActivo)
+        if (socio is null || !socio.EstaActivo || !socio.RolId.HasValue)
             throw new UnauthorizedAccessException("No encontramos una cuenta asociada a este correo.");
 
         if (string.IsNullOrWhiteSpace(socio.GoogleUserId))

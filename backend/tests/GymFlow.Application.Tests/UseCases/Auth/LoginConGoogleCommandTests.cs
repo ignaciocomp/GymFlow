@@ -65,6 +65,21 @@ public class LoginConGoogleCommandTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_SocioSinRol_LanzaUnauthorizedConMensajeE3()
+    {
+        SetupTokenValido();
+        var socio = SocioFake();
+        typeof(Usuario).GetProperty(nameof(Usuario.RolId))!.SetValue(socio, null);
+        _socioRepo.Setup(r => r.GetByCorreoAsync(Correo)).ReturnsAsync(socio);
+
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            CrearCommand().ExecuteAsync(IdToken));
+
+        Assert.Equal("No encontramos una cuenta asociada a este correo.", ex.Message);
+        _socioRepo.Verify(r => r.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_TokenInvalido_LanzaUnauthorized()
     {
         _tokenValidator.Setup(v => v.ValidarAsync(IdToken))
