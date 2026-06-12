@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import api from '@/services/api'
+import api, { authApi } from '@/services/api'
+import type { LoginResponse } from '@/services/api'
 import type { Permiso, Modulo, Operacion } from '@/types/permisos'
 
 interface User {
@@ -16,6 +17,7 @@ interface AuthContextType {
   user: User | null
   token: string | null
   login: (correo: string, password: string) => Promise<void>
+  loginConGoogle: (idToken: string) => Promise<void>
   logout: () => void
   isAuthenticated: boolean
   isLoading: boolean
@@ -48,8 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token, logout])
 
-  const login = async (correo: string, password: string) => {
-    const { data } = await api.post('/auth/login', { correo, password })
+  const aplicarSesion = (data: LoginResponse) => {
     localStorage.setItem('gymflow_token', data.token)
     api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
     setToken(data.token)
@@ -63,11 +64,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  const login = async (correo: string, password: string) => {
+    aplicarSesion(await authApi.login(correo, password))
+  }
+
+  const loginConGoogle = async (idToken: string) => {
+    aplicarSesion(await authApi.loginConGoogle(idToken))
+  }
+
   const tienePermiso = (modulo: Modulo, operacion: Operacion): boolean =>
     user?.permisos.some(p => p.modulo === modulo && p.operacion === operacion) ?? false
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading, tienePermiso }}>
+    <AuthContext.Provider value={{ user, token, login, loginConGoogle, logout, isAuthenticated: !!user, isLoading, tienePermiso }}>
       {children}
     </AuthContext.Provider>
   )
