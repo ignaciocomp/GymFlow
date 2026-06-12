@@ -5,7 +5,7 @@ using GymFlow.Domain.Enums;
 namespace GymFlow.Application.UseCases.Cuotas;
 
 /// <summary>
-/// Plantillas HTML compartidas para emails de recordatorio de cuota.
+/// Plantillas HTML compartidas para emails de cuotas (recordatorios y confirmación de pago).
 /// Aplica HtmlEncode a todos los valores dinámicos para prevenir inyección HTML
 /// (ej: un plan llamado "&lt;script&gt;..." no ejecuta código en el cliente de email).
 /// </summary>
@@ -29,6 +29,36 @@ internal static class EmailTemplates
             _ => ("Recordatorio de cuota", "Tenés una cuota pendiente.")
         };
         return (asunto, BuildBody(socio, cuota, encabezado, llamada: null));
+    }
+
+    public static (string Asunto, string Cuerpo) ConfirmacionPago(Socio socio, Cuota cuota)
+    {
+        // HtmlEncode en TODOS los valores dinámicos (mismo criterio que BuildBody).
+        var nombre = WebUtility.HtmlEncode(socio.Nombre);
+        var plan = WebUtility.HtmlEncode(cuota.NombrePlan);
+        var monto = cuota.Monto.ToString("N2");
+        var periodo = cuota.FechaEmision.ToString("MM/yyyy");
+        var fechaPago = (cuota.FechaPago ?? DateTime.UtcNow).ToString("dd/MM/yyyy");
+        var filaSede = cuota.Unidad is null
+            ? ""
+            : $"<tr><td><b>Sede:</b></td><td>{WebUtility.HtmlEncode(cuota.Unidad.Nombre)}</td></tr>";
+
+        var asunto = $"Pago confirmado: tu cuota de {plan}";
+        var cuerpo = $@"<html>
+<body style='font-family: Arial, sans-serif;'>
+    <h2>Hola {nombre},</h2>
+    <p>Registramos el pago de tu cuota. ¡Gracias!</p>
+    <table style='border-collapse: collapse;'>
+        <tr><td><b>Plan:</b></td><td>{plan}</td></tr>
+        {filaSede}
+        <tr><td><b>Monto:</b></td><td>${monto}</td></tr>
+        <tr><td><b>Período:</b></td><td>{periodo}</td></tr>
+        <tr><td><b>Fecha de pago:</b></td><td>{fechaPago}</td></tr>
+    </table>
+    <p>Saludos,<br/>Equipo GymFlow</p>
+</body>
+</html>";
+        return (asunto, cuerpo);
     }
 
     private static string BuildBody(Socio socio, Cuota cuota, string encabezado, string? llamada)
