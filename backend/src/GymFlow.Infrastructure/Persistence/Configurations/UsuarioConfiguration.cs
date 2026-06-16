@@ -21,6 +21,7 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.Property(u => u.Correo).IsRequired().HasMaxLength(200);
         builder.HasIndex(u => u.Correo).IsUnique();
         builder.Property(u => u.PasswordHash).IsRequired(false).HasMaxLength(500);
+        builder.Property(u => u.GoogleUserId).IsRequired(false).HasMaxLength(64);
         builder.Property(u => u.EstaActivo).IsRequired();
         builder.Property(u => u.FechaCreacion).IsRequired();
 
