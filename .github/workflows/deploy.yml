@@ -61,11 +61,16 @@ jobs:
 
       - name: Build & push image to ACR (tag con SHA + latest)
         run: |
-          az acr build \
-            --registry ${{ vars.AZURE_ACR_NAME }} \
-            --image gymflow:${{ github.sha }} \
-            --image gymflow:latest \
-            --file Dockerfile .
+          # Azure for Students no permite ACR Tasks (az acr build falla con
+          # TasksOperationsNotAllowed), asi que construimos la imagen en el
+          # runner y la pusheamos con docker. El Service Principal es Contributor
+          # sobre el RG, rol que habilita push a ACR via 'az acr login'.
+          az acr login --name ${{ vars.AZURE_ACR_NAME }}
+          IMG_SHA=${{ vars.AZURE_ACR_LOGIN_SERVER }}/gymflow:${{ github.sha }}
+          IMG_LATEST=${{ vars.AZURE_ACR_LOGIN_SERVER }}/gymflow:latest
+          docker build -t "$IMG_SHA" -t "$IMG_LATEST" -f Dockerfile .
+          docker push "$IMG_SHA"
+          docker push "$IMG_LATEST"
 
       - name: Update Container App
         run: |
