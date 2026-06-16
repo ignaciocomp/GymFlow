@@ -1,3 +1,4 @@
+using GymFlow.Application.Common;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 using GymFlow.Domain.Constants;
@@ -8,23 +9,24 @@ namespace GymFlow.Application.UseCases.Empleados;
 
 public class CrearEmpleadoCommand
 {
-    private const int MinPasswordLength = 8;
-
     private readonly IEmpleadoRepository _empleadoRepository;
     private readonly IRolRepository _rolRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IAuditLogger _auditLogger;
+    private readonly IEmailService _emailService;
 
     public CrearEmpleadoCommand(
         IEmpleadoRepository empleadoRepository,
         IRolRepository rolRepository,
         IPasswordHasher passwordHasher,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        IEmailService emailService)
     {
         _empleadoRepository = empleadoRepository;
         _rolRepository = rolRepository;
         _passwordHasher = passwordHasher;
         _auditLogger = auditLogger;
+        _emailService = emailService;
     }
 
     public async Task<EmpleadoDto> ExecuteAsync(CrearEmpleadoRequest request, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
@@ -35,8 +37,6 @@ public class CrearEmpleadoCommand
             throw new ArgumentException("El apellido es obligatorio.", nameof(request));
         if (string.IsNullOrWhiteSpace(request.Correo))
             throw new ArgumentException("El correo es obligatorio.", nameof(request));
-        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < MinPasswordLength)
-            throw new ArgumentException($"La contraseña debe tener al menos {MinPasswordLength} caracteres.", nameof(request));
 
         if (await _empleadoRepository.ExisteCorreoAsync(request.Correo, null, ct))
             throw new InvalidOperationException("El correo ingresado ya está registrado.");
@@ -47,16 +47,24 @@ public class CrearEmpleadoCommand
         if (rol.Id == RolesSeed.SocioRolId)
             throw new InvalidOperationException("No se puede asignar el rol Socio a un empleado.");
 
-        var hash = _passwordHasher.Hash(request.Password);
+        var passwordTemporal = GeneradorPassword.Generar();
+        var hash = _passwordHasher.Hash(passwordTemporal);
         var empleado = new Empleado(request.Nombre, request.Apellido, request.Correo, hash, rol.Id);
 
         await _empleadoRepository.AddAsync(empleado, ct);
         await _empleadoRepository.SaveChangesAsync(ct);
 
+        var (asunto, cuerpo) = EmpleadoEmailTemplates.Bienvenida(empleado, passwordTemporal, rol.Nombre);
+        var emailRes = await _emailService.EnviarAsync(empleado.Correo, asunto, cuerpo);
+
+        var estadoEmail = emailRes.Exitoso
+            ? "se envió el correo de bienvenida con las credenciales temporales"
+            : $"falló el envío del correo de bienvenida ({emailRes.Error})";
+
         await _auditLogger.LogAsync(
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Creacion, "Empleado", empleado.Id,
-            $"Se creó el empleado {empleado.Nombre} {empleado.Apellido} ({rol.Nombre})");
+            $"Se creó el empleado {empleado.Nombre} {empleado.Apellido} ({rol.Nombre}); {estadoEmail}");
 
         return new EmpleadoDto(empleado.Id, empleado.Nombre, empleado.Apellido, empleado.Correo,
             rol.Id, rol.Nombre, empleado.EstaActivo, empleado.FechaCreacion);

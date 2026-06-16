@@ -10,39 +10,33 @@ namespace GymFlow.Application.Tests.UseCases.Horarios;
 public class UpdateHorarioCommandTests
 {
     private readonly Mock<IHorarioClaseRepository> _horarioRepo = new();
-    private readonly Mock<IClaseRepository> _claseRepo = new();
+    private readonly Mock<IInscripcionClaseRepository> _inscripcionRepo = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
     private readonly Mock<IEmailService> _emailService = new();
 
     private UpdateHorarioCommand CrearCommand() =>
-        new(_horarioRepo.Object, _claseRepo.Object, _auditLogger.Object, _emailService.Object);
+        new(_horarioRepo.Object, _inscripcionRepo.Object, _auditLogger.Object, _emailService.Object);
 
     private static (Clase clase, HorarioClase horario) CrearHorarioConClase()
     {
         var unidad = new Unidad("Espacio Mora", "Av. 8 de Octubre 2845");
-        var clase = new Clase("Yoga", "Clase de yoga", 20, 60, "Laura García", unidad.Id);
-
-        // Use reflection to set navigation property for mapper
-        var claseProp = typeof(HorarioClase).GetProperty("Clase")!;
+        var clase = new Clase("Yoga", "Clase de yoga", 20, 60, "Laura Garcia", unidad.Id);
         var horario = new HorarioClase(clase.Id, DiaSemana.Lunes,
             new TimeOnly(9, 0), new TimeOnly(10, 0), "Sala A");
-        claseProp.SetValue(horario, clase);
-
-        var unidadProp = typeof(Clase).GetProperty("Unidad")!;
-        unidadProp.SetValue(clase, unidad);
-
+        typeof(HorarioClase).GetProperty("Clase")!.SetValue(horario, clase);
+        typeof(Clase).GetProperty("Unidad")!.SetValue(clase, unidad);
         return (clase, horario);
     }
 
     [Fact]
     public async Task ExecuteAsync_ConDatosValidos_ActualizaHorarioYRegistraAuditoria()
     {
-        var (clase, horario) = CrearHorarioConClase();
+        var (_, horario) = CrearHorarioConClase();
         _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
         _horarioRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
         _horarioRepo.Setup(r => r.GetByUnidadYDiaAsync(It.IsAny<Guid>(), It.IsAny<DiaSemana>()))
             .ReturnsAsync(Array.Empty<HorarioClase>());
-        _claseRepo.Setup(r => r.GetInscripcionesActivasAsync(clase.Id))
+        _inscripcionRepo.Setup(r => r.GetActivasByHorarioClaseIdAsync(horario.Id))
             .ReturnsAsync(Array.Empty<InscripcionClase>());
 
         var request = new UpdateHorarioClaseRequest(DiaSemana.Miercoles, "14:00", "15:00", "Sala B");
@@ -85,7 +79,7 @@ public class UpdateHorarioCommandTests
     [Fact]
     public async Task ExecuteAsync_ConInscriptos_EnviaNotificaciones()
     {
-        var (clase, horario) = CrearHorarioConClase();
+        var (_, horario) = CrearHorarioConClase();
         _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
         _horarioRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
         _horarioRepo.Setup(r => r.GetByUnidadYDiaAsync(It.IsAny<Guid>(), It.IsAny<DiaSemana>()))
@@ -94,7 +88,7 @@ public class UpdateHorarioCommandTests
         var socio = new Socio(
             rolSocioId: Guid.NewGuid(),
             nombre: "Juan",
-            apellido: "Pérez",
+            apellido: "Perez",
             correo: "juan@test.com",
             passwordHash: "hash",
             fechaAlta: DateTime.UtcNow,
@@ -103,11 +97,11 @@ public class UpdateHorarioCommandTests
             telefono: null,
             documentoIdentidad: "12345672",
             fechaNacimiento: null);
-        var inscripcion = new InscripcionClase(clase.Id, socio.Id);
-        var socioProp = typeof(InscripcionClase).GetProperty("Socio")!;
-        socioProp.SetValue(inscripcion, socio);
+        var inscripcion = new InscripcionClase(horario.Id, socio.Id);
+        typeof(InscripcionClase).GetProperty("Socio")!.SetValue(inscripcion, socio);
+        typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(inscripcion, horario);
 
-        _claseRepo.Setup(r => r.GetInscripcionesActivasAsync(clase.Id))
+        _inscripcionRepo.Setup(r => r.GetActivasByHorarioClaseIdAsync(horario.Id))
             .ReturnsAsync(new[] { inscripcion });
         _emailService.Setup(e => e.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new EmailResultado(true, null));

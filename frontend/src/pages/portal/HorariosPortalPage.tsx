@@ -1,12 +1,14 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { horariosApi, unidadesApi } from '@/services/api'
+import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { horariosApi, unidadesApi, inscripcionesApi } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import { CalendarDays } from 'lucide-react'
-import type { HorarioClase, DiaSemana } from '@/types'
+import { CalendarDays, CheckCircle2, Loader2 } from 'lucide-react'
+import type { HorarioClase, DiaSemana, InscripcionClase } from '@/types'
 
 const DIAS: DiaSemana[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 const DIAS_LABEL: Record<DiaSemana, string> = {
@@ -36,19 +38,69 @@ function getColorForClase(claseId: string) {
 }
 
 export default function HorariosPortalPage() {
-  const [unidadFilter, setUnidadFilter] = useState<string>('all')
-
-  const { data: horarios, isLoading } = useQuery({
-    queryKey: ['horarios-portal', unidadFilter],
-    queryFn: () => horariosApi.getAll(unidadFilter === 'all' ? undefined : unidadFilter),
-  })
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const socioUnidadIds = user?.unidadIds ?? []
+  const [unidadFilter, setUnidadFilter] = useState<string>('')
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const { data: unidades } = useQuery({
     queryKey: ['unidades'],
     queryFn: unidadesApi.getAll,
   })
 
-  // Group by day
+  const misUnidades = socioUnidadIds.length > 0
+    ? unidades?.filter(u => socioUnidadIds.includes(u.id))
+    : unidades
+
+  useEffect(() => {
+    if (!unidadFilter && misUnidades && misUnidades.length > 0) {
+      setUnidadFilter(misUnidades[0].id)
+    }
+  }, [misUnidades, unidadFilter])
+
+  const { data: horarios, isLoading } = useQuery({
+    queryKey: ['horarios-portal', unidadFilter],
+    queryFn: () => horariosApi.getAll(unidadFilter || undefined),
+    enabled: !!unidadFilter,
+  })
+
+  const { data: misInscripciones } = useQuery({
+    queryKey: ['mis-inscripciones'],
+    queryFn: inscripcionesApi.getMisInscripciones,
+  })
+
+  const inscripcionPorHorario = new Map<string, InscripcionClase>()
+  misInscripciones?.forEach(i => {
+    inscripcionPorHorario.set(i.horarioClaseId, i)
+  })
+
+  const inscribirseMutation = useMutation({
+    mutationFn: (horarioClaseId: string) => inscripcionesApi.inscribirse(horarioClaseId),
+    onSuccess: () => {
+      setActionError(null)
+      queryClient.invalidateQueries({ queryKey: ['mis-inscripciones'] })
+      queryClient.invalidateQueries({ queryKey: ['horarios-portal'] })
+    },
+    onError: (err: unknown) => {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      setActionError(axiosErr?.response?.data?.error || 'Error al inscribirse.')
+    },
+  })
+
+  const cancelarMutation = useMutation({
+    mutationFn: (id: string) => inscripcionesApi.cancelar(id),
+    onSuccess: () => {
+      setActionError(null)
+      queryClient.invalidateQueries({ queryKey: ['mis-inscripciones'] })
+      queryClient.invalidateQueries({ queryKey: ['horarios-portal'] })
+    },
+    onError: (err: unknown) => {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      setActionError(axiosErr?.response?.data?.error || 'Error al cancelar inscripción.')
+    },
+  })
+
   const horariosByDay: Record<DiaSemana, HorarioClase[]> = {
     Lunes: [], Martes: [], Miercoles: [], Jueves: [], Viernes: [], Sabado: [], Domingo: [],
   }
@@ -58,7 +110,6 @@ export default function HorariosPortalPage() {
     }
   })
 
-  // Sort each day by start time
   for (const dia of DIAS) {
     horariosByDay[dia].sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
   }
@@ -70,24 +121,28 @@ export default function HorariosPortalPage() {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Horarios de Clases</h1>
       </div>
 
-      {/* Sede filter */}
-      <div className="flex items-center gap-3">
-        <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? 'all')}>
-          <SelectTrigger className="w-[220px] bg-card border-border">
-            <SelectValue>
-              {unidadFilter === 'all'
-                ? 'Todas las sedes'
-                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las sedes</SelectItem>
-            {unidades?.map((u) => (
-              <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {misUnidades && misUnidades.length > 1 && (
+        <div className="flex items-center gap-3">
+          <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? '')}>
+            <SelectTrigger className="w-[220px] bg-card border-border">
+              <SelectValue>
+                {misUnidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {misUnidades.map((u) => (
+                <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {actionError && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+          <p className="text-sm text-destructive">{actionError}</p>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex h-32 items-center justify-center text-muted-foreground">
@@ -107,10 +162,10 @@ export default function HorariosPortalPage() {
                 <div className="divide-y divide-border">
                   {diaHorarios.map(h => {
                     const colorClass = getColorForClase(h.claseId)
-                    const ocupacion = h.capacidadMaxima > 0
-                      ? Math.round((h.inscripcionesActivas / h.capacidadMaxima) * 100)
-                      : 0
                     const lleno = h.inscripcionesActivas >= h.capacidadMaxima
+                    const inscripcion = inscripcionPorHorario.get(h.id)
+                    const estaInscripto = !!inscripcion
+                    const isBusy = inscribirseMutation.isPending || cancelarMutation.isPending
 
                     return (
                       <div key={h.id} className="flex items-center gap-4 px-4 py-3">
@@ -124,18 +179,44 @@ export default function HorariosPortalPage() {
                           <p className="text-xs text-muted-foreground">
                             {h.instructor}
                             {h.sala && <> &middot; {h.sala}</>}
-                            {unidadFilter === 'all' && <> &middot; {h.unidadNombre}</>}
+                            {misUnidades && misUnidades.length > 1 && <> &middot; {h.unidadNombre}</>}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {lleno ? (
+                          {lleno && !estaInscripto ? (
                             <Badge variant="secondary" className="bg-destructive/10 text-destructive border-0 text-xs">
-                              Lleno
+                              Cupo lleno
                             </Badge>
                           ) : (
                             <Badge variant="secondary" className="bg-muted text-muted-foreground border-0 text-xs">
-                              {h.inscripcionesActivas}/{h.capacidadMaxima} ({ocupacion}%)
+                              {h.inscripcionesActivas}/{h.capacidadMaxima}
                             </Badge>
+                          )}
+                          {estaInscripto ? (
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-400 border-0 text-xs gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Inscripto
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs cursor-pointer"
+                                disabled={isBusy}
+                                onClick={() => cancelarMutation.mutate(inscripcion.id)}
+                              >
+                                {cancelarMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Cancelar'}
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs cursor-pointer"
+                              disabled={lleno || isBusy}
+                              onClick={() => inscribirseMutation.mutate(h.id)}
+                            >
+                              {inscribirseMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Inscribirme'}
+                            </Button>
                           )}
                         </div>
                       </div>

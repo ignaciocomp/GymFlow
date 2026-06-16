@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
 import { BookOpen, ArrowLeft } from 'lucide-react'
 
 export default function EditClasePage() {
@@ -65,9 +64,9 @@ export default function EditClasePage() {
     if (!form.nombre.trim()) { setError('El nombre es obligatorio.'); return }
     if (!form.instructor.trim()) { setError('El instructor es obligatorio.'); return }
     const capacidad = parseInt(form.capacidadMaxima)
-    if (isNaN(capacidad) || capacidad <= 0) { setError('La capacidad debe ser un número mayor a 0.'); return }
+    if (isNaN(capacidad) || capacidad <= 0) { setError('La capacidad debe ser un numero mayor a 0.'); return }
     const duracion = parseInt(form.duracionMinutos)
-    if (isNaN(duracion) || duracion <= 0) { setError('La duración debe ser un número mayor a 0.'); return }
+    if (isNaN(duracion) || duracion <= 0) { setError('La duracion debe ser un numero mayor a 0.'); return }
 
     updateMutation.mutate({
       nombre: form.nombre,
@@ -101,14 +100,7 @@ export default function EditClasePage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Editar clase</h1>
-            <p className="text-sm text-muted-foreground">
-              {clase.unidadNombre}
-              {clase.inscripcionesActivas > 0 && (
-                <Badge variant="outline" className="ml-2 border-border text-xs">
-                  {clase.inscripcionesActivas} inscriptos
-                </Badge>
-              )}
-            </p>
+            <p className="text-sm text-muted-foreground">{clase.unidadNombre}</p>
           </div>
         </div>
       </div>
@@ -141,7 +133,7 @@ export default function EditClasePage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Capacidad máxima *</Label>
+              <Label className="text-muted-foreground">Capacidad maxima *</Label>
               <Input
                 type="number"
                 min={1}
@@ -150,14 +142,9 @@ export default function EditClasePage() {
                 placeholder="20"
                 className="bg-muted/30 border-border"
               />
-              {clase.inscripcionesActivas > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Mínimo: {clase.inscripcionesActivas} (inscripciones activas)
-                </p>
-              )}
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">Duración (minutos) *</Label>
+              <Label className="text-muted-foreground">Duracion (minutos) *</Label>
               <Input
                 type="number"
                 min={1}
@@ -170,11 +157,11 @@ export default function EditClasePage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-muted-foreground">Descripción</Label>
+            <Label className="text-muted-foreground">Descripcion</Label>
             <Textarea
               value={form.descripcion || ''}
               onChange={(e) => setForm({ ...form, descripcion: e.target.value || null })}
-              placeholder="Descripción de la clase (opcional)"
+              placeholder="Descripcion de la clase (opcional)"
               className="bg-muted/30 border-border"
               rows={3}
             />

@@ -42,20 +42,6 @@ public class ClaseRepository : IClaseRepository
         return await query.OrderBy(c => c.Nombre).ToListAsync();
     }
 
-    public async Task<int> GetInscripcionesActivasCountAsync(Guid claseId)
-    {
-        return await _context.InscripcionesClase
-            .CountAsync(i => i.ClaseId == claseId && i.EstaActiva);
-    }
-
-    public async Task<IEnumerable<InscripcionClase>> GetInscripcionesActivasAsync(Guid claseId)
-    {
-        return await _context.InscripcionesClase
-            .Include(i => i.Socio)
-            .Where(i => i.ClaseId == claseId && i.EstaActiva)
-            .ToListAsync();
-    }
-
     public async Task AddAsync(Clase clase) => await _context.Clases.AddAsync(clase);
 
     public async Task SaveChangesAsync() => await _context.SaveChangesAsync();

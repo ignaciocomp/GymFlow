@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CalendarDays, Plus, Trash2, Pencil } from 'lucide-react'
-import type { HorarioClase, DiaSemana, CreateHorarioClaseRequest, UpdateHorarioClaseRequest } from '@/types'
+import type { HorarioClase, DiaSemana, UpdateHorarioClaseRequest } from '@/types'
 
 const DIAS: DiaSemana[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 const DIAS_LABEL: Record<DiaSemana, string> = {
@@ -52,9 +52,21 @@ function timeToMinutes(time: string): number {
   return h * 60 + m
 }
 
+function clustersDeSolapamiento(horarios: HorarioClase[]): HorarioClase[][] {
+  const ordenados = [...horarios].sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
+  const clusters: HorarioClase[][] = []
+  for (const h of ordenados) {
+    const ultimo = clusters[clusters.length - 1]
+    const solapa = ultimo?.some(x => x.horaInicio < h.horaFin && h.horaInicio < x.horaFin)
+    if (solapa) ultimo.push(h)
+    else clusters.push([h])
+  }
+  return clusters
+}
+
 export default function HorariosPage() {
   const queryClient = useQueryClient()
-  const [unidadFilter, setUnidadFilter] = useState<string>('all')
+  const [unidadFilter, setUnidadFilter] = useState<string>('')
   const [createDialog, setCreateDialog] = useState(false)
   const [editDialog, setEditDialog] = useState<HorarioClase | null>(null)
   const [deleteDialog, setDeleteDialog] = useState<HorarioClase | null>(null)
@@ -62,14 +74,16 @@ export default function HorariosPage() {
 
   // Form state
   const [formClaseId, setFormClaseId] = useState<string | null>('')
-  const [formDia, setFormDia] = useState<DiaSemana>('Lunes')
+  const [formDias, setFormDias] = useState<DiaSemana[]>(['Lunes'])
   const [formInicio, setFormInicio] = useState('08:00')
   const [formFin, setFormFin] = useState('09:00')
   const [formSala, setFormSala] = useState('')
+  const [creating, setCreating] = useState(false)
 
   const { data: horarios, isLoading } = useQuery({
     queryKey: ['horarios', unidadFilter],
-    queryFn: () => horariosApi.getAll(unidadFilter === 'all' ? undefined : unidadFilter),
+    queryFn: () => horariosApi.getAll(unidadFilter),
+    enabled: !!unidadFilter,
   })
 
   const { data: unidades } = useQuery({
@@ -80,23 +94,6 @@ export default function HorariosPage() {
   const { data: clases } = useQuery({
     queryKey: ['clases-activas'],
     queryFn: () => clasesApi.getAll(undefined, false),
-  })
-
-  const createMutation = useMutation({
-    mutationFn: (req: CreateHorarioClaseRequest) => horariosApi.create(req),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['horarios'] })
-      setCreateDialog(false)
-      resetForm()
-    },
-    onError: (err: unknown) => {
-      if (err && typeof err === 'object' && 'response' in err) {
-        const axiosErr = err as { response?: { data?: { error?: string } } }
-        setFormError(axiosErr.response?.data?.error || 'Error al crear el horario.')
-      } else {
-        setFormError('Error al crear el horario.')
-      }
-    },
   })
 
   const updateMutation = useMutation({
@@ -134,7 +131,7 @@ export default function HorariosPage() {
 
   const resetForm = () => {
     setFormClaseId('')
-    setFormDia('Lunes')
+    setFormDias(['Lunes'])
     setFormInicio('08:00')
     setFormFin('09:00')
     setFormSala('')
@@ -148,7 +145,7 @@ export default function HorariosPage() {
 
   const openEdit = (h: HorarioClase) => {
     setFormClaseId(h.claseId)
-    setFormDia(h.diaSemana)
+    setFormDias([h.diaSemana])
     setFormInicio(h.horaInicio)
     setFormFin(h.horaFin)
     setFormSala(h.sala || '')
@@ -156,15 +153,31 @@ export default function HorariosPage() {
     setEditDialog(h)
   }
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!formClaseId) { setFormError('Selecciona una clase.'); return }
-    createMutation.mutate({
-      claseId: formClaseId,
-      diaSemana: formDia,
-      horaInicio: formInicio,
-      horaFin: formFin,
-      sala: formSala?.trim() || null,
-    })
+    if (formDias.length === 0) { setFormError('Selecciona al menos un día.'); return }
+    setFormError(null)
+    setCreating(true)
+    try {
+      for (const dia of formDias) {
+        await horariosApi.create({
+          claseId: formClaseId,
+          diaSemana: dia,
+          horaInicio: formInicio,
+          horaFin: formFin,
+          sala: formSala?.trim() || null,
+        })
+      }
+      queryClient.invalidateQueries({ queryKey: ['horarios'] })
+      setCreateDialog(false)
+      resetForm()
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      setFormError(axiosErr?.response?.data?.error || 'Error al crear el horario.')
+      queryClient.invalidateQueries({ queryKey: ['horarios'] })
+    } finally {
+      setCreating(false)
+    }
   }
 
   const handleUpdate = () => {
@@ -172,7 +185,7 @@ export default function HorariosPage() {
     updateMutation.mutate({
       id: editDialog.id,
       req: {
-        diaSemana: formDia,
+        diaSemana: formDias[0],
         horaInicio: formInicio,
         horaFin: formFin,
         sala: formSala?.trim() || null,
@@ -217,22 +230,21 @@ export default function HorariosPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? 'all')}>
+        <Select value={unidadFilter} onValueChange={(val) => setUnidadFilter(val ?? '')}>
           <SelectTrigger className="w-[200px] bg-card border-border">
-            <SelectValue>
-              {unidadFilter === 'all'
-                ? 'Todas las sedes'
-                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'}
+            <SelectValue placeholder="Seleccionar sede">
+              {unidadFilter
+                ? unidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'
+                : undefined}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas las sedes</SelectItem>
             {unidades?.map((u) => (
               <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {horarios && (
+        {unidadFilter && horarios && (
           <span className="text-sm text-muted-foreground">
             {horarios.length} horario{horarios.length !== 1 ? 's' : ''} programado{horarios.length !== 1 ? 's' : ''}
           </span>
@@ -240,7 +252,25 @@ export default function HorariosPage() {
       </div>
 
       {/* Weekly Calendar Grid */}
-      {isLoading ? (
+      {!unidadFilter ? (
+        <div className="flex h-64 flex-col items-center justify-center gap-5 rounded-xl border border-border bg-card text-center">
+          <p className="text-lg font-medium text-foreground">
+            📅 Seleccioná una sede para ver los horarios
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {unidades?.map((u) => (
+              <Button
+                key={u.id}
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => setUnidadFilter(u.id)}
+              >
+                {u.nombre}
+              </Button>
+            ))}
+          </div>
+        </div>
+      ) : isLoading ? (
         <div className="flex h-64 items-center justify-center text-muted-foreground">
           Cargando horarios...
         </div>
@@ -284,48 +314,43 @@ export default function HorariosPage() {
                     />
                   ))}
 
-                  {/* Horario blocks */}
-                  {horariosByDay[dia].map(h => {
-                    const top = timeToMinutes(h.horaInicio) - gridStartHour * 60
-                    const height = timeToMinutes(h.horaFin) - timeToMinutes(h.horaInicio)
-                    const colorClass = getColorForClase(h.claseId)
+                  {/* Horario blocks (split de clases solapadas lado a lado) */}
+                  {clustersDeSolapamiento(horariosByDay[dia]).flatMap(cluster =>
+                    cluster.map((h, indiceEnCluster) => {
+                      const top = timeToMinutes(h.horaInicio) - gridStartHour * 60
+                      const height = timeToMinutes(h.horaFin) - timeToMinutes(h.horaInicio)
+                      const colorClass = getColorForClase(h.claseId)
+                      const width = 100 / cluster.length
+                      const left = width * indiceEnCluster
 
-                    return (
-                      <div
-                        key={h.id}
-                        className={`absolute left-1 right-1 rounded-md border px-2 py-1 cursor-pointer hover:opacity-80 transition-opacity group ${colorClass}`}
-                        style={{ top: `${top}px`, height: `${Math.max(height, 30)}px` }}
-                        onClick={() => openEdit(h)}
-                      >
-                        <div className="flex items-start justify-between gap-1">
-                          <div className="min-w-0 flex-1 overflow-hidden">
-                            <p className="text-xs font-semibold truncate">{h.claseNombre}</p>
-                            {height >= 40 && (
-                              <p className="text-[10px] opacity-80 truncate">{h.instructor}</p>
-                            )}
-                            {height >= 55 && (
-                              <p className="text-[10px] opacity-70">
-                                {h.horaInicio} - {h.horaFin}
-                                {h.sala && ` | ${h.sala}`}
-                              </p>
-                            )}
-                            {height >= 70 && (
-                              <p className="text-[10px] opacity-60">
-                                {h.inscripcionesActivas}/{h.capacidadMaxima}
-                              </p>
-                            )}
+                      return (
+                        <div
+                          key={h.id}
+                          className={`absolute rounded-md border px-2 py-1 cursor-pointer hover:opacity-80 transition-opacity group ${colorClass}`}
+                          style={{
+                            top: `${top}px`,
+                            height: `${Math.max(height, 30)}px`,
+                            left: `calc(${left}% + 2px)`,
+                            width: `calc(${width}% - 4px)`,
+                          }}
+                          onClick={() => openEdit(h)}
+                        >
+                          <div className="flex items-start justify-between gap-1">
+                            <div className="min-w-0 flex-1 overflow-hidden">
+                              <p className="text-xs font-semibold truncate">{h.claseNombre}</p>
+                            </div>
+                            <button
+                              className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-0.5 rounded hover:bg-white/10 transition-opacity cursor-pointer"
+                              title="Eliminar"
+                              onClick={(e) => { e.stopPropagation(); setDeleteDialog(h); setFormError(null) }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
                           </div>
-                          <button
-                            className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-0.5 rounded hover:bg-white/10 transition-opacity cursor-pointer"
-                            title="Eliminar"
-                            onClick={(e) => { e.stopPropagation(); setDeleteDialog(h); setFormError(null) }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  )}
                 </div>
               ))}
             </div>
@@ -348,7 +373,11 @@ export default function HorariosPage() {
               <Label>Clase</Label>
               <Select value={formClaseId ?? undefined} onValueChange={setFormClaseId}>
                 <SelectTrigger className="bg-card border-border">
-                  <SelectValue placeholder="Seleccionar clase" />
+                  <SelectValue placeholder="Seleccionar clase">
+                    {formClaseId
+                      ? (() => { const c = clases?.find(cl => cl.id === formClaseId); return c ? `${c.nombre} (${c.unidadNombre})` : 'Seleccionar clase' })()
+                      : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {clases?.filter(c => c.estaActivo).map(c => (
@@ -361,17 +390,24 @@ export default function HorariosPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Dia de la semana</Label>
-              <Select value={formDia} onValueChange={(v) => setFormDia(v as DiaSemana)}>
-                <SelectTrigger className="bg-card border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DIAS.map(d => (
-                    <SelectItem key={d} value={d}>{DIAS_LABEL[d]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Días de la semana</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {DIAS.map(d => (
+                  <label key={d} className="flex items-center gap-2 cursor-pointer rounded-md border border-border px-3 py-2 hover:bg-muted/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formDias.includes(d)}
+                      onChange={() => {
+                        setFormDias(prev =>
+                          prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]
+                        )
+                      }}
+                      className="h-4 w-4 cursor-pointer"
+                    />
+                    <span className="text-sm">{DIAS_LABEL[d]}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -406,8 +442,8 @@ export default function HorariosPage() {
             <Button variant="outline" onClick={() => { setCreateDialog(false); resetForm() }} className="cursor-pointer">
               Cancelar
             </Button>
-            <Button onClick={handleCreate} disabled={createMutation.isPending} className="cursor-pointer">
-              {createMutation.isPending ? 'Creando...' : 'Crear horario'}
+            <Button onClick={handleCreate} disabled={creating} className="cursor-pointer">
+              {creating ? 'Creando...' : `Crear horario${formDias.length > 1 ? `s (${formDias.length})` : ''}`}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -430,7 +466,7 @@ export default function HorariosPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Dia de la semana</Label>
-              <Select value={formDia} onValueChange={(v) => setFormDia(v as DiaSemana)}>
+              <Select value={formDias[0]} onValueChange={(v) => setFormDias([v as DiaSemana])}>
                 <SelectTrigger className="bg-card border-border">
                   <SelectValue />
                 </SelectTrigger>

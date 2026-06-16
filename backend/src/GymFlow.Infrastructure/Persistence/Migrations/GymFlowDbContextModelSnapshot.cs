@@ -146,21 +146,21 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ClaseId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("EstaActiva")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("FechaInscripcion")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("HorarioClaseId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("SocioId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClaseId");
+                    b.HasIndex("HorarioClaseId");
 
                     b.HasIndex("SocioId");
 
@@ -720,6 +720,10 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("FechaCreacion")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("GoogleUserId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -876,9 +880,9 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("GymFlow.Domain.Entities.InscripcionClase", b =>
                 {
-                    b.HasOne("GymFlow.Domain.Entities.Clase", "Clase")
-                        .WithMany("Inscripciones")
-                        .HasForeignKey("ClaseId")
+                    b.HasOne("GymFlow.Domain.Entities.HorarioClase", "HorarioClase")
+                        .WithMany()
+                        .HasForeignKey("HorarioClaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -888,7 +892,7 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Clase");
+                    b.Navigation("HorarioClase");
 
                     b.Navigation("Socio");
                 });
@@ -976,11 +980,6 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Unidad");
 
                     b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("GymFlow.Domain.Entities.Clase", b =>
-                {
-                    b.Navigation("Inscripciones");
                 });
 
             modelBuilder.Entity("GymFlow.Domain.Entities.Rol", b =>

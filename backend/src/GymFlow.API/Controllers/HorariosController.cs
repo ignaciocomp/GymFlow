@@ -33,7 +33,6 @@ public class HorariosController : ControllerBase
     }
 
     [HttpGet]
-    [RequierePermiso(Modulo.Clases, Operacion.Lectura)]
     public async Task<ActionResult<IEnumerable<HorarioClaseDto>>> GetAll([FromQuery] Guid? unidadId)
     {
         var horarios = await _getHorariosQuery.ExecuteAsync(unidadId);
@@ -41,7 +40,6 @@ public class HorariosController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [RequierePermiso(Modulo.Clases, Operacion.Lectura)]
     public async Task<ActionResult<HorarioClaseDto>> GetById(Guid id)
     {
         try

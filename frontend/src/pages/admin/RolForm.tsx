@@ -11,7 +11,7 @@ interface Props {
   submitLabel: string
 }
 
-const MODULOS: Modulo[] = ['Socios', 'Planes', 'Unidades', 'Auditoria']
+const MODULOS: Modulo[] = ['Socios', 'Planes', 'Unidades', 'Auditoria', 'Empleados', 'Cuotas', 'Clases']
 const OPERACIONES: Operacion[] = ['Lectura', 'Escritura', 'Modificacion', 'Eliminacion']
 
 export default function RolForm({ initialNombre = '', initialPermisoIds = [], onSubmit, submitLabel }: Props) {

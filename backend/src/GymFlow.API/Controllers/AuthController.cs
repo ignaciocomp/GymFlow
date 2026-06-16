@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
+using GymFlow.Application.UseCases.Auth;
 using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +21,7 @@ public class AuthController : ControllerBase
     private readonly ISocioRepository _socioRepository;
     private readonly IRolRepository _rolRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly LoginConGoogleCommand _loginConGoogleCommand;
 
     public AuthController(
         IConfiguration configuration,
@@ -28,7 +30,8 @@ public class AuthController : ControllerBase
         IEmpleadoRepository empleadoRepository,
         ISocioRepository socioRepository,
         IRolRepository rolRepository,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        LoginConGoogleCommand loginConGoogleCommand)
     {
         _configuration = configuration;
         _auditLogger = auditLogger;
@@ -37,6 +40,7 @@ public class AuthController : ControllerBase
         _socioRepository = socioRepository;
         _rolRepository = rolRepository;
         _passwordHasher = passwordHasher;
+        _loginConGoogleCommand = loginConGoogleCommand;
     }
 
     [HttpPost("login")]
@@ -84,10 +88,43 @@ public class AuthController : ControllerBase
                 TipoAccionAuditoria.InicioSesion, "Sesion", null,
                 $"Inicio de sesión de {socio.Nombre} {socio.Apellido} ({rolNombre})");
 
-            return Ok(new LoginResponse(token, socio.Nombre, socio.Apellido, socio.Correo, rolNombre, permisosDto));
+            var unidadIds = socio.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+            return Ok(new LoginResponse(token, socio.Nombre, socio.Apellido, socio.Correo, rolNombre, permisosDto, unidadIds));
         }
 
         return Unauthorized(new { error = "Correo o contraseña incorrectos." });
+    }
+
+    [HttpPost("google")]
+    public async Task<IActionResult> LoginConGoogle([FromBody] GoogleLoginRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.IdToken))
+            return BadRequest(new { error = "El token de Google es obligatorio." });
+
+        try
+        {
+            var socio = await _loginConGoogleCommand.ExecuteAsync(request.IdToken);
+
+            var rolId = socio.RolId!.Value;
+            var rol = await _rolRepository.GetByIdAsync(rolId);
+            var rolNombre = rol?.Nombre ?? "Socio";
+
+            var token = GenerateJwt(socio.Id, socio.Correo, rolId, rolNombre, socio.Nombre, socio.Apellido);
+            var permisos = await _permisoCache.ObtenerPermisosAsync(rolId);
+            var permisosDto = permisos.Select(p => new PermisoDto(Guid.Empty, p.Modulo, p.Operacion)).ToList();
+
+            await _auditLogger.LogAsync(
+                socio.Id, $"{socio.Nombre} {socio.Apellido}",
+                TipoAccionAuditoria.InicioSesion, "Sesion", null,
+                $"Inicio de sesión con Google de {socio.Nombre} {socio.Apellido} ({rolNombre})");
+
+            var unidadIds = socio.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+            return Ok(new LoginResponse(token, socio.Nombre, socio.Apellido, socio.Correo, rolNombre, permisosDto, unidadIds));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
     }
 
     [HttpGet("me")]
@@ -115,13 +152,20 @@ public class AuthController : ControllerBase
             var permisos = await _permisoCache.ObtenerPermisosAsync(rolId);
             var permisosDto = permisos.Select(p => new PermisoDto(Guid.Empty, p.Modulo, p.Operacion)).ToList();
 
+            var correo = principal.FindFirst(ClaimTypes.Email)?.Value;
+            List<Guid>? unidadIds = null;
+            var socio = await _socioRepository.GetByCorreoAsync(correo ?? "");
+            if (socio != null)
+                unidadIds = socio.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+
             return Ok(new
             {
                 nombre = principal.FindFirst("nombre")?.Value,
                 apellido = principal.FindFirst("apellido")?.Value,
-                correo = principal.FindFirst(ClaimTypes.Email)?.Value,
+                correo,
                 rolNombre = principal.FindFirst("rolNombre")?.Value,
-                permisos = permisosDto
+                permisos = permisosDto,
+                unidadIds
             });
         }
         catch
@@ -153,4 +197,5 @@ public class AuthController : ControllerBase
 }
 
 public record LoginRequest(string Correo, string Password);
-public record LoginResponse(string Token, string Nombre, string Apellido, string Correo, string RolNombre, IReadOnlyList<PermisoDto> Permisos);
+public record GoogleLoginRequest(string IdToken);
+public record LoginResponse(string Token, string Nombre, string Apellido, string Correo, string RolNombre, IReadOnlyList<PermisoDto> Permisos, IReadOnlyList<Guid>? UnidadIds = null);

@@ -36,7 +36,6 @@ public class ClasesController : ControllerBase
     }
 
     [HttpGet]
-    [RequierePermiso(Modulo.Clases, Operacion.Lectura)]
     public async Task<ActionResult<IEnumerable<ClaseDto>>> GetAll(
         [FromQuery] Guid? unidadId,
         [FromQuery] bool includeInactive = false)
@@ -46,7 +45,6 @@ public class ClasesController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [RequierePermiso(Modulo.Clases, Operacion.Lectura)]
     public async Task<ActionResult<ClaseDto>> GetById(Guid id)
     {
         try

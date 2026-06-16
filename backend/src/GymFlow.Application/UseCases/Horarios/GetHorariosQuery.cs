@@ -6,25 +6,19 @@ namespace GymFlow.Application.UseCases.Horarios;
 public class GetHorariosQuery
 {
     private readonly IHorarioClaseRepository _horarioRepo;
-    private readonly IClaseRepository _claseRepo;
+    private readonly IInscripcionClaseRepository _inscripcionRepo;
 
-    public GetHorariosQuery(IHorarioClaseRepository horarioRepo, IClaseRepository claseRepo)
+    public GetHorariosQuery(IHorarioClaseRepository horarioRepo, IInscripcionClaseRepository inscripcionRepo)
     {
         _horarioRepo = horarioRepo;
-        _claseRepo = claseRepo;
+        _inscripcionRepo = inscripcionRepo;
     }
 
     public async Task<IEnumerable<HorarioClaseDto>> ExecuteAsync(Guid? unidadId = null)
     {
-        var horarios = await _horarioRepo.GetAllAsync(unidadId);
-        var result = new List<HorarioClaseDto>();
-
-        foreach (var h in horarios)
-        {
-            var inscripciones = await _claseRepo.GetInscripcionesActivasCountAsync(h.ClaseId);
-            result.Add(HorarioMapper.ToDto(h, inscripciones));
-        }
-
-        return result;
+        var horarios = (await _horarioRepo.GetAllAsync(unidadId)).ToList();
+        var horarioIds = horarios.Select(h => h.Id);
+        var conteos = await _inscripcionRepo.GetConteoActivasPorHorariosAsync(horarioIds);
+        return horarios.Select(h => HorarioMapper.ToDto(h, conteos.GetValueOrDefault(h.Id, 0)));
     }
 }

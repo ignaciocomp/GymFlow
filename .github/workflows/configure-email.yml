@@ -1,0 +1,82 @@
+name: Configurar email (SMTP)
+
+# Workflow MANUAL (one-time): activa el envio real de emails en el Container App
+# de produccion sin que ninguna credencial toque el repo.
+# - La password SMTP se guarda como secret del Container App (smtp-password)
+#   y el env var Email__SmtpPassword la referencia via secretref.
+# - Los env vars del Container App PERSISTEN entre deploys de imagen, asi que
+#   alcanza con correrlo una sola vez (o cuando cambien las credenciales SMTP).
+# Requiere los secrets de GitHub: AZURE_CREDENTIALS, SMTP_USER, SMTP_PASSWORD.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: configure-email-production
+  cancel-in-progress: false
+
+jobs:
+  configure:
+    name: Activar emails en el Container App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar secrets requeridos
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        run: |
+          FALTAN=""
+          if [ -z "$SMTP_USER" ]; then FALTAN="$FALTAN SMTP_USER"; fi
+          if [ -z "$SMTP_PASSWORD" ]; then FALTAN="$FALTAN SMTP_PASSWORD"; fi
+          if [ -n "$FALTAN" ]; then
+            echo "::error::Faltan secrets de GitHub:$FALTAN"
+            echo "Cargalos en Settings -> Secrets and variables -> Actions -> New repository secret y volve a correr el workflow."
+            exit 1
+          fi
+          echo "Secrets SMTP presentes."
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Guardar password SMTP como secret del Container App
+        env:
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        run: |
+          # La password viaja solo como env var hacia az; NUNCA se imprime
+          # (--output none evita que az devuelva la lista de secrets).
+          az containerapp secret set \
+            --name ${{ vars.AZURE_ACA_APP }} \
+            --resource-group ${{ vars.AZURE_RG }} \
+            --secrets smtp-password="$SMTP_PASSWORD" \
+            --output none
+          echo "Secret smtp-password guardado en el Container App."
+
+      - name: Activar envio de emails (env vars del Container App)
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+        run: |
+          # Email__SmtpPassword referencia el secret del Container App (secretref),
+          # nunca el valor en texto plano. El resto de la config SMTP
+          # (host, puerto, SSL) ya viene en appsettings.json.
+          az containerapp update \
+            --name ${{ vars.AZURE_ACA_APP }} \
+            --resource-group ${{ vars.AZURE_RG }} \
+            --set-env-vars \
+              "Email__Habilitado=true" \
+              "Email__SmtpUser=$SMTP_USER" \
+              "Email__From=$SMTP_USER" \
+              "Email__SmtpPassword=secretref:smtp-password" \
+            --output none
+          echo "Env vars de email aplicados. Nueva revision en camino."
+
+      - name: Resumen
+        if: success()
+        run: |
+          echo "## Emails SMTP activados" >> $GITHUB_STEP_SUMMARY
+          echo "- App: \`${{ vars.AZURE_ACA_APP }}\` (RG \`${{ vars.AZURE_RG }}\`)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`Email__Habilitado=true\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`Email__SmtpUser\` y \`Email__From\` seteados desde el secret \`SMTP_USER\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`Email__SmtpPassword\` referencia el secret del Container App \`smtp-password\` (secretref, sin valores en logs)" >> $GITHUB_STEP_SUMMARY
+          echo "- Esta configuracion persiste entre deploys de imagen: no hace falta volver a correrlo." >> $GITHUB_STEP_SUMMARY

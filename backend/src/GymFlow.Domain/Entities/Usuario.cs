@@ -7,6 +7,7 @@ public abstract class Usuario
     public string Apellido { get; private set; } = string.Empty;
     public string Correo { get; private set; } = string.Empty;
     public string? PasswordHash { get; private set; }
+    public string? GoogleUserId { get; private set; }
     public Guid? RolId { get; private set; }
     public Rol? Rol { get; private set; }
     public bool EstaActivo { get; private set; } = true;
@@ -33,6 +34,15 @@ public abstract class Usuario
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new ArgumentException("PasswordHash is required.", nameof(passwordHash));
         PasswordHash = passwordHash;
+    }
+
+    public void VincularGoogle(string googleUserId)
+    {
+        if (string.IsNullOrWhiteSpace(googleUserId))
+            throw new ArgumentException("GoogleUserId is required.", nameof(googleUserId));
+        if (!string.IsNullOrWhiteSpace(GoogleUserId))
+            return; // idempotente: ya vinculado, no se pisa
+        GoogleUserId = googleUserId;
     }
 
     protected void CambiarRolInterno(Guid nuevoRolId)

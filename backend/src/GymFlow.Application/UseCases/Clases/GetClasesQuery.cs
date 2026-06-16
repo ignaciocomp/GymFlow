@@ -6,25 +6,40 @@ namespace GymFlow.Application.UseCases.Clases;
 public class GetClasesQuery
 {
     private readonly IClaseRepository _repository;
+    private readonly IHorarioClaseRepository _horarioRepo;
+    private readonly IInscripcionClaseRepository _inscripcionRepo;
 
-    public GetClasesQuery(IClaseRepository repository)
+    public GetClasesQuery(IClaseRepository repository, IHorarioClaseRepository horarioRepo, IInscripcionClaseRepository inscripcionRepo)
     {
         _repository = repository;
+        _horarioRepo = horarioRepo;
+        _inscripcionRepo = inscripcionRepo;
     }
 
     public async Task<IEnumerable<ClaseDto>> ExecuteAsync(Guid? unidadId = null, bool includeInactive = false)
     {
-        var clases = unidadId.HasValue
+        var clases = (unidadId.HasValue
             ? await _repository.GetByUnidadIdAsync(unidadId.Value, includeInactive)
-            : await _repository.GetAllAsync(includeInactive);
+            : await _repository.GetAllAsync(includeInactive)).ToList();
 
-        var result = new List<ClaseDto>();
+        var allHorarios = new List<Guid>();
+        var claseHorarioIds = new Dictionary<Guid, List<Guid>>();
         foreach (var c in clases)
         {
-            var inscripcionesActivas = await _repository.GetInscripcionesActivasCountAsync(c.Id);
-            result.Add(new ClaseDto(c.Id, c.Nombre, c.Descripcion, c.CapacidadMaxima, c.DuracionMinutos,
-                c.Instructor, c.UnidadId, c.Unidad?.Nombre ?? "", c.EstaActivo, inscripcionesActivas));
+            var horarios = (await _horarioRepo.GetByClaseIdAsync(c.Id)).Select(h => h.Id).ToList();
+            claseHorarioIds[c.Id] = horarios;
+            allHorarios.AddRange(horarios);
         }
-        return result;
+
+        var conteos = allHorarios.Count > 0
+            ? await _inscripcionRepo.GetConteoActivasPorHorariosAsync(allHorarios)
+            : new Dictionary<Guid, int>();
+
+        return clases.Select(c =>
+        {
+            var total = claseHorarioIds.GetValueOrDefault(c.Id, []).Sum(hId => conteos.GetValueOrDefault(hId, 0));
+            return new ClaseDto(c.Id, c.Nombre, c.Descripcion, c.CapacidadMaxima, c.DuracionMinutos,
+                c.Instructor, c.UnidadId, c.Unidad?.Nombre ?? "", c.EstaActivo, total);
+        });
     }
 }

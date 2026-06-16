@@ -1,5 +1,6 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase } from '@/types'
+import type { Permiso } from '@/types/permisos'
 
 const api = axios.create({
   baseURL: '/api',
@@ -16,6 +17,28 @@ api.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+export interface LoginResponse {
+  token: string
+  nombre: string
+  apellido: string
+  correo: string
+  rolNombre: string
+  permisos: Permiso[]
+  unidadIds: string[]
+}
+
+export const authApi = {
+  login: async (correo: string, password: string): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/login', { correo, password })
+    return data
+  },
+
+  loginConGoogle: async (idToken: string): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/google', { idToken })
+    return data
+  },
+}
 
 export const unidadesApi = {
   getAll: async (): Promise<Unidad[]> => {
@@ -239,6 +262,22 @@ export const horariosApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/horarios/${id}`)
+  },
+}
+
+export const inscripcionesApi = {
+  inscribirse: async (horarioClaseId: string): Promise<InscripcionClase> => {
+    const { data } = await api.post<InscripcionClase>('/inscripciones', { horarioClaseId })
+    return data
+  },
+
+  getMisInscripciones: async (): Promise<InscripcionClase[]> => {
+    const { data } = await api.get<InscripcionClase[]>('/inscripciones/mis-inscripciones')
+    return data
+  },
+
+  cancelar: async (id: string): Promise<void> => {
+    await api.delete(`/inscripciones/${id}`)
   },
 }
 

@@ -127,7 +127,6 @@ export interface Clase {
   unidadId: string
   unidadNombre: string
   estaActivo: boolean
-  inscripcionesActivas: number
 }
 
 export interface CreateClaseRequest {
@@ -177,6 +176,23 @@ export interface UpdateHorarioClaseRequest {
   horaInicio: string
   horaFin: string
   sala: string | null
+}
+
+export interface InscripcionClase {
+  id: string
+  horarioClaseId: string
+  claseId: string
+  claseNombre: string
+  instructor: string
+  unidadId: string
+  unidadNombre: string
+  diaSemana: DiaSemana
+  horaInicio: string
+  horaFin: string
+  sala: string | null
+  capacidadMaxima: number
+  inscripcionesActivas: number
+  fechaInscripcion: string
 }
 
 export type EstadoGeneralCuotas = 'AlDia' | 'Pendiente' | 'Vencido'

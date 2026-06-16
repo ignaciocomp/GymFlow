@@ -21,10 +21,5 @@ public class ClaseConfiguration : IEntityTypeConfiguration<Clase>
             .WithMany()
             .HasForeignKey(c => c.UnidadId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasMany(c => c.Inscripciones)
-            .WithOne(i => i.Clase)
-            .HasForeignKey(i => i.ClaseId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

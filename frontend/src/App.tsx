@@ -25,6 +25,7 @@ import NuevaClasePage from '@/pages/admin/NuevaClasePage'
 import EditClasePage from '@/pages/admin/EditClasePage'
 import HorariosPage from '@/pages/admin/HorariosPage'
 import HorariosPortalPage from '@/pages/portal/HorariosPortalPage'
+import MisInscripcionesPage from '@/pages/portal/MisInscripcionesPage'
 
 export default function App() {
   return (
@@ -60,6 +61,7 @@ export default function App() {
         <Route path="perfil" element={<PerfilSocioPage />} />
         <Route path="mis-cuotas" element={<MisCuotasPage />} />
         <Route path="horarios" element={<HorariosPortalPage />} />
+        <Route path="mis-inscripciones" element={<MisInscripcionesPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
