@@ -41,7 +41,7 @@ API (Presentation) → Application → Domain ← Infrastructure
 - **C# / .NET 8** con ASP.NET Core Web API
 - **Entity Framework Core** (Code-First, migraciones)
 - **PostgreSQL 16**
-- **JWT** para autenticación (OAuth 2.0 Google en fase 2)
+- **JWT** para autenticación (+ login de socios con Google OAuth 2.0, implementado en It.5)
 - **xUnit + Moq** para testing
 
 ### Frontend
@@ -138,7 +138,7 @@ La migración se aplica automáticamente en el próximo `docker compose up`.
 ```
 Usuario (abstract base, PasswordHash nullable)
 ├── Empleado — admin, profesor, recepcionista, etc. Login email + password (BCrypt). PasswordHash siempre seteado.
-└── Socio — Cuotas[], Inscripciones[], Asistencias[], Rutinas[], TipoDocumento. Login Google OAuth (It.5). PasswordHash null hasta entonces.
+└── Socio — Cuotas[], Inscripciones[], Asistencias[], Rutinas[], TipoDocumento, GoogleUserId. Login con Google OAuth (It.5, implementado). PasswordHash null (no gestiona contraseña propia).
 ```
 
 **El rol del usuario es un `RolId` (FK a `Rol`)**, no una subclase. La jerarquía solo refleja diferencias de atributos y mecanismo de auth, no de rol asignado.
@@ -178,8 +178,8 @@ Usuario (abstract base, PasswordHash nullable)
 
 | Tipo | Login | Roles posibles |
 |---|---|---|
-| **Empleado** | email + password (+ MFA en It.5) | Cualquier rol salvo Socio |
-| **Socio** | Google OAuth (It.5) | Únicamente el rol Socio |
+| **Empleado** | email + password (MFA It.5: pendiente) | Cualquier rol salvo Socio |
+| **Socio** | Google OAuth 2.0 (It.5: implementado) | Únicamente el rol Socio |
 
 - **JWT** firmado con clave simétrica, expiración 8 horas. Lleva `userId`, `correo`, `rolId`, `rolNombre`, `nombre`, `apellido`.
 - **Passwords de empleados** hasheados con BCrypt.Net-Next (factor 11).
