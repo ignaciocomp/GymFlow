@@ -39,3 +39,7 @@ export async function darDeBajaEmpleado(id: string): Promise<void> {
 export async function reactivarEmpleado(id: string, rolId?: string): Promise<void> {
   await api.patch(`/empleados/${id}/reactivar`, { rolId: rolId ?? null })
 }
+
+export async function resetearMfaEmpleado(id: string): Promise<void> {
+  await api.post(`/empleados/${id}/mfa/reset`)
+}
