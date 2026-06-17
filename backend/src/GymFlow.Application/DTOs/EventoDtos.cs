@@ -8,3 +8,9 @@ public record EventoDto(
     Guid UnidadId,
     string UnidadNombre,
     bool EstaActivo);
+
+public record CreateEventoRequest(
+    string Titulo,
+    string? Descripcion,
+    DateTime Fecha,
+    Guid UnidadId);
