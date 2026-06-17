@@ -1,4 +1,5 @@
 using GymFlow.Application.UseCases.Auditoria;
+using GymFlow.Application.UseCases.Auth;
 using GymFlow.Application.UseCases.Empleados;
 using GymFlow.Application.UseCases.Permisos;
 using GymFlow.Application.UseCases.Planes;
@@ -70,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<InscribirSocioCommand>();
         services.AddScoped<CancelarInscripcionCommand>();
         services.AddScoped<GetMisInscripcionesQuery>();
+        services.AddScoped<LoginConGoogleCommand>();
         return services;
     }
 }

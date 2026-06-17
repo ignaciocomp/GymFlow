@@ -57,3 +57,36 @@ Si un deploy rompe la app:
 az containerapp revision list --name ca-gymflow --resource-group rg-gymflow -o table
 az containerapp revision activate --name ca-gymflow --resource-group rg-gymflow --revision <REVISION_ANTERIOR>
 ```
+
+## Activar emails reales (SMTP)
+
+> One-time: los env vars del Container App persisten entre deploys de imagen.
+> Ninguna credencial toca el repo: la password vive como secret del Container App
+> y el env var `Email__SmtpPassword` la referencia via `secretref`.
+
+### 1. Crear una App Password de Gmail
+
+- La cuenta Gmail tiene que tener verificacion en 2 pasos (2FA) activada.
+- Ir a https://myaccount.google.com/apppasswords y crear una App Password (por ejemplo con nombre "GymFlow").
+- Google muestra 16 caracteres: **copiarlos SIN espacios** (Google los muestra en grupos de 4, pero la password real no lleva espacios).
+
+### 2. Cargar secrets en GitHub
+
+En **Settings -> Secrets and variables -> Actions -> New repository secret**:
+
+| Nombre | Valor |
+|--------|-------|
+| `SMTP_USER` | La cuenta Gmail completa (ej: `gymflow.notificaciones@gmail.com`) |
+| `SMTP_PASSWORD` | Los 16 caracteres de la App Password, sin espacios |
+
+### 3. Correr el workflow
+
+**Actions -> Configurar email (SMTP) -> Run workflow** (solo se dispara manual).
+
+El workflow valida que los secrets existan, guarda la password como secret `smtp-password` del Container App y setea `Email__Habilitado=true`, `Email__SmtpUser`, `Email__From` y `Email__SmtpPassword=secretref:smtp-password`.
+
+### Notas
+
+- Gmail fuerza el `From` a la cuenta autenticada: aunque se configure otro `Email__From`, los mails salen desde la cuenta del `SMTP_USER`.
+- En dev local los mails siguen simulados (`Email:Habilitado=false` en `appsettings.json`) y eso es **intencional**: solo produccion envia mails reales.
+- Si cambia la App Password, alcanza con actualizar el secret `SMTP_PASSWORD` en GitHub y volver a correr el workflow.

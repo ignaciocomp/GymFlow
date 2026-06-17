@@ -1,19 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Dumbbell } from 'lucide-react'
 
+const GIS_SCRIPT_SRC = 'https://accounts.google.com/gsi/client'
+
 export default function Login() {
-  const { login, isAuthenticated, isLoading } = useAuth()
+  const { login, loginConGoogle, isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
   const [correo, setCorreo] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const googleButtonRef = useRef<HTMLDivElement>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,6 +32,69 @@ export default function Login() {
       setLoading(false)
     }
   }
+
+  const handleGoogleCredential = async (credential: string) => {
+    setError(null)
+    setLoading(true)
+    try {
+      await loginConGoogle(credential)
+      navigate('/admin/socios')
+    } catch (err) {
+      const mensaje = isAxiosError(err) && typeof err.response?.data?.error === 'string'
+        ? err.response.data.error
+        : 'No se pudo iniciar sesión con Google.'
+      setError(mensaje)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Ref para que el callback de GIS (registrado una sola vez) siempre use la versión vigente
+  const handleGoogleCredentialRef = useRef(handleGoogleCredential)
+  handleGoogleCredentialRef.current = handleGoogleCredential
+
+  useEffect(() => {
+    let cancelado = false
+
+    const inicializarBotonGoogle = () => {
+      if (cancelado || !window.google || !googleButtonRef.current) return
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: (response) => { void handleGoogleCredentialRef.current(response.credential) },
+      })
+      googleButtonRef.current.innerHTML = ''
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: 'filled_black',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'rectangular',
+        locale: 'es',
+        width: googleButtonRef.current.offsetWidth > 0
+          ? Math.min(400, googleButtonRef.current.offsetWidth)
+          : undefined,
+      })
+    }
+
+    if (window.google?.accounts?.id) {
+      inicializarBotonGoogle()
+      return () => { cancelado = true }
+    }
+
+    // Cargar el script GIS solo si no está ya en el documento
+    const existente = document.querySelector<HTMLScriptElement>(`script[src="${GIS_SCRIPT_SRC}"]`)
+    const script = existente ?? document.createElement('script')
+    if (!existente) {
+      script.src = GIS_SCRIPT_SRC
+      script.async = true
+      script.defer = true
+      document.head.appendChild(script)
+    }
+    script.addEventListener('load', inicializarBotonGoogle)
+    return () => {
+      cancelado = true
+      script.removeEventListener('load', inicializarBotonGoogle)
+    }
+  }, [])
 
   if (!isLoading && isAuthenticated) {
     return <Navigate to="/admin" replace />
@@ -104,6 +171,19 @@ export default function Login() {
               {loading ? 'Ingresando...' : 'Iniciar sesión'}
             </Button>
           </form>
+
+          {/* Divisor */}
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs uppercase text-muted-foreground">o</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          {/* Botón oficial de Google (lo renderiza GIS) */}
+          <div
+            ref={googleButtonRef}
+            className="flex min-h-10 w-full items-center justify-center"
+          />
 
         </div>
       </div>
