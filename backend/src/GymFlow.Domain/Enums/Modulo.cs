@@ -8,5 +8,6 @@ public enum Modulo
     Auditoria,
     Empleados,
     Cuotas,
-    Clases
+    Clases,
+    Eventos
 }
