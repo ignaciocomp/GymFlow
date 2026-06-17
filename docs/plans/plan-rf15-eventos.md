@@ -20,11 +20,11 @@
 - `backend/src/GymFlow.Application/Interfaces/IEventoRepository.cs` — (nuevo)
 - `backend/src/GymFlow.Application/Interfaces/ISocioRepository.cs` — (modif) `GetActivosByUnidadAsync`
 - `backend/src/GymFlow.Application/DTOs/EventoDtos.cs` — (nuevo) EventoDto + requests
-- `backend/src/GymFlow.Application/UseCases/Eventos/*` — (nuevo) queries/commands/mapper/templates
+- `backend/src/GymFlow.Application/UseCases/Eventos/*` — (nuevo) queries/commands/mapper/templates + `EventoNotificador.cs` (helper de envío compartido)
 - `backend/src/GymFlow.Infrastructure/Repositories/EventoRepository.cs` + `SocioRepository.cs` (modif) — (nuevo/modif)
 - `backend/src/GymFlow.Infrastructure/Persistence/Configurations/EventoConfiguration.cs` + `GymFlowDbContext.cs` (DbSet) + Migration — (nuevo/modif)
 - `backend/src/GymFlow.API/Controllers/EventosController.cs` (nuevo) + `PortalController.cs` (modif) + DI — (nuevo/modif)
-- `frontend/src/types/permisos.ts` (modif), `types/index.ts` (modif), `services/api.ts` (modif), `pages/admin/EventosPage.tsx` + Nuevo/Editar (nuevo), `pages/portal/EventosPortalPage.tsx` (nuevo), `Sidebar.tsx` (modif), router/nav (modif)
+- `frontend/src/types/permisos.ts` (modif), `types/index.ts` (modif), `services/api.ts` (modif), `pages/admin/EventosPage.tsx` + Nuevo/Editar (nuevo), `pages/portal/EventosPortalPage.tsx` (nuevo), `components/layout/Sidebar.tsx` (modif, nav admin), `components/layout/SocioLayout.tsx` (modif, nav portal — `<Link>` hardcodeados), `App.tsx` (modif, rutas)
 
 ---
 
@@ -39,7 +39,7 @@
   - `Actualizar_CambiaCampos` (incluye permitir fecha pasada — el dominio NO valida fecha pasada).
   - `Cancelar_DesactivaYReactivar_Activa`.
 - [ ] **Step 3:** Correr → FAIL (clase inexistente). Verificar.
-- [ ] **Step 4 (GREEN):** Implementar `Evento` (setters privados; ctor `(titulo, descripcion, fecha, unidadId)` validando título; `Actualizar(titulo, descripcion, fecha)`, `Cancelar()`, `Reactivar()`; nav `Unidad`). NO validar fecha pasada en el dominio.
+- [ ] **Step 4 (GREEN):** Implementar `Evento` (setters privados; ctor `(titulo, descripcion, fecha, unidadId)` validando título; `Actualizar(titulo, descripcion, fecha)`, `Cancelar()`, `Reactivar()`; nav `Unidad`). NO validar fecha pasada en el dominio. **`Cancelar()`/`Reactivar()` son idempotentes** (solo setean `EstaActivo`; NO lanzan si ya está en ese estado — más simple que `Clase`; la spec solo pide setear el flag). Por eso el controller NO necesita mapear `InvalidOperationException`.
 - [ ] **Step 5:** `dotnet test --filter EventoTests` → PASS; suite completa → PASS.
 - [ ] **Step 6:** Commit `feat(eventos): enum Modulo.Eventos + entidad Evento`.
 
@@ -52,8 +52,8 @@
 - [ ] **Step 1:** `IEventoRepository`: `GetAllAsync(Guid? unidadId, bool incluirInactivos)`, `GetByIdAsync(Guid)`, `GetProximosByUnidadesAsync(IEnumerable<Guid> unidadIds, DateTime ahora)`, `AddAsync(Evento)`, `void Update(Evento)`, `SaveChangesAsync()`. Todas las lecturas con `.Include(e => e.Unidad)`. `GetAll` ordena por `Fecha`; `GetProximos` filtra `EstaActivo && Fecha >= ahora && unidadIds.Contains(UnidadId)` orden por `Fecha`.
 - [ ] **Step 2:** Agregar `Task<IEnumerable<Socio>> GetActivosByUnidadAsync(Guid unidadId)` a `ISocioRepository` + impl en `SocioRepository` (`s.EstaActivo && s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId)`).
 - [ ] **Step 3:** `EventoConfiguration` (FK a `Unidad` por `UnidadId`, índices `UnidadId` y `Fecha`, `Titulo` requerido). `DbSet<Evento> Eventos` en `GymFlowDbContext`. Implementar `EventoRepository`.
-- [ ] **Step 4:** Migración: `dotnet ef migrations add AgregarEventos --project backend/src/GymFlow.Infrastructure --startup-project backend/src/GymFlow.API`. Editar la migración generada para que, además de crear la tabla `Eventos`, **inserte las 4 filas de `Permisos` para `Modulo.Eventos`** (Lectura/Escritura/Modificacion/Eliminacion) y los `RolPermisos` que las asignan al **rol Admin** — copiar el patrón EXACTO de `20260502204656_AddEmpleadosYPermisosEmpleados.cs` (mismos Guids fijos generados, mismas tablas/columnas). Verificar el `Down`.
-- [ ] **Step 5:** `dotnet build` + suite completa → PASS.
+- [ ] **Step 4:** Migración: `dotnet ef migrations add AgregarEventos --project backend/src/GymFlow.Infrastructure --startup-project backend/src/GymFlow.API`. Editar la migración generada para que, además de crear la tabla `Eventos`, **inserte 4 filas en `Permisos`** (columnas `Id`, `Modulo`, `Operacion`; `Modulo`="Eventos" y `Operacion`="Lectura"/"Escritura"/"Modificacion"/"Eliminacion" como **strings**) y 4 filas en `RolPermisos` (`PermisoId`, `RolId`) asignándolas al Admin. Datos concretos que NO se inventan: **RolId Admin = `11111111-1111-1111-1111-111111111111`** (literal seedeado); generar **4 Guids nuevos** (uno por Permiso.Id) y fijarlos como literales. Patrón de referencia: `20260502204656_AddEmpleadosYPermisosEmpleados.cs` (copiar SOLO los inserts de Permisos/RolPermisos, **NO** el insert del usuario admin). El `Down` borra los `RolPermisos` y `Permisos` insertados (no toca `Usuarios`).
+- [ ] **Step 5:** `dotnet build` + suite completa → PASS. (No hace falta invalidar `IPermisoCache`: arranca vacío y se reconstruye al reiniciar; la migración corre en startup.)
 - [ ] **Step 6:** Commit `feat(eventos): persistencia (repos + EF config + migracion con permisos)`.
 
 ---
@@ -64,7 +64,7 @@
 
 - [ ] **Step 1 (RED):** Tests:
   - `GetEventos_FiltraPorUnidad_MapeaDto`: con mock de `IEventoRepository`, devuelve `EventoDto` con `UnidadNombre` poblado.
-  - `GetEventoById_NoExiste_DevuelveNull` (o lanza KeyNotFound según patrón de `GetClaseByIdQuery` — seguilo).
+  - `GetEventoById_NoExiste_LanzaKeyNotFound`: **lanza `KeyNotFoundException`** (patrón de `GetClaseByIdQuery`, que el controller mapea a `NotFound`).
 - [ ] **Step 2:** Correr → FAIL. Verificar.
 - [ ] **Step 3 (GREEN):** `EventoDto(Id, Titulo, Descripcion, Fecha, UnidadId, UnidadNombre, EstaActivo)`; `EventoMapper.ToDto`; las dos queries.
 - [ ] **Step 4:** Tests + suite → PASS.
@@ -79,9 +79,9 @@
 - [ ] **Step 1 (RED):** Tests:
   - `Crear_PersisteYNotificaSocios`: valida unidad existente, persiste el evento (AddAsync+SaveChanges), obtiene socios activos de la unidad (`GetActivosByUnidadAsync`) y manda email a cada uno (`EnviarAsync` Times = nº socios), audita `Creacion`.
   - `Crear_ConFechaPasada_Lanza`: fecha < `DateTime.UtcNow` → ArgumentException, no persiste.
-  - `Crear_SiEmailFalla_ElEventoIgualSeCrea`: `EnviarAsync` lanza/Exitoso=false → el evento queda persistido (SaveChanges llamado antes), no se propaga excepción.
+  - `Crear_SiEmailFalla_ElEventoIgualSeCrea`: `EnviarAsync` devuelve `EmailResultado(Exitoso=false)` → el evento queda persistido (SaveChanges llamado ANTES de enviar); no se propaga excepción.
 - [ ] **Step 2:** Correr → FAIL. Verificar.
-- [ ] **Step 3 (GREEN):** Implementar: validar título (vía ctor de Evento) + fecha no pasada (en el command, contra `DateTime.UtcNow`) + unidad existe; normalizar Fecha a UTC; `AddAsync`+`SaveChangesAsync`; auditar `Creacion`; LUEGO enviar emails best-effort secuencial (try/catch por socio) con `EventoEmailTemplates.Notificacion` (HtmlEncode en todo). Auditar conteo enviados/fallidos en el detalle.
+- [ ] **Step 3 (GREEN):** Implementar: validar título (vía ctor de Evento) + fecha no pasada (en el command, contra `DateTime.UtcNow`) + unidad existe; normalizar Fecha a UTC; `AddAsync`+`SaveChangesAsync`; auditar `Creacion`; **LUEGO** notificar reusando un helper nuevo **`EventoNotificador.NotificarAsync(emailService, socios, evento)`** (creado acá, en `UseCases/Eventos/`) que replica EXACTAMENTE el patrón de `CancelClaseCommand`: `Task.WhenAll` (paralelo) sobre los socios activos, arma el cuerpo con `EventoEmailTemplates.Notificacion` (HtmlEncode en TODO valor dinámico), y cuenta `EmailResultado.Exitoso` para el conteo enviados/fallidos que se incluye en el detalle de auditoría. `IEmailService.EnviarAsync` NO lanza (best-effort vía el flag `Exitoso`).
 - [ ] **Step 4:** Tests + suite → PASS.
 - [ ] **Step 5:** Commit `feat(eventos): CrearEventoCommand con notificacion por email`.
 
@@ -93,7 +93,7 @@
 
 - [ ] **Step 1 (RED):** Tests: `Actualizar_CambiaCamposYAudita` (permite fecha pasada); `Cancelar_BajaLogicaYAudita`; `Notificar_EnviaEmailASociosDeLaUnidad` (reusa el helper de envío; best-effort).
 - [ ] **Step 2:** Correr → FAIL. Verificar.
-- [ ] **Step 3 (GREEN):** Implementar los 3 (reusar la lógica de envío de Task 4, extraída a un helper o repetida según el repo). Auditoría `Modificacion`/`Baja`.
+- [ ] **Step 3 (GREEN):** Implementar los 3. `NotificarEventoCommand` reusa el helper **`EventoNotificador.NotificarAsync`** de Task 4 (no dupliques ni inventes un servicio nuevo). Auditoría `Modificacion`/`Baja`/notificación.
 - [ ] **Step 4:** Tests + suite → PASS.
 - [ ] **Step 5:** Commit `feat(eventos): Actualizar + Cancelar + Notificar commands`.
 
@@ -117,7 +117,7 @@
 
 - [ ] **Step 1:** Registrar en DI los commands/queries (AddScoped), `IEventoRepository`→`EventoRepository`.
 - [ ] **Step 2:** `EventosController` (patrón `ClasesController`): GET `?unidadId=&incluirInactivos=` `[RequierePermiso(Eventos,Lectura)]`, GET `/{id}` `[Lectura]`, POST `[Escritura]`, PUT `/{id}` `[Modificacion]`, DELETE `/{id}` `[Eliminacion]`, POST `/{id}/notificar` `[Escritura]`. Mapear `ArgumentException`→`BadRequest`, `KeyNotFoundException`→`NotFound`.
-- [ ] **Step 3:** `PortalController`: GET `/api/portal/eventos` (resuelve socio por correo del JWT como el resto del controller) → `GetEventosPortalQuery`.
+- [ ] **Step 3:** `PortalController`: GET `/api/portal/eventos` → `GetEventosPortalQuery`. Seguir el patrón del controller: validar el token a mano con `ExtractClaims()` y resolver el socio por `ClaimTypes.Email` → `GetByCorreoAsync`; **NO** agregar `[Authorize]` (el controller no lo usa).
 - [ ] **Step 4:** `dotnet build` + suite completa → PASS.
 - [ ] **Step 5:** Commit `feat(eventos): EventosController + endpoint portal/eventos (API)`.
 
@@ -140,7 +140,7 @@
 **Files:** Modify `services/api.ts` (portalApi.getEventos), portal nav/router; Create `pages/portal/EventosPortalPage.tsx`.
 
 - [ ] **Step 1:** `portalApi.getEventos()` → GET `/portal/eventos`.
-- [ ] **Step 2:** `EventosPortalPage` (patrón `HorariosPortalPage`): lista de próximos eventos de las sedes del socio (título, descripción, fecha, sede), solo lectura, responsive. Ítem en el nav del portal + ruta.
+- [ ] **Step 2:** `EventosPortalPage` (patrón `HorariosPortalPage`): lista de próximos eventos de las sedes del socio (título, descripción, fecha, sede), solo lectura, responsive. Agregar un `<Link to="/portal/eventos">` en `components/layout/SocioLayout.tsx` (los `<Link>` del nav del portal están hardcodeados ahí) y la ruta `<Route path="eventos" element={<EventosPortalPage />} />` (hija de `/portal`) en `App.tsx`.
 - [ ] **Step 3:** `npm run build` + `npx vitest run` → PASS.
 - [ ] **Step 4:** Commit `feat(eventos): vista de eventos en el portal del socio`.
 
