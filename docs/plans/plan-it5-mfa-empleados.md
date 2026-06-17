@@ -103,6 +103,7 @@
   - `GenerarUri_DevuelveOtpauthConIssuerYCuenta`: el `otpauth://totp/...` contiene issuer `GymFlow` y el correo.
   - `GenerarCodigosRecuperacion_Devuelve10Distintos` con ~50 bits cada uno.
   - Interface: `string GenerarSecreto()`, `bool ValidarCodigo(string secreto, string codigo)` (ventana ±1 step), `string GenerarUriOtpauth(string secreto, string cuenta)`, `IReadOnlyList<string> GenerarCodigosRecuperacion()`.
+  - **Hash de códigos de recuperación (DECISIÓN ÚNICA, vale para Tasks 8 y 9):** se reusa el `IPasswordHasher` (BCrypt) **ya existente y registrado** (`BCryptPasswordHasher`). Al persistir: `hasher.Hash(codigo)`. Al verificar: iterar los códigos activos del empleado y `hasher.Verify(codigoIngresado, codigo.CodigoHash)`. No se introduce SHA-256 ni dependencia nueva. `ITotpService` NO hashea (solo genera en claro); el hash lo hace el command con `IPasswordHasher`.
 - [ ] **Step 3:** Correr → FAIL. Verificar.
 - [ ] **Step 4 (GREEN):** Implementar con Otp.NET (`Totp`, `Base32Encoding`), ventana de verificación ±1 (`VerificationWindow(1,1)`).
 - [ ] **Step 5:** Tests → PASS, suite completa → PASS.
@@ -124,7 +125,7 @@
   - `Validar_Expirado_Falla`.
   - Interface: `string Emitir(Guid userId, string purpose)` (exp ~5 min), `Guid? Validar(string token, string purposeEsperado)`. Claims: `sub`, `purpose`, `exp`. SIN rolId/permisos.
 - [ ] **Step 2:** Correr → FAIL. Verificar.
-- [ ] **Step 3 (GREEN):** Implementar con `JwtSecurityTokenHandler` usando `Mfa:TokenSigningKey` (de config). Validar firma + purpose + exp.
+- [ ] **Step 3 (GREEN):** Implementar con `JwtSecurityTokenHandler` usando `Mfa:TokenSigningKey` (de config). **Formato de la clave:** string UTF-8 de ≥32 chars (igual patrón que `Jwt:Key`), usada con `new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))` y firma **HmacSha256** (idéntico a `GenerateJwt`). DEBE ser distinta de `Jwt:Key`. Validar firma + purpose + exp con `ValidateIssuerSigningKey=true`, `ValidateIssuer/Audience=false`, `ClockSkew=Zero`.
 - [ ] **Step 4:** Tests → PASS, suite completa → PASS.
 - [ ] **Step 5:** Commit `feat(auth): IMfaTokenService firmado con clave dedicada`.
 
@@ -136,11 +137,11 @@
 - Create: `backend/src/GymFlow.Application/Interfaces/ICodigoRecuperacionMfaRepository.cs`
 - Create: `backend/src/GymFlow.Infrastructure/Repositories/CodigoRecuperacionMfaRepository.cs`
 - Modify: EmpleadoRepository / ISocioRepository? — usar el repo de empleados para persistir el Empleado; agregar `SaveChangesAsync` si falta.
-- Create/Modify: EF Configuration para `Empleado` (columnas MFA) y `CodigoRecuperacionMfa`.
+- Create: `CodigoRecuperacionMfaConfiguration` (config EF de la entidad hija). Agregar `DbSet<CodigoRecuperacionMfa>` a `GymFlowDbContext`.
 - Migración EF.
 
-- [ ] **Step 1:** Interface `ICodigoRecuperacionMfaRepository`: `Task AgregarRangoAsync(IEnumerable<CodigoRecuperacionMfa>)`, `Task<IReadOnlyList<CodigoRecuperacionMfa>> GetActivosPorEmpleadoAsync(Guid empleadoId)`, `Task EliminarPorEmpleadoAsync(Guid empleadoId)`, `Task SaveChangesAsync()`.
-- [ ] **Step 2:** EF config: columnas nullable de MFA en la tabla `Usuarios` (TPH); tabla `CodigosRecuperacionMfa` con FK a Usuarios (EmpleadoId), índice por EmpleadoId, CodigoHash requerido.
+- [ ] **Step 1:** Interface `ICodigoRecuperacionMfaRepository`: `Task AgregarRangoAsync(IEnumerable<CodigoRecuperacionMfa>)`, `Task<IReadOnlyList<CodigoRecuperacionMfa>> GetActivosPorEmpleadoAsync(Guid empleadoId)`, `Task EliminarPorEmpleadoAsync(Guid empleadoId)`, `Task SaveChangesAsync()`. Para persistir el `Empleado` modificado, reusar el repo de empleados existente (`IEmpleadoRepository.SaveChangesAsync` si existe; si no, usar el mismo `DbContext`/repo que ya usan los commands de empleados).
+- [ ] **Step 2:** EF config. **Las columnas escalares de MFA se mapean POR CONVENCIÓN** al ser props de `Empleado` (igual que las props de `Socio`): NO hace falta `EmpleadoConfiguration` ni tocar `UsuarioConfiguration`. Lo obligatorio: (a) `DbSet<CodigoRecuperacionMfa>` en `GymFlowDbContext`; (b) `CodigoRecuperacionMfaConfiguration` (FK a `Usuarios` por EmpleadoId, índice por EmpleadoId, `CodigoHash` requerido).
 - [ ] **Step 3:** Implementar el repo.
 - [ ] **Step 4:** Generar migración: `dotnet ef migrations add AgregarMfaEmpleado --project backend/src/GymFlow.Infrastructure --startup-project backend/src/GymFlow.API`. Verificar que solo agregue columnas nullable + la tabla nueva (sin cambios espurios).
 - [ ] **Step 5:** `dotnet build` + suite completa → PASS.
@@ -152,9 +153,11 @@
 
 **Files:**
 - Create: `backend/src/GymFlow.Application/UseCases/Auth/Mfa/IniciarMfaSetupCommand.cs`
-- Test: `.../UseCases/Auth/Mfa/IniciarMfaSetupCommandTests.cs`
+- Test: `backend/tests/GymFlow.Application.Tests/UseCases/Auth/Mfa/IniciarMfaSetupCommandTests.cs`
 
-Genera secreto (sin persistir como habilitado), URI otpauth, y 10 códigos de recuperación en claro (solo para la respuesta). El secreto y los hashes se devuelven para que `activate` los persista, o se guardan en estado temporal. **Decisión:** el secreto generado se devuelve cifrado al cliente NO; en su lugar el setup persiste el secreto cifrado en el Empleado pero con `MfaHabilitado=false`, y `activate` solo flipea el flag tras validar. Los códigos de recuperación se generan en `activate` (no en setup) para no persistir códigos de un enrolment abandonado — **reconfirmar en el test**: setup devuelve secreto+URI+QR; activate genera y persiste códigos. Ajustar el reparto setup/activate para que sea coherente y testeable.
+**Decisión cerrada del reparto setup/activate (DESVÍA de la spec — la spec entregaba los códigos en setup; acá van en activate, para no persistir códigos de un enrolment abandonado; registrar la desviación en Task 14):**
+- `setup`: genera el secreto (`ITotpService.GenerarSecreto`), lo **cifra** (`IMfaSecretProtector.Protect`) y lo **persiste en el Empleado con `MfaHabilitado=false`**; devuelve `{ secretoBase32 (en claro, para el QR/clave manual), uriOtpauth }`. **No** genera ni persiste códigos de recuperación.
+- `activate` (Task 8): valida el primer código; recién ahí genera, persiste (hasheados) y **devuelve en claro** los 10 códigos de recuperación, y pone `MfaHabilitado=true`.
 
 - [ ] **Step 1 (RED):** Test: dado un empleado sin MFA, `IniciarMfaSetupAsync(empleadoId)` genera secreto vía `ITotpService`, lo cifra vía `IMfaSecretProtector`, lo persiste en el Empleado (`MfaHabilitado` sigue false), y devuelve `{ secretoBase32, uriOtpauth }`. Mock de repos/servicios.
 - [ ] **Step 2:** Correr → FAIL. Verificar.
@@ -166,7 +169,9 @@ Genera secreto (sin persistir como habilitado), URI otpauth, y 10 códigos de re
 
 ### Task 8: Command de activación — `ActivarMfaCommand`
 
-**Files:** `.../Mfa/ActivarMfaCommand.cs` + tests.
+**Files:**
+- Create: `backend/src/GymFlow.Application/UseCases/Auth/Mfa/ActivarMfaCommand.cs`
+- Test: `backend/tests/GymFlow.Application.Tests/UseCases/Auth/Mfa/ActivarMfaCommandTests.cs`
 
 - [ ] **Step 1 (RED):** Tests:
   - `CodigoValido_ActivaYGeneraCodigos`: valida el código contra el secreto guardado; si ok, marca `MfaHabilitado=true`, genera 10 códigos de recuperación, los persiste hasheados, y devuelve los códigos en claro + señal de éxito.
@@ -180,7 +185,9 @@ Genera secreto (sin persistir como habilitado), URI otpauth, y 10 códigos de re
 
 ### Task 9: Commands de verificación — `VerificarMfaCommand` + `UsarCodigoRecuperacionCommand`
 
-**Files:** `.../Mfa/VerificarMfaCommand.cs`, `.../Mfa/UsarCodigoRecuperacionCommand.cs` + tests.
+**Files:**
+- Create: `backend/src/GymFlow.Application/UseCases/Auth/Mfa/VerificarMfaCommand.cs`, `.../Mfa/UsarCodigoRecuperacionCommand.cs`
+- Test: `backend/tests/GymFlow.Application.Tests/UseCases/Auth/Mfa/VerificarMfaCommandTests.cs`, `.../UsarCodigoRecuperacionCommandTests.cs`
 
 - [ ] **Step 1 (RED):** Tests Verificar:
   - `Bloqueado_Lanza`: si `EstaBloqueadoMfa(now)` → excepción sin validar.
@@ -191,7 +198,7 @@ Genera secreto (sin persistir como habilitado), URI otpauth, y 10 códigos de re
   - `CodigoRecuperacionValido_ConsumeYEntra`: matchea un código activo (hash), lo marca usado, resetea contador, audita `MfaCodigoRecuperacionUsado`, devuelve empleado.
   - `CodigoRecuperacionInvalido_SumaIntento`: cuenta para el mismo lockout.
 - [ ] **Step 2:** Correr → FAIL. Verificar.
-- [ ] **Step 3 (GREEN):** Implementar ambos (reciben `DateTime` ahora inyectable o vía un `IClock`/parámetro). El hash de recuperación: comparar con BCrypt.Verify o SHA-256+sal según lo elegido en Task 4/2.
+- [ ] **Step 3 (GREEN):** Implementar ambos. **Manejo del tiempo:** el command captura `DateTime.UtcNow` al entrar y se lo pasa a los métodos de dominio (`EstaBloqueadoMfa(now)`, `RegistrarIntentoFallidoMfa(now)`). NO se introduce `IClock` (no existe en el repo); el comportamiento de bloqueo con tiempo controlado ya queda testeado a nivel dominio en Task 2, y los tests de command verifican el efecto observable (intentos incrementados / excepción / códigos consumidos) con repos mockeados. El hash de recuperación: `IPasswordHasher.Verify(codigoIngresado, codigo.CodigoHash)` (BCrypt, decisión de Task 4).
 - [ ] **Step 4:** Tests + suite → PASS.
 - [ ] **Step 5:** Commit `feat(auth): VerificarMfaCommand + UsarCodigoRecuperacionCommand`.
 
@@ -199,7 +206,9 @@ Genera secreto (sin persistir como habilitado), URI otpauth, y 10 códigos de re
 
 ### Task 10: Command de reset por admin — `ResetearMfaEmpleadoCommand`
 
-**Files:** `.../Mfa/ResetearMfaEmpleadoCommand.cs` + tests.
+**Files:**
+- Create: `backend/src/GymFlow.Application/UseCases/Auth/Mfa/ResetearMfaEmpleadoCommand.cs`
+- Test: `backend/tests/GymFlow.Application.Tests/UseCases/Auth/Mfa/ResetearMfaEmpleadoCommandTests.cs`
 
 - [ ] **Step 1 (RED):** Tests:
   - `Reset_LimpiaTodoYAudita`: `ResetearMfa()` en el empleado, elimina sus códigos, audita `MfaReseteadoPorAdmin`.
@@ -216,13 +225,13 @@ Genera secreto (sin persistir como habilitado), URI otpauth, y 10 códigos de re
 **Files:**
 - Modify: `backend/src/GymFlow.API/Controllers/AuthController.cs`
 - Modify: `backend/src/GymFlow.API/Controllers/EmpleadosController.cs`
-- Modify: `backend/src/GymFlow.API/DependencyInjection.cs`, `Infrastructure/DependencyInjection.cs`, `appsettings.json` + `appsettings.Development.json`
+- Modify: `backend/src/GymFlow.API/DependencyInjection.cs`, `Infrastructure/DependencyInjection.cs`, `appsettings.json`
 - NuGet `QRCoder` en Infrastructure (o API) para el QR.
 
-- [ ] **Step 1:** Config: agregar `Mfa:EncryptionKey` y `Mfa:TokenSigningKey` a `appsettings.Development.json` (valores de dev). En `appsettings.json` placeholders vacíos. Registrar en DI: `ITotpService`, `IMfaSecretProtector`, `IMfaTokenService`, `ICodigoRecuperacionMfaRepository`, y los 5 commands.
+- [ ] **Step 1:** Config: agregar `Mfa:EncryptionKey` (base64 de 32 bytes) y `Mfa:TokenSigningKey` (string UTF-8 ≥32 chars, distinta de `Jwt:Key`) a **`appsettings.json`** (NO existe `appsettings.Development.json` en el repo; las claves de dev viven en `appsettings.json`, igual que `Jwt:Key`). En producción se sobreescriben por env-vars/secrets del Container App (Task 13). Registrar en DI: `ITotpService`, `IMfaSecretProtector`, `IMfaTokenService`, `ICodigoRecuperacionMfaRepository`, y los 5 commands (`AddScoped`).
 - [ ] **Step 2:** Definir DTOs: `LoginResultado(bool RequiereMfa, bool SetupRequerido, string? MfaToken, LoginResponse? Sesion)`; requests `MfaActivarRequest(string Codigo)`, `MfaVerificarRequest(string Codigo)`, `MfaRecoveryRequest(string Codigo)`. Los endpoints `/mfa/*` reciben el `mfaToken` por header `Authorization: Bearer` y lo validan con `IMfaTokenService` (NO `[Authorize]`/`[RequierePermiso]`).
 - [ ] **Step 3:** Modificar `/auth/login`: si el correo corresponde a un **empleado** válido (password ok), en vez del JWT devolver `LoginResultado{ RequiereMfa=true, SetupRequerido = !empleado.MfaHabilitado, MfaToken = emitir(purpose setup|pending) }`. Socio/legacy → `LoginResultado{ RequiereMfa=false, Sesion=LoginResponse(...) }`. Reutilizar `GenerateJwt` para la sesión.
-- [ ] **Step 4:** Endpoints: `POST /auth/mfa/setup` (valida mfaToken setup → `IniciarMfaSetupCommand` → devuelve uri, **QR data URI** generado con QRCoder, clave manual; los códigos NO acá), `POST /auth/mfa/activate` (valida mfaToken setup → `ActivarMfaCommand` → devuelve `LoginResponse` + códigos de recuperación una vez), `POST /auth/mfa/verify` (valida mfaToken pending → `VerificarMfaCommand` → `LoginResponse`), `POST /auth/mfa/recovery` (→ `UsarCodigoRecuperacionCommand` → `LoginResponse`). Mapear excepciones: bloqueo → 429/423 con mensaje; código inválido → 401 "Código incorrecto o expirado."
+- [ ] **Step 4:** Endpoints: `POST /auth/mfa/setup` (valida mfaToken setup → `IniciarMfaSetupCommand` → devuelve uri, **QR data URI** generado con QRCoder, clave manual; los códigos NO acá), `POST /auth/mfa/activate` (valida mfaToken setup → `ActivarMfaCommand` → devuelve `LoginResponse` + códigos de recuperación una vez), `POST /auth/mfa/verify` (valida mfaToken pending → `VerificarMfaCommand` → `LoginResponse`), `POST /auth/mfa/recovery` (→ `UsarCodigoRecuperacionCommand` → `LoginResponse`). Mapear excepciones: bloqueo → **429 Too Many Requests** con mensaje "Demasiados intentos. Probá de nuevo en unos minutos."; código inválido → 401 "Código incorrecto o expirado." (Usar tipos de excepción distinguibles desde los commands, p.ej. `MfaBloqueadoException` vs `InvalidOperationException`/`UnauthorizedAccessException`, para mapear bien el status.) Extracción del `mfaToken`: replicar el patrón de `AuthController.Me()` (`authHeader["Bearer ".Length..]`).
 - [ ] **Step 5:** `EmpleadosController`: `POST /{id}/mfa/reset` con `[RequierePermiso(Modulo.Empleados, Operacion.Modificacion)]`; comparar `{id}` con `userId` del JWT (NameIdentifier) → si igual, 400; si no, `ResetearMfaEmpleadoCommand`.
 - [ ] **Step 6:** `dotnet build` + suite completa → PASS. (Los commands ya tienen cobertura; el controller se valida por compilación + smoke manual.)
 - [ ] **Step 7:** Commit `feat(auth): login en dos pasos + endpoints MFA + reset (API)`.
@@ -258,4 +267,4 @@ Genera secreto (sin persistir como habilitado), URI otpauth, y 10 códigos de re
 
 ### Task 14: Review final
 
-- [ ] Reviewer adversarial sobre el diff completo vs develop: seguridad (mfaToken rechazado en endpoints normales — test real; secreto nunca en claro; lockout no bypasseable; QR/secreto no logueado), migración consistente, build backend+frontend y suites completas en verde. Crear el PR a develop.
+- [ ] Reviewer adversarial sobre el diff completo vs develop: seguridad (la separación de claves que garantiza el rechazo del `mfaToken` en endpoints normales queda cubierta por el test unitario `MfaTokenService.Validar_ConOtraClave_Falla` de Task 5 — NO se monta `WebApplicationFactory` nuevo; verificar que ese test existe y es real; secreto nunca en claro en DB/logs/respuestas; lockout no bypasseable; QR/secreto no logueado), migración consistente, contrato `/login` (chequear que no haya otros consumidores del shape plano además del frontend — p.ej. la colección Postman), build backend+frontend y suites completas en verde. Crear el PR a develop con descripción del cambio breaking de `/login`.

@@ -44,8 +44,8 @@ El endpoint `POST /api/auth/login` deja de devolver el JWT de sesión directamen
 ### Enrolment (RN-28 — configurar antes de operar)
 Si el empleado no tiene MFA activado, tras la contraseña entra al alta de MFA:
 
-- `POST /api/auth/mfa/setup` (con `mfaToken` de setup): genera un secreto TOTP (aún no activado), devuelve el URI `otpauth://`, el **QR como data URI PNG** (generado server-side con QRCoder), la **clave manual** (base32) y **10 códigos de recuperación** de un solo uso (se muestran **una sola vez**, en claro, solo en esta respuesta).
-- `POST /api/auth/mfa/activate` (`mfaToken` + código de la app): valida el código contra el secreto; si es correcto, **persiste el secreto cifrado + los códigos de recuperación hasheados**, marca MFA activado y **emite el JWT de sesión** (login completo).
+- `POST /api/auth/mfa/setup` (con `mfaToken` de setup): genera un secreto TOTP (aún no activado), **persiste el secreto cifrado en el empleado con `MfaHabilitado=false`**, y devuelve el URI `otpauth://`, el **QR como data URI PNG** (generado server-side con QRCoder) y la **clave manual** (base32). Todavía no genera códigos de recuperación (así un enrolment abandonado no deja códigos persistidos).
+- `POST /api/auth/mfa/activate` (`mfaToken` + código de la app): valida el código contra el secreto; si es correcto, **genera 10 códigos de recuperación de un solo uso** (los devuelve en claro **una sola vez** en esta respuesta, y los persiste hasheados), marca MFA activado y **emite el JWT de sesión** (login completo).
 - Hasta activarlo, el empleado no obtiene JWT de sesión ni puede operar.
 - El admin semilla (`admin@gymflow.com`) pasa por este enrolment en su primer login tras el release.
 
