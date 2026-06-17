@@ -24,21 +24,23 @@ El administrador crea **eventos especiales** (torneos, charlas, promociones) por
 ### Modelo de datos
 - **Entidad `Evento`** (Domain): `Id` (Guid), `Titulo` (string, requerido), `Descripcion` (string), `Fecha` (DateTime UTC — fecha/hora del evento), `UnidadId` (Guid, FK a `Unidad`), `EstaActivo` (bool, default true — baja lógica como `Clase`/`Plan`), `FechaCreacion` (DateTime UTC). Navegación a `Unidad`.
 - **Mutación por métodos de dominio** (setters privados, como el resto): ctor con validación (título no vacío), `Actualizar(titulo, descripcion, fecha)`, `Cancelar()` (setea `EstaActivo=false`), `Reactivar()`.
-- **EF:** `EventoConfiguration` (FK a Unidad, índices por `UnidadId` y `Fecha`); `DbSet<Evento>`. Migración que crea la tabla `Eventos` (se auto-aplica al arrancar).
+- **EF:** `EventoConfiguration` (FK a Unidad, índices por `UnidadId` y `Fecha`); `DbSet<Evento>`. Migración que crea la tabla `Eventos` (se auto-aplica al arrancar). Las queries que devuelven `EventoDto` con `UnidadNombre` deben `.Include(e => e.Unidad)` (como `GetClasesQuery`).
+- **Repositorios:** `IEventoRepository` (GetAllAsync(unidadId?, incluirInactivos), GetByIdAsync, GetProximosByUnidadesAsync(IEnumerable<Guid> unidadIds, DateTime ahora) para el portal, AddAsync, Update, SaveChangesAsync). Para los socios a notificar: **agregar `Task<IEnumerable<Socio>> GetActivosByUnidadAsync(Guid unidadId)` a `ISocioRepository`** (impl en `SocioRepository` filtrando `s.EstaActivo && s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId)`); es más limpio que reusar el `SearchAsync` genérico (que trae includes de Plan innecesarios).
 
 ### Permisos
-- Nuevo valor en el enum `Modulo`: **`Eventos`**. Migración que inserta el módulo en el catálogo de permisos y **asigna las 4 operaciones (Lectura/Escritura/Modificacion/Eliminacion) al rol Admin** (mismo patrón que se usó al agregar `Empleados`). Los controllers usan `[RequierePermiso(Modulo.Eventos, Operacion.X)]`.
-- El portal del socio (lectura de eventos) es **self-service** con `[Authorize]` (no requiere permiso de módulo), igual que `InscripcionesController`/`PortalController`.
+- Nuevo valor en el enum `Modulo` (Domain): **`Eventos`**. Migración que inserta las **4 filas de permiso** (una por operación) y los `RolPermisos` que **asignan las 4 operaciones al rol Admin** — plantilla exacta: la migración `20260502204656_AddEmpleadosYPermisosEmpleados.cs`. Los controllers usan `[RequierePermiso(Modulo.Eventos, Operacion.X)]`.
+- **Frontend:** agregar `'Eventos'` al union `Modulo` en `frontend/src/types/permisos.ts` (definición duplicada del enum), si no, `puedeLeer(Modulo.Eventos)` en el Sidebar no typechequea.
+- El portal del socio (lectura de eventos) es **self-service**. El endpoint vive en `PortalController` (ruta `/api/portal/*`) y **resuelve el socio por el correo del JWT** (patrón de `PortalController.ExtractClaims` + `GetByCorreoAsync`, que ya incluye `UnidadesAsignadas`), NO por socioId. De ahí deriva las `UnidadId` del socio.
 
 ### Casos de uso (Application — patrón Command/Query)
-- **Queries:** `GetEventosQuery` (admin: filtra por `unidadId`, opción de incluir inactivos), `GetEventoByIdQuery`, `GetEventosPortalQuery` (socio: próximos eventos `Fecha >= ahora` y activos, de las unidades del socio, ordenados por fecha).
-- **Commands:** `CrearEventoCommand` (valida unidad existente y fecha no pasada; persiste; **notifica por email** a los socios de la unidad; audita `Creacion`), `ActualizarEventoCommand` (audita `Modificacion`), `CancelarEventoCommand` (baja lógica; audita `Baja`), `NotificarEventoCommand` (re-envía el email a los socios de la unidad; audita).
+- **Queries:** `GetEventosQuery` (admin: filtra por `unidadId`, opción de incluir inactivos), `GetEventoByIdQuery`, `GetEventosPortalQuery` (socio: resuelve sus `UnidadId` desde `socio.UnidadesAsignadas` y trae próximos eventos `Fecha >= DateTime.UtcNow` y activos, ordenados por fecha).
+- **Commands:** `CrearEventoCommand` (valida unidad existente y **fecha no pasada contra `DateTime.UtcNow`** —en el command, no en el dominio, para que `Actualizar` pueda ajustar fechas—; normaliza la `Fecha` a UTC; **persiste y audita ANTES de enviar emails**; luego **notifica por email** a los socios de la unidad; audita `Creacion` con el conteo enviados/fallidos en el detalle), `ActualizarEventoCommand` (audita `Modificacion`), `CancelarEventoCommand` (baja lógica; audita `Baja`), `NotificarEventoCommand` (re-envía el email a los socios de la unidad; audita).
 - DTO `EventoDto` (Id, Titulo, Descripcion, Fecha, UnidadId, UnidadNombre, EstaActivo).
 
 ### Notificación por email
 - Plantilla `EventoEmailTemplates.Notificacion(socio, evento)` siguiendo el estilo de `ClaseEmailTemplates`/`InscripcionEmailTemplates`: método estático que devuelve `(Asunto, Cuerpo)` con `WebUtility.HtmlEncode` en **todo** valor dinámico (título, descripción, nombre del socio, sede). Asunto tipo "Nuevo evento en {sede}: {título}".
-- Envío **best-effort**: se obtiene la lista de socios activos de la unidad y se les envía a cada uno con `IEmailService.EnviarAsync`; un fallo individual se traga (try/catch por socio) y no rompe la creación del evento. La operación de crear el evento se confirma aunque el email falle (mismo criterio que el resto del sistema).
-- Para evitar bloquear el request con N envíos, el envío puede hacerse en secuencia best-effort dentro del command (consistente con `ProcesarRecordatoriosCommand`); no se introduce cola/async nuevo (YAGNI).
+- Envío **best-effort**, con el patrón de `CancelClaseCommand` (el caso análogo real de "notificar a N socios al hacer una acción de ABM"): **primero `SaveChangesAsync()` del evento + auditoría, después** se obtiene la lista de socios activos de la unidad (`GetActivosByUnidadAsync`) y se envía a cada uno con `IEmailService.EnviarAsync`. Un fallo individual se traga (try/catch por socio) y no rompe la creación. El evento queda creado aunque el `IEmailService` falle o lance (criterio del resto del sistema; hay test de eso).
+- Envío **secuencial** (`foreach` + `await`) para no abrir muchas conexiones SMTP a la vez; no se introduce cola/async nuevo (YAGNI). El detalle de auditoría incluye el conteo enviados/fallidos.
 - **N-11** (no más de un recordatorio del mismo tipo por socio por día) aplica a los recordatorios automáticos de cuota; para eventos, la notificación se dispara una vez al crear y manualmente vía "Notificar" (no es un job diario), así que N-11 no agrega lógica acá.
 
 ### API (endpoints)
@@ -58,7 +60,9 @@ El administrador crea **eventos especiales** (torneos, charlas, promociones) por
 - `services/api.ts`: `eventosApi` (getAll, getById, create, update, cancel, notificar) y `portalApi.getEventos`. Tipos en `types/`.
 
 ### Validaciones
-- Título obligatorio (no vacío); fecha del evento no puede ser pasada al **crear** (al editar se permite ajustar); unidad obligatoria y existente.
+- Título obligatorio (no vacío) — `ArgumentException` → el controller mapea a `BadRequest` (patrón `ClasesController.Create`).
+- Fecha del evento no puede ser pasada al **crear** (comparada contra `DateTime.UtcNow`, validación en `CrearEventoCommand`); al **editar** se permite ajustar (la validación no está en el dominio ni en `Actualizar`). La `Fecha` recibida se normaliza a UTC antes de persistir (Npgsql `timestamptz` exige `Kind=Utc`).
+- Unidad obligatoria y existente.
 
 ## Criterios de aceptación
 
