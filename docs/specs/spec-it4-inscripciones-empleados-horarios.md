@@ -24,15 +24,15 @@ RF-13 y RF-14 se consideran cubiertos por el sistema de roles y permisos configu
 
 ### Incluido
 
-| # | Componente | Mapea a |
-|---|------------|---------|
-| 1 | Inscripcion por `HorarioClaseId` con validacion de cupo y duplicados | RF-10, RN-09, CU-02 |
-| 2 | Notificacion por email y auditoria de inscripcion/cancelacion | CA-09, RNF-11 |
-| 3 | Vista "Mis Inscripciones" con dia, hora y sala | RF-11 |
-| 4 | Horarios del portal como vista unica de inscripcion | CU-02 |
-| 5 | Horarios admin con filtro de sede obligatorio y split simple de solapamientos | RF-09, RNF-03 |
-| 6 | Credenciales temporales por email al crear empleado | RF-12, CA-29 |
-| 7 | Tests de dominio, aplicacion y build frontend | Calidad |
+| #   | Componente                                                                    | Mapea a             |
+| --- | ----------------------------------------------------------------------------- | ------------------- |
+| 1   | Inscripcion por `HorarioClaseId` con validacion de cupo y duplicados          | RF-10, RN-09, CU-02 |
+| 2   | Notificacion por email y auditoria de inscripcion/cancelacion                 | CA-09, RNF-11       |
+| 3   | Vista "Mis Inscripciones" con dia, hora y sala                                | RF-11               |
+| 4   | Horarios del portal como vista unica de inscripcion                           | CU-02               |
+| 5   | Horarios admin con filtro de sede obligatorio y split simple de solapamientos | RF-09, RNF-03       |
+| 6   | Credenciales temporales por email al crear empleado                           | RF-12, CA-29        |
+| 7   | Tests de dominio, aplicacion y build frontend                                 | Calidad             |
 
 ### Fuera de alcance
 
