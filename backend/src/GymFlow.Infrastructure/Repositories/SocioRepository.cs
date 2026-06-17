@@ -100,6 +100,18 @@ public class SocioRepository : ISocioRepository
         return await query.OrderBy(s => s.Apellido).ThenBy(s => s.Nombre).ToListAsync();
     }
 
+    public async Task<IEnumerable<Socio>> GetActivosByUnidadAsync(Guid unidadId)
+    {
+        return await _context.Socios
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Unidad)
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Plan)
+            .Where(s => s.EstaActivo && s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId))
+            .OrderBy(s => s.Apellido).ThenBy(s => s.Nombre)
+            .ToListAsync();
+    }
+
     public async Task AddAsync(Socio socio)
     {
         await _context.Socios.AddAsync(socio);
