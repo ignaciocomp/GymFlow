@@ -14,3 +14,8 @@ public record CreateEventoRequest(
     string? Descripcion,
     DateTime Fecha,
     Guid UnidadId);
+
+public record UpdateEventoRequest(
+    string Titulo,
+    string? Descripcion,
+    DateTime Fecha);
