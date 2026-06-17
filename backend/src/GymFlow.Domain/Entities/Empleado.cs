@@ -23,6 +23,20 @@ public class Empleado : Usuario
     public void CambiarRol(Guid nuevoRolId) => CambiarRolInterno(nuevoRolId);
 
     /// <summary>
+    /// Guarda el secreto TOTP (ya cifrado) durante el alta, dejando el segundo
+    /// factor todavía deshabilitado: recién se habilita al validar el primer
+    /// código en la activación. Permite reintentar el enrolment sin habilitar.
+    /// </summary>
+    public void PrepararSecretoMfa(string secretoProtegido)
+    {
+        if (string.IsNullOrWhiteSpace(secretoProtegido))
+            throw new ArgumentException("El secreto MFA es requerido.", nameof(secretoProtegido));
+
+        MfaSecret = secretoProtegido;
+        MfaHabilitado = false;
+    }
+
+    /// <summary>
     /// Guarda el secreto TOTP (ya cifrado) y habilita el segundo factor.
     /// </summary>
     public void ActivarMfa(string secretoProtegido)
