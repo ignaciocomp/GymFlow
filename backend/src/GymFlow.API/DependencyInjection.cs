@@ -8,6 +8,7 @@ using GymFlow.Application.UseCases.Roles;
 using GymFlow.Application.UseCases.Socios;
 using GymFlow.Application.UseCases.Cuotas;
 using GymFlow.Application.UseCases.Clases;
+using GymFlow.Application.UseCases.Eventos;
 using GymFlow.Application.UseCases.Horarios;
 using GymFlow.Application.UseCases.Inscripciones;
 using GymFlow.Application.UseCases.Unidades;
@@ -71,6 +72,13 @@ public static class DependencyInjection
         services.AddScoped<InscribirSocioCommand>();
         services.AddScoped<CancelarInscripcionCommand>();
         services.AddScoped<GetMisInscripcionesQuery>();
+        services.AddScoped<GetEventosQuery>();
+        services.AddScoped<GetEventoByIdQuery>();
+        services.AddScoped<CrearEventoCommand>();
+        services.AddScoped<ActualizarEventoCommand>();
+        services.AddScoped<CancelarEventoCommand>();
+        services.AddScoped<NotificarEventoCommand>();
+        services.AddScoped<GetEventosPortalQuery>();
         services.AddScoped<LoginConGoogleCommand>();
         return services;
     }

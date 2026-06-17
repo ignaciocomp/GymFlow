@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using GymFlow.Application.DTOs;
+using GymFlow.Application.UseCases.Eventos;
 using GymFlow.Application.UseCases.Portal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -15,17 +16,20 @@ public class PortalController : ControllerBase
     private readonly GetSocioPerfilQuery _getPerfilQuery;
     private readonly SolicitarModificacionCommand _solicitarModificacionCommand;
     private readonly SolicitarBajaCommand _solicitarBajaCommand;
+    private readonly GetEventosPortalQuery _getEventosPortalQuery;
     private readonly IConfiguration _configuration;
 
     public PortalController(
         GetSocioPerfilQuery getPerfilQuery,
         SolicitarModificacionCommand solicitarModificacionCommand,
         SolicitarBajaCommand solicitarBajaCommand,
+        GetEventosPortalQuery getEventosPortalQuery,
         IConfiguration configuration)
     {
         _getPerfilQuery = getPerfilQuery;
         _solicitarModificacionCommand = solicitarModificacionCommand;
         _solicitarBajaCommand = solicitarBajaCommand;
+        _getEventosPortalQuery = getEventosPortalQuery;
         _configuration = configuration;
     }
 
@@ -93,6 +97,29 @@ public class PortalController : ControllerBase
         {
             await _solicitarBajaCommand.ExecuteAsync(correo, request?.Motivo, userId, userName);
             return Ok(new { mensaje = "Tu solicitud de baja fue registrada. El equipo procesará tu solicitud en los próximos días." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// RF-15: Próximos eventos activos de las sedes del socio autenticado
+    /// </summary>
+    [HttpGet("eventos")]
+    public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos()
+    {
+        var claims = ExtractClaims();
+        if (claims == null) return Unauthorized(new { error = "Token inválido o expirado." });
+
+        var correo = claims.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrWhiteSpace(correo)) return Unauthorized(new { error = "No se pudo identificar al usuario." });
+
+        try
+        {
+            var eventos = await _getEventosPortalQuery.ExecuteAsync(correo);
+            return Ok(eventos);
         }
         catch (KeyNotFoundException ex)
         {
