@@ -1,9 +1,11 @@
 using GymFlow.Application.DTOs;
+using GymFlow.Application.Interfaces;
 using GymFlow.Application.UseCases.Eventos;
 using GymFlow.API.Authorization;
 using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace GymFlow.API.Controllers;
 
@@ -18,6 +20,7 @@ public class EventosController : ControllerBase
     private readonly ActualizarEventoCommand _actualizarEventoCommand;
     private readonly CancelarEventoCommand _cancelarEventoCommand;
     private readonly NotificarEventoCommand _notificarEventoCommand;
+    private readonly IUnidadesVisiblesResolver _unidadesResolver;
 
     public EventosController(
         GetEventosQuery getEventosQuery,
@@ -25,7 +28,8 @@ public class EventosController : ControllerBase
         CrearEventoCommand crearEventoCommand,
         ActualizarEventoCommand actualizarEventoCommand,
         CancelarEventoCommand cancelarEventoCommand,
-        NotificarEventoCommand notificarEventoCommand)
+        NotificarEventoCommand notificarEventoCommand,
+        IUnidadesVisiblesResolver unidadesResolver)
     {
         _getEventosQuery = getEventosQuery;
         _getEventoByIdQuery = getEventoByIdQuery;
@@ -33,6 +37,7 @@ public class EventosController : ControllerBase
         _actualizarEventoCommand = actualizarEventoCommand;
         _cancelarEventoCommand = cancelarEventoCommand;
         _notificarEventoCommand = notificarEventoCommand;
+        _unidadesResolver = unidadesResolver;
     }
 
     [HttpGet]
@@ -41,8 +46,18 @@ public class EventosController : ControllerBase
         [FromQuery] Guid? unidadId,
         [FromQuery] bool incluirInactivos = false)
     {
-        var eventos = await _getEventosQuery.ExecuteAsync(unidadId, incluirInactivos);
+        var (userId, rolId) = GetCurrentActor();
+        var unidadesPermitidas = await _unidadesResolver.ResolverAsync(userId, rolId);
+        var eventos = await _getEventosQuery.ExecuteAsync(unidadId, incluirInactivos, unidadesPermitidas);
         return Ok(eventos);
+    }
+
+    // Identidad del actuante (userId + rolId) del JWT, para resolver server-side las unidades visibles.
+    private (Guid UserId, Guid RolId) GetCurrentActor()
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var rolId = Guid.TryParse(User.FindFirst("rolId")?.Value, out var r) ? r : Guid.Empty;
+        return (userId, rolId);
     }
 
     [HttpGet("{id:guid}")]

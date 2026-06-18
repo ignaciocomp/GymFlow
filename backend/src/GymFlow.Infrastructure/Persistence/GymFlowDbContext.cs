@@ -62,7 +62,7 @@ public class GymFlowDbContext : DbContext
 
         // Seed RolPermisos: Dueno opera sus unidades — todas las operaciones de Socios,
         // Planes, Clases, Cuotas y Empleados, mas Unidades Lectura. SIN Auditoria (exclusiva del Admin).
-        var modulosOperativosDueno = new[] { Modulo.Socios, Modulo.Planes, Modulo.Clases, Modulo.Cuotas, Modulo.Empleados };
+        var modulosOperativosDueno = new[] { Modulo.Socios, Modulo.Planes, Modulo.Clases, Modulo.Cuotas, Modulo.Empleados, Modulo.Eventos };
         var permisosDueno = permisoIds
             .Where(kvp => modulosOperativosDueno.Contains(kvp.Key.Item1)
                 || (kvp.Key.Item1 == Modulo.Unidades && kvp.Key.Item2 == Operacion.Lectura))
