@@ -11,9 +11,10 @@ public class ProcesarRecordatoriosCommandTests
     private readonly Mock<ICuotaRepository> _cuotaRepo = new();
     private readonly Mock<IRecordatorioCuotaRepository> _recordatorioRepo = new();
     private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<INotificadorInApp> _notificador = new();
 
     private ProcesarRecordatoriosCommand CrearCommand() =>
-        new(_cuotaRepo.Object, _recordatorioRepo.Object, _emailService.Object);
+        new(_cuotaRepo.Object, _recordatorioRepo.Object, _emailService.Object, _notificador.Object);
 
     [Theory]
     [InlineData(5, TipoRecordatorio.CincoDias)]
@@ -163,6 +164,68 @@ public class ProcesarRecordatoriosCommandTests
         Assert.Equal(0, resultado.Omitidos);
         Assert.Equal(0, resultado.Fallidos);
         _recordatorioRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_CreaNotificacionesEnBatch_SoloDeLosEnviados()
+    {
+        var hoy = new DateTime(2026, 5, 11, 0, 0, 0, DateTimeKind.Utc);
+        var (s1, c1) = CrearCuotaConSocio(correo: "a@test.com", vencimiento: hoy.AddDays(5));
+        var (s2, c2) = CrearCuotaConSocio(correo: "b@test.com", vencimiento: hoy.AddDays(1));
+        // c3 falla el email → NO debe quedar en el batch in-app.
+        var (s3, c3) = CrearCuotaConSocio(correo: "c@test.com", vencimiento: hoy);
+
+        _cuotaRepo.Setup(r => r.GetCuotasParaRecordatorioAsync(hoy)).ReturnsAsync(new[] { c1, c2, c3 });
+        _emailService.Setup(s => s.EnviarAsync(s3.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: false, Error: "SMTP unavailable"));
+        _emailService.Setup(s => s.EnviarAsync(s1.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+        _emailService.Setup(s => s.EnviarAsync(s2.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+
+        await CrearCommand().ExecuteAsync(hoy);
+
+        // Un solo batch (después del SaveChanges de los recordatorios) con los 2 enviados.
+        _notificador.Verify(n => n.CrearParaVariosAsync(
+            It.Is<IEnumerable<Guid>>(ids =>
+                ids.Count() == 2 &&
+                ids.Contains(s1.Id) &&
+                ids.Contains(s2.Id) &&
+                !ids.Contains(s3.Id)),
+            TipoNotificacion.RecordatorioCuota,
+            It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SinEnviados_NoLlamaAlNotificador()
+    {
+        var hoy = new DateTime(2026, 5, 11, 0, 0, 0, DateTimeKind.Utc);
+        _cuotaRepo.Setup(r => r.GetCuotasParaRecordatorioAsync(hoy)).ReturnsAsync(new List<Cuota>());
+
+        await CrearCommand().ExecuteAsync(hoy);
+
+        _notificador.Verify(n => n.CrearParaVariosAsync(
+            It.IsAny<IEnumerable<Guid>>(), It.IsAny<TipoNotificacion>(),
+            It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NotificadorLanza_NoRompeElJob()
+    {
+        // Best-effort: si el batch in-app falla, el job igual devuelve su resultado.
+        var hoy = new DateTime(2026, 5, 11, 0, 0, 0, DateTimeKind.Utc);
+        var (socio, cuota) = CrearCuotaConSocio(vencimiento: hoy.AddDays(5));
+
+        _cuotaRepo.Setup(r => r.GetCuotasParaRecordatorioAsync(hoy)).ReturnsAsync(new[] { cuota });
+        _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+        _notificador.Setup(n => n.CrearParaVariosAsync(It.IsAny<IEnumerable<Guid>>(),
+            It.IsAny<TipoNotificacion>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ThrowsAsync(new Exception("DB caída"));
+
+        var resultado = await CrearCommand().ExecuteAsync(hoy);
+
+        Assert.Equal(1, resultado.Enviados);
     }
 
     private static (Socio Socio, Cuota Cuota) CrearCuotaConSocio(string correo = "socio@test.com", DateTime? vencimiento = null)

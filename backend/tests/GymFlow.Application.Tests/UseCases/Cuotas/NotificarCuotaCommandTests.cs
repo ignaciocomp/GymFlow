@@ -13,9 +13,10 @@ public class NotificarCuotaCommandTests
     private readonly Mock<IRecordatorioCuotaRepository> _recordatorioRepo = new();
     private readonly Mock<IEmailService> _emailService = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
+    private readonly Mock<INotificadorInApp> _notificador = new();
 
     private NotificarCuotaCommand CrearCommand() =>
-        new(_cuotaRepo.Object, _socioRepo.Object, _recordatorioRepo.Object, _emailService.Object, _auditLogger.Object);
+        new(_cuotaRepo.Object, _socioRepo.Object, _recordatorioRepo.Object, _emailService.Object, _auditLogger.Object, _notificador.Object);
 
     private static Socio CrearSocio(string correo = "socio@test.com") =>
         new(rolSocioId: Guid.NewGuid(),
@@ -200,5 +201,67 @@ public class NotificarCuotaCommandTests
         // El HTML peligroso debe estar escapado (no contener literalmente "<script>")
         Assert.DoesNotContain("<script>", cuerpoCapturado);
         Assert.Contains("&lt;script&gt;", cuerpoCapturado);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_EmailOk_CreaNotificacionInApp()
+    {
+        var socio = CrearSocio();
+        var cuota = CrearCuotaPendiente(socio.Id);
+
+        _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
+        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        _recordatorioRepo.Setup(r => r.ExisteRecordatorioExitosoHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
+        _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+
+        await CrearCommand().ExecuteAsync(cuota.Id, Guid.NewGuid(), "Admin");
+
+        _notificador.Verify(n => n.CrearAsync(
+            socio.Id, TipoNotificacion.RecordatorioCuota,
+            It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_EmailFalla_NoCreaNotificacionInApp()
+    {
+        var socio = CrearSocio();
+        var cuota = CrearCuotaPendiente(socio.Id);
+
+        _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
+        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        _recordatorioRepo.Setup(r => r.ExisteRecordatorioExitosoHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
+        _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: false, Error: "SMTP timeout"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CrearCommand().ExecuteAsync(cuota.Id, Guid.NewGuid(), "Admin"));
+
+        // Si el mail falla, no se crea la notificación in-app (solo en la rama de éxito).
+        _notificador.Verify(n => n.CrearAsync(
+            It.IsAny<Guid>(), It.IsAny<TipoNotificacion>(),
+            It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NotificadorLanza_NoRompeLaOperacion()
+    {
+        // Best-effort: si crear la notificación in-app falla, el flujo de negocio
+        // (email exitoso ya registrado) igual termina sin excepción.
+        var socio = CrearSocio();
+        var cuota = CrearCuotaPendiente(socio.Id);
+
+        _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
+        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        _recordatorioRepo.Setup(r => r.ExisteRecordatorioExitosoHoyAsync(cuota.Id, TipoRecordatorio.Manual)).ReturnsAsync(false);
+        _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+        _notificador.Setup(n => n.CrearAsync(It.IsAny<Guid>(), It.IsAny<TipoNotificacion>(),
+            It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("DB caída"));
+
+        // No debe lanzar.
+        await CrearCommand().ExecuteAsync(cuota.Id, Guid.NewGuid(), "Admin");
+
+        _recordatorioRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 }

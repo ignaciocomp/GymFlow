@@ -17,15 +17,18 @@ public class ProcesarRecordatoriosCommand
     private readonly ICuotaRepository _cuotaRepository;
     private readonly IRecordatorioCuotaRepository _recordatorioRepository;
     private readonly IEmailService _emailService;
+    private readonly INotificadorInApp _notificador;
 
     public ProcesarRecordatoriosCommand(
         ICuotaRepository cuotaRepository,
         IRecordatorioCuotaRepository recordatorioRepository,
-        IEmailService emailService)
+        IEmailService emailService,
+        INotificadorInApp notificador)
     {
         _cuotaRepository = cuotaRepository;
         _recordatorioRepository = recordatorioRepository;
         _emailService = emailService;
+        _notificador = notificador;
     }
 
     public async Task<ProcesarRecordatoriosResultado> ExecuteAsync(DateTime hoy)
@@ -35,6 +38,7 @@ public class ProcesarRecordatoriosCommand
         var enviados = 0;
         var omitidos = 0;
         var fallidos = 0;
+        var sociosNotificados = new List<Guid>();
 
         foreach (var cuota in cuotas)
         {
@@ -63,11 +67,33 @@ public class ProcesarRecordatoriosCommand
                 cuota.Id, cuota.Socio.Id, tipo.Value,
                 exitoso: resultado.Exitoso, error: resultado.Error));
 
-            if (resultado.Exitoso) enviados++;
+            if (resultado.Exitoso)
+            {
+                enviados++;
+                sociosNotificados.Add(cuota.SocioId);
+            }
             else fallidos++;
         }
 
         await _recordatorioRepository.SaveChangesAsync();
+
+        // Notificación in-app en batch, una sola vez, después del SaveChanges de los recordatorios.
+        // Best-effort: si la creación falla, el job igual devuelve su resultado.
+        if (sociosNotificados.Count > 0)
+        {
+            try
+            {
+                await _notificador.CrearParaVariosAsync(
+                    sociosNotificados,
+                    TipoNotificacion.RecordatorioCuota,
+                    "Tenés una cuota pendiente",
+                    "Te recordamos que tenés una cuota pendiente en GymFlow. Por favor regularizá tu pago a la brevedad.");
+            }
+            catch
+            {
+                // Best-effort: la creación de las notificaciones in-app nunca rompe el job.
+            }
+        }
 
         return new ProcesarRecordatoriosResultado(enviados, omitidos, fallidos);
     }
