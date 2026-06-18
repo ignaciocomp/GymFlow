@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { clasesApi, unidadesApi } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -18,6 +19,7 @@ import { BookOpen, Plus, Eye, Trash2, RotateCcw } from 'lucide-react'
 export default function ClasesPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const [unidadFilter, setUnidadFilter] = useState<string>('all')
   const [cancelDialog, setCancelDialog] = useState<{ id: string; nombre: string } | null>(null)
@@ -34,6 +36,12 @@ export default function ClasesPage() {
     queryKey: ['unidades'],
     queryFn: unidadesApi.getAll,
   })
+
+  // Para un Dueño, constreñir el selector a sus unidades; el Admin (unidadIds vacío) ve todas.
+  const unidadIdsPermitidas = user?.unidadIds ?? []
+  const unidadesVisibles = unidadIdsPermitidas.length > 0
+    ? unidades?.filter(u => unidadIdsPermitidas.includes(u.id))
+    : unidades
 
   const cancelMutation = useMutation({
     mutationFn: (id: string) => clasesApi.cancel(id),
@@ -103,12 +111,12 @@ export default function ClasesPage() {
             <SelectValue>
               {unidadFilter === 'all'
                 ? 'Todas las sedes'
-                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'}
+                : unidadesVisibles?.find(u => u.id === unidadFilter)?.nombre || 'Sede'}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las sedes</SelectItem>
-            {unidades?.map((u) => (
+            {unidadesVisibles?.map((u) => (
               <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
             ))}
           </SelectContent>

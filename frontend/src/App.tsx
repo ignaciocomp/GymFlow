@@ -24,8 +24,11 @@ import ClasesPage from '@/pages/admin/ClasesPage'
 import NuevaClasePage from '@/pages/admin/NuevaClasePage'
 import EditClasePage from '@/pages/admin/EditClasePage'
 import HorariosPage from '@/pages/admin/HorariosPage'
+import EventosPage from '@/pages/admin/EventosPage'
 import HorariosPortalPage from '@/pages/portal/HorariosPortalPage'
+import EventosPortalPage from '@/pages/portal/EventosPortalPage'
 import MisInscripcionesPage from '@/pages/portal/MisInscripcionesPage'
+import NotificacionesPortalPage from '@/pages/portal/NotificacionesPortalPage'
 
 export default function App() {
   return (
@@ -55,13 +58,16 @@ export default function App() {
         <Route path="clases/nueva" element={<NuevaClasePage />} />
         <Route path="clases/:id/editar" element={<EditClasePage />} />
         <Route path="horarios" element={<HorariosPage />} />
+        <Route path="eventos" element={<EventosPage />} />
       </Route>
       <Route path="/portal" element={<SocioLayout />}>
         <Route index element={<PerfilSocioPage />} />
         <Route path="perfil" element={<PerfilSocioPage />} />
         <Route path="mis-cuotas" element={<MisCuotasPage />} />
         <Route path="horarios" element={<HorariosPortalPage />} />
+        <Route path="eventos" element={<EventosPortalPage />} />
         <Route path="mis-inscripciones" element={<MisInscripcionesPage />} />
+        <Route path="notificaciones" element={<NotificacionesPortalPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />

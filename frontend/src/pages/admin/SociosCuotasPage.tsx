@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { cuotasApi, unidadesApi } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,6 +51,7 @@ function EstadoBadge({ estado }: { estado: EstadoGeneralCuotas }) {
 
 export default function SociosCuotasPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [unidadFilter, setUnidadFilter] = useState<string | null>(null)
   const [estadoFilter, setEstadoFilter] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
@@ -58,6 +60,12 @@ export default function SociosCuotasPage() {
     queryKey: ['unidades'],
     queryFn: unidadesApi.getAll,
   })
+
+  // Para un Dueño, constreñir el selector a sus unidades; el Admin (unidadIds vacío) ve todas.
+  const unidadIdsPermitidas = user?.unidadIds ?? []
+  const unidadesVisibles = unidadIdsPermitidas.length > 0
+    ? unidades?.filter(u => unidadIdsPermitidas.includes(u.id))
+    : unidades
 
   const { data: socios, isLoading } = useQuery({
     queryKey: ['socios-estado-cuota', unidadFilter],
@@ -154,7 +162,7 @@ export default function SociosCuotasPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={null}>Todas las unidades</SelectItem>
-            {unidades?.map((unidad) => (
+            {unidadesVisibles?.map((unidad) => (
               <SelectItem key={unidad.id} value={unidad.id}>
                 {unidad.nombre}
               </SelectItem>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { horariosApi, clasesApi, unidadesApi } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -66,6 +67,7 @@ function clustersDeSolapamiento(horarios: HorarioClase[]): HorarioClase[][] {
 
 export default function HorariosPage() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const [unidadFilter, setUnidadFilter] = useState<string>('')
   const [createDialog, setCreateDialog] = useState(false)
   const [editDialog, setEditDialog] = useState<HorarioClase | null>(null)
@@ -90,6 +92,12 @@ export default function HorariosPage() {
     queryKey: ['unidades'],
     queryFn: unidadesApi.getAll,
   })
+
+  // Para un Dueño, constreñir el selector a sus unidades; el Admin (unidadIds vacío) ve todas.
+  const unidadIdsPermitidas = user?.unidadIds ?? []
+  const unidadesVisibles = unidadIdsPermitidas.length > 0
+    ? unidades?.filter(u => unidadIdsPermitidas.includes(u.id))
+    : unidades
 
   const { data: clases } = useQuery({
     queryKey: ['clases-activas'],
@@ -234,12 +242,12 @@ export default function HorariosPage() {
           <SelectTrigger className="w-[200px] bg-card border-border">
             <SelectValue placeholder="Seleccionar sede">
               {unidadFilter
-                ? unidades?.find(u => u.id === unidadFilter)?.nombre || 'Sede'
+                ? unidadesVisibles?.find(u => u.id === unidadFilter)?.nombre || 'Sede'
                 : undefined}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {unidades?.map((u) => (
+            {unidadesVisibles?.map((u) => (
               <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
             ))}
           </SelectContent>
@@ -258,7 +266,7 @@ export default function HorariosPage() {
             📅 Seleccioná una sede para ver los horarios
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            {unidades?.map((u) => (
+            {unidadesVisibles?.map((u) => (
               <Button
                 key={u.id}
                 variant="outline"

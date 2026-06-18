@@ -57,6 +57,14 @@ const navigation: NavGroup[] = [
     ],
   },
   {
+    label: 'Eventos',
+    icon: <CalendarDays className="h-5 w-5" />,
+    modulo: 'Eventos',
+    items: [
+      { label: 'Gestión de eventos', path: '/admin/eventos', icon: <CalendarDays className="h-4 w-4" /> },
+    ],
+  },
+  {
     label: 'Cuotas',
     icon: <Receipt className="h-5 w-5" />,
     modulo: 'Cuotas',

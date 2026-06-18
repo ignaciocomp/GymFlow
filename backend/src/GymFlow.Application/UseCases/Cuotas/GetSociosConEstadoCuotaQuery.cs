@@ -24,7 +24,7 @@ public class GetSociosConEstadoCuotaQuery
         _cuotaRepository = cuotaRepository;
     }
 
-    public async Task<IEnumerable<SocioConEstadoCuotaDto>> ExecuteAsync(Guid? unidadId = null)
+    public async Task<IEnumerable<SocioConEstadoCuotaDto>> ExecuteAsync(Guid? unidadId = null, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
         // Query 1: traer todos los socios activos
         var socios = await _socioRepository.GetAllAsync(includeInactive: false);
@@ -43,6 +43,12 @@ public class GetSociosConEstadoCuotaQuery
 
         foreach (var socio in socios)
         {
+            // Scoping server-side: el Dueño solo ve socios de sus unidades permitidas.
+            // null = sin restricción (Admin u otro empleado). No es spoofeable por query param.
+            if (unidadesPermitidas is not null &&
+                !socio.UnidadesAsignadas.Any(uu => unidadesPermitidas.Contains(uu.UnidadId)))
+                continue;
+
             // Si hay filtro de unidad, saltear socios que no pertenezcan a esa unidad
             if (unidadId.HasValue && !socio.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId.Value))
                 continue;
@@ -62,6 +68,8 @@ public class GetSociosConEstadoCuotaQuery
 
             var nombresUnidades = socio.UnidadesAsignadas
                 .Where(uu => !unidadId.HasValue || uu.UnidadId == unidadId.Value)
+                // No exponer nombres de unidades que el Dueño no tiene permitido ver.
+                .Where(uu => unidadesPermitidas is null || unidadesPermitidas.Contains(uu.UnidadId))
                 .Select(uu => uu.Unidad?.Nombre ?? "")
                 .Where(n => !string.IsNullOrEmpty(n))
                 .Distinct()

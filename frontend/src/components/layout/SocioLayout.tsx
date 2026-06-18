@@ -1,10 +1,22 @@
 import { Link, Outlet, Navigate, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
-import { Dumbbell, LogOut, User, CreditCard, CalendarDays, BookOpen } from 'lucide-react'
+import { portalApi } from '@/services/api'
+import { Dumbbell, LogOut, User, CreditCard, CalendarDays, BookOpen, PartyPopper, Bell } from 'lucide-react'
 
 export default function SocioLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
   const location = useLocation()
+
+  const esSocio = user?.rolNombre === 'Socio'
+
+  const { data: noLeidas } = useQuery({
+    queryKey: ['notif-count'],
+    queryFn: portalApi.contarNoLeidas,
+    enabled: esSocio,
+    refetchInterval: 45_000,
+    refetchOnWindowFocus: true,
+  })
 
   if (isLoading) {
     return (
@@ -37,7 +49,27 @@ export default function SocioLayout() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link
+              to="/portal/notificaciones"
+              aria-label={
+                noLeidas && noLeidas > 0
+                  ? `Notificaciones, ${noLeidas} sin leer`
+                  : 'Notificaciones'
+              }
+              className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors cursor-pointer ${
+                location.pathname === '/portal/notificaciones'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              }`}
+            >
+              <Bell className="h-5 w-5" />
+              {noLeidas != null && noLeidas > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground tabular-nums">
+                  {noLeidas > 99 ? '99+' : noLeidas}
+                </span>
+              )}
+            </Link>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
                 {user.nombre.charAt(0)}{user.apellido.charAt(0)}
@@ -92,6 +124,17 @@ export default function SocioLayout() {
             Horarios
           </Link>
           <Link
+            to="/portal/eventos"
+            className={`flex items-center gap-1.5 border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+              location.pathname === '/portal/eventos'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <PartyPopper className="h-4 w-4" />
+            Eventos
+          </Link>
+          <Link
             to="/portal/mis-inscripciones"
             className={`flex items-center gap-1.5 border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
               location.pathname === '/portal/mis-inscripciones'
@@ -101,6 +144,22 @@ export default function SocioLayout() {
           >
             <BookOpen className="h-4 w-4" />
             Mis Inscripciones
+          </Link>
+          <Link
+            to="/portal/notificaciones"
+            className={`flex items-center gap-1.5 border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+              location.pathname === '/portal/notificaciones'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Bell className="h-4 w-4" />
+            Notificaciones
+            {noLeidas != null && noLeidas > 0 && (
+              <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground tabular-nums">
+                {noLeidas > 99 ? '99+' : noLeidas}
+              </span>
+            )}
           </Link>
         </nav>
       </header>
