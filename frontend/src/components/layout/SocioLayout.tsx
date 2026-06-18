@@ -1,6 +1,6 @@
 import { Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
-import { Dumbbell, LogOut, User, CreditCard, CalendarDays, BookOpen } from 'lucide-react'
+import { Dumbbell, LogOut, User, CreditCard, CalendarDays, BookOpen, PartyPopper } from 'lucide-react'
 
 export default function SocioLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
@@ -90,6 +90,17 @@ export default function SocioLayout() {
           >
             <CalendarDays className="h-4 w-4" />
             Horarios
+          </Link>
+          <Link
+            to="/portal/eventos"
+            className={`flex items-center gap-1.5 border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+              location.pathname === '/portal/eventos'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <PartyPopper className="h-4 w-4" />
+            Eventos
           </Link>
           <Link
             to="/portal/mis-inscripciones"

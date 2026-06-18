@@ -132,6 +132,11 @@ export const portalApi = {
     const { data } = await api.post<{ mensaje: string }>('/portal/solicitar-baja', request ?? { motivo: null })
     return data
   },
+
+  getEventos: async (): Promise<Evento[]> => {
+    const { data } = await api.get<Evento[]>('/portal/eventos')
+    return data
+  },
 }
 
 export const auditoriaApi = {
