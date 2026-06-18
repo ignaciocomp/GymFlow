@@ -46,6 +46,7 @@ export default function App() {
         <Route path="/planes" element={<PlanesPublicPage />} />
         <Route path="/clases" element={<ClasesPublicPage />} />
         <Route path="/contacto" element={<ContactoPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/admin" element={<AdminLayout />}>
@@ -83,7 +84,6 @@ export default function App() {
         <Route path="mis-inscripciones" element={<MisInscripcionesPage />} />
         <Route path="notificaciones" element={<NotificacionesPortalPage />} />
       </Route>
-      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

@@ -13,13 +13,13 @@ import { Menu, X, Dumbbell } from 'lucide-react'
  * Todo el contenido y las rutas son fijas del sitio (no salen de site.ts porque
  * son la navegación del propio sitio, no contenido editable).
  */
-const NAV_LINKS = [
+const NAV_LINKS: { to: string; label: string; end?: boolean }[] = [
   { to: '/', label: 'Inicio', end: true },
   { to: '/sedes', label: 'Sedes' },
   { to: '/planes', label: 'Planes' },
   { to: '/clases', label: 'Clases' },
   { to: '/contacto', label: 'Contacto' },
-] as const
+]
 
 export default function PublicHeader() {
   const [open, setOpen] = useState(false)
