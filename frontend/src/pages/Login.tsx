@@ -6,17 +6,23 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Dumbbell } from 'lucide-react'
+import MfaSetupPage from '@/pages/mfa/MfaSetupPage'
+import MfaVerifyPage from '@/pages/mfa/MfaVerifyPage'
 
 const GIS_SCRIPT_SRC = 'https://accounts.google.com/gsi/client'
 
+// Paso del login: credenciales (password) o el desafío del segundo factor (empleados).
+type PasoMfa = 'setup' | 'verify' | null
+
 export default function Login() {
-  const { login, loginConGoogle, isAuthenticated, isLoading } = useAuth()
+  const { login, loginConGoogle, cancelarMfa, isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
   const [correo, setCorreo] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [pasoMfa, setPasoMfa] = useState<PasoMfa>(null)
   const googleButtonRef = useRef<HTMLDivElement>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,13 +30,25 @@ export default function Login() {
     setError(null)
     setLoading(true)
     try {
-      await login(correo, password)
-      navigate('/admin/socios')
+      const resultado = await login(correo, password)
+      if (resultado.requiereMfa) {
+        // Empleado: el password fue solo el primer factor; ramificamos al segundo.
+        setPasoMfa(resultado.setupRequerido ? 'setup' : 'verify')
+      } else {
+        navigate('/admin/socios')
+      }
     } catch {
       setError('Correo o contraseña incorrectos.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const volverAlPassword = () => {
+    cancelarMfa()
+    setPasoMfa(null)
+    setPassword('')
+    setError(null)
   }
 
   const handleGoogleCredential = async (credential: string) => {
@@ -114,6 +132,18 @@ export default function Login() {
 
         {/* Login Card */}
         <div className="rounded-xl border border-border bg-card p-8 shadow-lg shadow-black/20">
+          {pasoMfa === 'setup' ? (
+            <MfaSetupPage
+              onListo={() => navigate('/admin/socios')}
+              onCancelar={volverAlPassword}
+            />
+          ) : pasoMfa === 'verify' ? (
+            <MfaVerifyPage
+              onVerificado={() => navigate('/admin/socios')}
+              onCancelar={volverAlPassword}
+            />
+          ) : (
+          <>
           <h2 className="mb-6 text-lg font-semibold text-card-foreground">Iniciar sesión</h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -184,7 +214,8 @@ export default function Login() {
             ref={googleButtonRef}
             className="flex min-h-10 w-full items-center justify-center"
           />
-
+          </>
+          )}
         </div>
       </div>
     </div>

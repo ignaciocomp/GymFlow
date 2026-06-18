@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sociosApi, unidadesApi, planesApi } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
 import { formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +21,7 @@ import { UserPlus, Search, Eye, Trash2, RotateCcw, Users, UserX } from 'lucide-r
 export default function SociosPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get('tab') || 'activos'
 
@@ -46,6 +48,12 @@ export default function SociosPage() {
     queryKey: ['unidades'],
     queryFn: unidadesApi.getAll,
   })
+
+  // Para un Dueño, constreñir el selector a sus unidades; el Admin (unidadIds vacío) ve todas.
+  const unidadIdsPermitidas = user?.unidadIds ?? []
+  const unidadesVisibles = unidadIdsPermitidas.length > 0
+    ? unidades?.filter(u => unidadIdsPermitidas.includes(u.id))
+    : unidades
 
   const { data: planes } = useQuery({
     queryKey: ['planes'],
@@ -137,12 +145,12 @@ export default function SociosPage() {
             <SelectValue>
               {unidadFilter === 'all'
                 ? 'Todas las unidades'
-                : unidades?.find(u => u.id === unidadFilter)?.nombre || 'Unidad'}
+                : unidadesVisibles?.find(u => u.id === unidadFilter)?.nombre || 'Unidad'}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las unidades</SelectItem>
-            {unidades?.map((u) => (
+            {unidadesVisibles?.map((u) => (
               <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>
             ))}
           </SelectContent>

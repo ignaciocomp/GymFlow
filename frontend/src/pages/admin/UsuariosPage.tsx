@@ -6,12 +6,13 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  listarEmpleados, darDeBajaEmpleado, reactivarEmpleado,
+  listarEmpleados, darDeBajaEmpleado, reactivarEmpleado, resetearMfaEmpleado,
 } from '@/services/empleados'
 import { listarRoles } from '@/services/roles'
 import type { Empleado } from '@/types/empleado'
 import type { Rol } from '@/types/permisos'
 import { usePermisos } from '@/hooks/usePermisos'
+import { useAuth } from '@/context/AuthContext'
 
 export default function UsuariosPage() {
   const [empleados, setEmpleados] = useState<Empleado[]>([])
@@ -27,6 +28,12 @@ export default function UsuariosPage() {
   const [reactivarRolId, setReactivarRolId] = useState<string>('')
   const [reactivarError, setReactivarError] = useState<string | null>(null)
 
+  const [resetMfaDialog, setResetMfaDialog] = useState<{ id: string; nombre: string } | null>(null)
+  const [resetMfaError, setResetMfaError] = useState<string | null>(null)
+  const [resetMfaOk, setResetMfaOk] = useState<string | null>(null)
+  const [resetMfaLoading, setResetMfaLoading] = useState(false)
+
+  const { user } = useAuth()
   const { puedeEscribir, puedeModificar, puedeEliminar } = usePermisos()
   const puedeCrear = puedeEscribir('Empleados')
   const puedeEditar = puedeModificar('Empleados')
@@ -79,6 +86,22 @@ export default function UsuariosPage() {
     }
   }
 
+  const onConfirmarResetMfa = async () => {
+    if (!resetMfaDialog) return
+    setResetMfaLoading(true)
+    try {
+      await resetearMfaEmpleado(resetMfaDialog.id)
+      setResetMfaOk(`Se reseteó el segundo factor de ${resetMfaDialog.nombre}. La próxima vez que ingrese va a tener que configurarlo de nuevo.`)
+      setResetMfaDialog(null)
+      setResetMfaError(null)
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } } }
+      setResetMfaError(err?.response?.data?.error ?? 'Error al resetear el segundo factor')
+    } finally {
+      setResetMfaLoading(false)
+    }
+  }
+
   const rolesDisponibles = roles.filter(r => r.nombre !== 'Socio')
 
   return (
@@ -102,6 +125,13 @@ export default function UsuariosPage() {
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
+        </div>
+      )}
+
+      {resetMfaOk && (
+        <div className="flex items-start justify-between gap-3 rounded-lg border border-primary/40 bg-primary/10 p-3 text-sm text-primary">
+          <span>{resetMfaOk}</span>
+          <button onClick={() => setResetMfaOk(null)} className="shrink-0 text-primary/70 hover:text-primary cursor-pointer">Cerrar</button>
         </div>
       )}
 
@@ -153,6 +183,11 @@ export default function UsuariosPage() {
                         <Button size="sm" variant="outline">Password</Button>
                       </Link>
                     </>
+                  )}
+                  {puedeEditar && emp.estaActivo && emp.correo !== user?.correo && (
+                    <Button size="sm" variant="outline" onClick={() => { setResetMfaError(null); setResetMfaOk(null); setResetMfaDialog({ id: emp.id, nombre: `${emp.nombre} ${emp.apellido}` }) }}>
+                      Resetear MFA
+                    </Button>
                   )}
                   {puedeBorrar && emp.estaActivo && (
                     <Button size="sm" variant="destructive" onClick={() => { setBajaError(null); setBajaDialog({ id: emp.id, nombre: `${emp.nombre} ${emp.apellido}` }) }}>
@@ -227,6 +262,16 @@ export default function UsuariosPage() {
                     <Button size="sm" variant="outline" className="w-full">Password</Button>
                   </Link>
                 </>
+              )}
+              {puedeEditar && emp.estaActivo && emp.correo !== user?.correo && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 min-w-[110px]"
+                  onClick={() => { setResetMfaError(null); setResetMfaOk(null); setResetMfaDialog({ id: emp.id, nombre: `${emp.nombre} ${emp.apellido}` }) }}
+                >
+                  Resetear MFA
+                </Button>
               )}
               {puedeBorrar && emp.estaActivo && (
                 <Button
@@ -309,6 +354,27 @@ export default function UsuariosPage() {
             </Button>
             <Button variant="default" onClick={onConfirmarReactivar} className="cursor-pointer">
               Reactivar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de reseteo de MFA */}
+      <Dialog open={!!resetMfaDialog} onOpenChange={() => { setResetMfaDialog(null); setResetMfaError(null) }}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Resetear segundo factor</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Estás por resetear el segundo factor (MFA) de <strong className="text-foreground">{resetMfaDialog?.nombre}</strong>. Se va a desactivar su autenticador actual y, en su próximo ingreso, va a tener que configurarlo de nuevo. Usalo si la persona perdió acceso a su app autenticadora.
+            </DialogDescription>
+          </DialogHeader>
+          {resetMfaError && <p className="text-sm text-destructive">{resetMfaError}</p>}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setResetMfaDialog(null); setResetMfaError(null) }} className="cursor-pointer" disabled={resetMfaLoading}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={onConfirmarResetMfa} className="cursor-pointer" disabled={resetMfaLoading}>
+              {resetMfaLoading ? 'Reseteando...' : 'Resetear MFA'}
             </Button>
           </DialogFooter>
         </DialogContent>

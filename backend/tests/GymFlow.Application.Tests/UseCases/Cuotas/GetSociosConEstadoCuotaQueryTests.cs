@@ -96,6 +96,64 @@ public class GetSociosConEstadoCuotaQueryTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_ConUnidadesPermitidas_SoloDevuelveSociosDeEsasUnidades()
+    {
+        // El Dueño NO selecciona unidad por query param: pasa unidadId null.
+        // Aun así, solo debe ver socios de sus unidades permitidas (no cross-unidad).
+        var unidadDelDueno = Guid.NewGuid();
+        var unidadAjena = Guid.NewGuid();
+
+        var socioVisible = CrearSocio("Visible");
+        socioVisible.UnidadesAsignadas.Add(new UsuarioUnidad(socioVisible.Id, unidadDelDueno));
+
+        var socioAjeno = CrearSocio("Ajeno");
+        socioAjeno.UnidadesAsignadas.Add(new UsuarioUnidad(socioAjeno.Id, unidadAjena));
+
+        _socioRepo.Setup(r => r.GetAllAsync(false)).ReturnsAsync(new[] { socioVisible, socioAjeno });
+        _cuotaRepo.Setup(r => r.GetCuotasPendientesDeTodosLosSociosAsync(null)).ReturnsAsync(Array.Empty<Cuota>());
+
+        var result = (await CrearQuery().ExecuteAsync(unidadId: null, unidadesPermitidas: new[] { unidadDelDueno })).ToList();
+
+        Assert.Single(result);
+        Assert.Equal("Visible", result[0].Nombre);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_UnidadIdAjenaAUnidadesPermitidas_NoFiltraFueraDeLoPermitido()
+    {
+        // El Dueño pide por query param una unidad que NO es suya: igual no debe ver nada de esa unidad.
+        var unidadDelDueno = Guid.NewGuid();
+        var unidadAjena = Guid.NewGuid();
+
+        var socioAjeno = CrearSocio("Ajeno");
+        socioAjeno.UnidadesAsignadas.Add(new UsuarioUnidad(socioAjeno.Id, unidadAjena));
+
+        _socioRepo.Setup(r => r.GetAllAsync(false)).ReturnsAsync(new[] { socioAjeno });
+        _cuotaRepo.Setup(r => r.GetCuotasPendientesDeTodosLosSociosAsync(It.IsAny<Guid?>())).ReturnsAsync(Array.Empty<Cuota>());
+
+        var result = (await CrearQuery().ExecuteAsync(unidadId: unidadAjena, unidadesPermitidas: new[] { unidadDelDueno })).ToList();
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SinUnidadesPermitidas_DevuelveTodos()
+    {
+        // null = sin restricción (Admin): comportamiento actual intacto.
+        var socioA = CrearSocio("A");
+        socioA.UnidadesAsignadas.Add(new UsuarioUnidad(socioA.Id, Guid.NewGuid()));
+        var socioB = CrearSocio("B");
+        socioB.UnidadesAsignadas.Add(new UsuarioUnidad(socioB.Id, Guid.NewGuid()));
+
+        _socioRepo.Setup(r => r.GetAllAsync(false)).ReturnsAsync(new[] { socioA, socioB });
+        _cuotaRepo.Setup(r => r.GetCuotasPendientesDeTodosLosSociosAsync(null)).ReturnsAsync(Array.Empty<Cuota>());
+
+        var result = (await CrearQuery().ExecuteAsync(unidadId: null, unidadesPermitidas: null)).ToList();
+
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_OrdenaVencidosPrimero()
     {
         var socioAlDia = CrearSocio("AlDia");

@@ -10,7 +10,7 @@ public interface ISocioRepository
     Task<Socio?> GetByCorreoAsync(string correo);
     Task<bool> ExisteCorreoAsync(string correo);
     Task<bool> ExisteCedulaAsync(string cedula);
-    Task<IEnumerable<Socio>> SearchAsync(string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo);
+    Task<IEnumerable<Socio>> SearchAsync(string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo, IReadOnlyCollection<Guid>? unidadesPermitidas = null);
     Task<IEnumerable<Socio>> GetActivosByUnidadAsync(Guid unidadId);
     Task AddAsync(Socio socio);
     Task SaveChangesAsync();

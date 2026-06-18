@@ -29,7 +29,7 @@ public class CrearEmpleadoCommand
         _emailService = emailService;
     }
 
-    public async Task<EmpleadoDto> ExecuteAsync(CrearEmpleadoRequest request, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
+    public async Task<EmpleadoDto> ExecuteAsync(CrearEmpleadoRequest request, Guid usuarioId, string usuarioNombre, Guid actuanteRolId, IReadOnlyCollection<Guid>? actuanteUnidades = null, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.Nombre))
             throw new ArgumentException("El nombre es obligatorio.", nameof(request));
@@ -47,9 +47,15 @@ public class CrearEmpleadoCommand
         if (rol.Id == RolesSeed.SocioRolId)
             throw new InvalidOperationException("No se puede asignar el rol Socio a un empleado.");
 
+        var unidades = request.UnidadIds ?? [];
+        AsignacionRolEmpleado.ValidarAsignacion(rol.Id, actuanteRolId, unidades, actuanteUnidades);
+
         var passwordTemporal = GeneradorPassword.Generar();
         var hash = _passwordHasher.Hash(passwordTemporal);
         var empleado = new Empleado(request.Nombre, request.Apellido, request.Correo, hash, rol.Id);
+
+        foreach (var unidadId in unidades.Distinct())
+            empleado.UnidadesAsignadas.Add(new UsuarioUnidad(empleado.Id, unidadId));
 
         await _empleadoRepository.AddAsync(empleado, ct);
         await _empleadoRepository.SaveChangesAsync(ct);
