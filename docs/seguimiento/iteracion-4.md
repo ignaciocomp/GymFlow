@@ -14,6 +14,259 @@ related:
 
 La cuarta iteración estabilizó los módulos de inscripción a clases, gestión de empleados/profesores y horarios del portal. El cambio más significativo fue rediseñar la inscripción para que opere por horario individual (`HorarioClaseId`) en lugar de por clase genérica, permitiendo que un socio se inscriba a "Yoga, lunes 08:00" y "Yoga, miércoles 18:00" como inscripciones independientes. Se eliminó la lista de espera del alcance (si no hay cupo, se rechaza la inscripción). Se implementaron credenciales temporales autogeneradas con envío por email al crear empleados. RF-13 y RF-14 quedaron cubiertos por el sistema de roles y permisos configurables desde interfaz, sin requerir una relación fija profesor-clase.
 
+En paralelo al trabajo de producto, esta iteración formalizó el **marco de trabajo** del equipo y se adoptó **Obsidian** como herramienta unificada para gestionar toda la documentación del proyecto.
+
+## Marco de trabajo
+
+Durante esta iteración se formalizó en un diagrama la metodología que el equipo venía aplicando desde iteraciones anteriores. El objetivo fue dejar explícito el ciclo de trabajo — desde la selección de requerimientos hasta la entrega al cliente — para alinear expectativas y servir como guía operativa para futuras iteraciones.
+
+```plantuml
+@startuml metodologia-trabajo
+title Metodología de Trabajo - GymFlow
+skinparam activityShape octagon
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #E8F4FD
+skinparam ActivityBorderColor #2E75B6
+skinparam ActivityDiamondBackgroundColor #FFF3CD
+skinparam ActivityDiamondBorderColor #D4A017
+skinparam NoteBackgroundColor #F0F0F0
+
+|#E8F4FD|Anteproyecto|
+start
+:Definir lógica de negocio
+y requerimientos del cliente;
+note right
+  Casos de uso, RF, RNF
+  Stack tecnológico
+  Cronograma
+end note
+:Redactar y entregar
+anteproyecto;
+
+|#D5F5E3|Iteración N|
+repeat
+
+  repeat
+    :Seleccionar RF/RNF
+    del cronograma para
+    la iteración;
+
+    partition "Desarrollo (Spec-Driven con Claude)" {
+      :Escribir **spec** del
+      requerimiento;
+      note right
+        En vault Obsidian.
+        Diseño detallado:
+        entidades, endpoints,
+        lógica, validaciones
+      end note
+      :Escribir **plan** de
+      implementación;
+      note right
+        Pasos concretos,
+        archivos a modificar,
+        orden de ejecución
+      end note
+      :Implementar siguiendo
+      el plan;
+      :Integrar a **develop**
+      vía Pull Request;
+      note right
+        feature/* → develop
+        Revisión por pares
+      end note
+    }
+
+  repeat while (¿Más RF/RNF en\nesta iteración?) is (sí) not (no)
+
+  partition "Testing" {
+    :Elaborar plan de pruebas;
+    :Ejecutar pruebas de API
+    con Postman;
+    note right
+      Happy path, errores
+      de validación, permisos,
+      autenticación, tiempos
+    end note
+    :Ejecutar pruebas
+    funcionales de frontend;
+    note right
+      Capturas de pantalla
+      por cada prueba
+    end note
+  }
+
+  :Merge **develop → main**
+  al cierre de iteración;
+  note right
+    Versión estable etiquetada
+    (tag vX.Y)
+  end note
+
+  partition "Documentación y entrega" {
+    :Escribir documentación
+    de la iteración en Markdown
+    (Obsidian);
+    note right
+      Usando template + Claude
+      desde specs y código
+    end note
+    :Exportar a .docx
+    con Pandoc;
+    :Subir al drive de Teams;
+  }
+
+  |#FFF3CD|Reunión con cliente (periódica)|
+  floating note
+    Las reuniones se agendan
+    según disponibilidad y pueden
+    cubrir más de una iteración.
+  end note
+  :Presentar avance al cliente;
+  note right
+    Demo de funcionalidades,
+    recoger feedback y
+    ajustes solicitados
+  end note
+  :Documentar feedback
+  del cliente;
+
+  |#D5F5E3|Iteración N|
+  :Incorporar feedback
+  del cliente al backlog;
+
+repeat while (¿Quedan iteraciones\nen el cronograma?) is (sí) not (no)
+
+|#E8D5F5|Cierre|
+:Entrega final del proyecto;
+stop
+
+@enduml
+```
+
+El ciclo arranca con la selección de los RF/RNF del cronograma asignados a la iteración. Por cada requerimiento se aplica un flujo **spec-driven**: primero se redacta una *spec* con el diseño detallado (entidades, endpoints, lógica, validaciones), luego un *plan* de implementación con pasos concretos y archivos a modificar, y recién después se escribe el código. La integración a `develop` se hace vía Pull Request con revisión por pares.
+
+Una vez completados todos los requerimientos de la iteración, se ejecuta el bloque de **testing** (pruebas de API con Postman y pruebas funcionales de frontend con capturas), se mergea `develop → main` etiquetando una versión estable, y se redacta la documentación de cierre de iteración. La presentación al cliente es periódica y puede cubrir más de una iteración según su disponibilidad; el feedback recogido se documenta y se reinyecta al backlog de la siguiente iteración.
+
+## Gestión de la documentación en Obsidian
+
+A partir de esta iteración, **toda la documentación del proyecto se gestiona como un vault de Obsidian** sobre la carpeta `docs/` del repositorio. Los archivos Markdown son la fuente de verdad; los `.docx` se generan únicamente como artefactos finales de entrega usando Pandoc.
+
+**Motivación del cambio:**
+
+- **Trazabilidad** — specs, planes, diagramas y seguimiento viven en el mismo repositorio que el código, versionados con Git. Cada cambio en la documentación queda registrado junto al commit que lo motiva.
+- **Documentos enlazados** — Obsidian permite navegar entre specs, planes y diagramas con enlaces internos, manteniendo coherencia entre los requerimientos escritos y su implementación.
+- **Edición ágil** — Markdown plano evita el ruido de formato de Word durante la redacción y revisión iterativa.
+- **Diagramas como código** — los diagramas PlantUML se escriben en bloques de código dentro de los `.md`, se versionan como cualquier fuente y se diffean en los Pull Requests.
+- **Encaje con flujo spec-driven** — el asistente de IA (Claude) consume y produce archivos `.md` directamente, sin transformaciones intermedias.
+
+**Estructura del vault:**
+
+| Carpeta | Contenido |
+|---|---|
+| `docs/specs/` | Specs por requerimiento (RF/RNF) con diseño detallado. |
+| `docs/plans/` | Planes de implementación derivados de cada spec. |
+| `docs/diagramas/` | Diagramas PlantUML (marco de trabajo, pipelines, actividad). |
+| `docs/seguimiento/` | Documentación de cierre por iteración. |
+| `docs/deploy/` | Notas de configuración de despliegue y CI/CD. |
+
+**Flujo de entrega:** una vez completada la documentación de la iteración en Markdown, se exporta a `.docx` mediante un script con Pandoc (`export-doc.ps1`), que renderiza los bloques PlantUML como imágenes embebidas y produce el documento final que se sube al drive de Teams.
+
+## Flujo de ramas y pipelines CI/CD
+
+Como parte del trabajo de esta iteración se formalizó también el flujo de ramas y la integración continua. Este diagrama complementa el marco de trabajo general y se relaciona directamente con la automatización del deploy implementada en esta iteración (detalle completo en el documento de deploy de iteración 4).
+
+```plantuml
+@startuml git-pipelines
+title Flujo de Ramas y Pipelines CI/CD - GymFlow
+skinparam shadowing false
+skinparam defaultFontName Arial
+
+legend top left
+  |= Rama |= Propósito |
+  | **main** | Código estable, listo para entregar |
+  | **develop** | Integración de funcionalidades de la iteración |
+  | **feature/*** | Desarrollo individual de RF/RNF |
+  | **bugfix/*** | Corrección de defectos |
+end legend
+
+|#E8F4FD|Desarrollador|
+start
+:Crear rama **feature/nombre**
+desde develop;
+
+:Implementar funcionalidad
+(commits frecuentes);
+note right
+  Convención de commits:
+  feat:, fix:, docs:,
+  test:, refactor:, chore:
+end note
+
+:Crear **Pull Request**
+hacia develop;
+
+|#FFF3CD|Pipeline CI|
+:Ejecutar checks automáticos;
+note right
+  **Backend:** restore, build, test
+  **Frontend:** install, build, test
+  (mismo pipeline en PR,
+  develop y main)
+end note
+
+if (¿Checks pasan?) then (sí)
+else (no)
+  |#E8F4FD|Desarrollador|
+  :Corregir errores
+  señalados por CI;
+  |#FFF3CD|Pipeline CI|
+  :Re-ejecutar checks;
+endif
+
+|#D5F5E3|Revisión por pares|
+:Revisión de código
+por otro integrante;
+
+if (¿Aprobado?) then (sí)
+else (no)
+  |#E8F4FD|Desarrollador|
+  :Aplicar ajustes
+  solicitados;
+  |#D5F5E3|Revisión por pares|
+  :Re-revisar;
+endif
+
+|#D5F5E3|Revisión por pares|
+:Merge a **develop**;
+note right
+  El mismo pipeline CI
+  se re-ejecuta como
+  verificación post-merge
+end note
+
+|#E8D5F5|Cierre de iteración|
+:Todas las features integradas
+y pruebas de iteración ejecutadas;
+
+:Aceptación de Maurice;
+
+:Merge **develop → main**;
+note right
+  CI se ejecuta nuevamente
+  sobre main (mismo workflow)
+  Tag de versión (vX.Y)
+end note
+
+:Versión estable etiquetada;
+stop
+
+@enduml
+```
+
+El flujo distingue cuatro tipos de ramas: **`main`** mantiene el código estable y listo para entregar, **`develop`** integra las funcionalidades de la iteración en curso, y las ramas **`feature/*`** y **`bugfix/*`** alojan el desarrollo individual de cada requerimiento o corrección. Cada PR dispara el mismo pipeline de CI (backend con `restore`/`build`/`test`, frontend con `install`/`build`/`test`), que se re-ejecuta como verificación tras cada merge a `develop` y a `main`. El cierre de iteración consolida todo el trabajo aceptado, mergea `develop → main` y etiqueta una versión estable.
+
 ## Tareas planificadas
 
 Funcionalidades a implementar:
