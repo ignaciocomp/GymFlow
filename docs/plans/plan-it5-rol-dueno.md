@@ -38,8 +38,8 @@
   - `Reactivar_AlRolDueno_PorNoAdmin_Lanza` (cubre el bypass).
   - `Actualizar_AlRolDueno_PorNoAdmin_Lanza`.
 - [ ] **Step 2:** Correr → FAIL. Verificar.
-- [ ] **Step 3 (GREEN):** Agregar `UnidadIds: Guid[]` a los requests. Los 3 comandos reciben `Guid actuanteRolId` (y, para Crear/Actualizar por Dueño, las unidades del actuante para validar subconjunto). Lógica: sincronizar `UsuarioUnidad` (sin PlanId); validar "rol Dueño solo lo asigna Admin"; validar Dueño con ≥1 unidad; validar subconjunto cuando el actuante es Dueño. Mantener la validación existente "no rol Socio".
-- [ ] **Step 4:** Tests + suite → PASS.
+- [ ] **Step 3 (GREEN):** Agregar `UnidadIds: Guid[]` a los requests. Los 3 comandos reciben `Guid actuanteRolId` (y, para Crear/Actualizar por Dueño, las unidades del actuante para validar subconjunto). Lógica: sincronizar `UsuarioUnidad` con el patrón existente (no hay método de dominio: usar `empleado.UnidadesAsignadas.Add(new UsuarioUnidad(...))` como `CreateSocioCommand`; en Actualizar, **clear + re-add**); validar "rol Dueño solo lo asigna Admin"; validar Dueño con ≥1 unidad; validar subconjunto cuando el actuante es Dueño. En `ReactivarEmpleadoCommand` la validación va **dentro** del branch `if (!empleado.RolId.HasValue)` (solo asigna rol cuando estaba null). Mantener la validación existente "no rol Socio".
+- [ ] **Step 4:** **Actualizar los tests existentes que rompen por la firma nueva:** `CrearEmpleadoCommandTests` y `ActualizarEmpleadoCommandTests` llaman con la firma vieja → agregar el `actuanteRolId` (pasar `RolesSeed.AdminRolId`) en cada invocación. Tests + suite completa → PASS.
 - [ ] **Step 5:** Commit `feat(dueno): asignacion de unidades a empleados + regla solo-Admin-crea-Dueno`.
 
 ---
@@ -76,7 +76,7 @@
   - `ClaseRepository`: variante que acepte el set (o reemplazar GetByUnidadId por filtro por set).
   - `HorarioClaseRepository.GetAllAsync`: filtrar por set de UnidadId (vía Clase.UnidadId).
   - `EmpleadoRepository.GetAllAsync`: `.Include(UnidadesAsignadas)` + filtro `e.UnidadesAsignadas.Any(uu => unidadesPermitidas.Contains(uu.UnidadId))`.
-  - `CuotaRepository`: para el caso por-socio, exponer un método para validar que el socio pertenece a una unidad permitida (o que la query lo valide).
+  - `CuotaRepository`/`GetCuotasAdminQuery`: el caso por-socio aplica a **ambos** métodos de la query (`ExecuteAsync(documentoIdentidad,...)` y `ExecuteBySocioIdAsync(socioId,...)`): validar que el socio consultado pertenece a una unidad permitida (el `SocioRepository` ya incluye `UnidadesAsignadas`).
 - [ ] **Step 2:** `dotnet build` → compila (las firmas nuevas con default null no rompen llamadas existentes).
 - [ ] **Step 3:** Suite completa → PASS.
 - [ ] **Step 4:** Commit `feat(dueno): filtro por set de unidades en los repos de listado`.
@@ -112,8 +112,8 @@
 **Files:** Modify `services/api.ts`, `context/AuthContext.tsx`, form de empleado (`NuevoUsuarioPage`/`EditUsuarioPage`), selector de sede compartido.
 
 - [ ] **Step 1:** AuthContext ya recibe `unidadIds` del login (ahora también para empleados). Form de empleado: permitir asignar unidades (multi-select de sedes); mostrar el rol "Dueño" como opción **solo si** el usuario actuante es Admin.
-- [ ] **Step 2:** Selector de sede del admin: para un Dueño, constreñir las opciones a `user.unidadIds` (como el portal del socio). Admin sin cambios.
-- [ ] **Step 3:** `npm run build` + `npx vitest run` → PASS.
+- [ ] **Step 2:** No hay un selector de sede único compartido: cada página admin (`SociosPage`, `ClasesPage`, `HorariosPage`, `CuotasPage`) maneja su propia selección de unidad. Para un Dueño, **constreñir las opciones de unidad a `user.unidadIds` en cada una de esas páginas** (como el portal del socio). Admin sin cambios.
+- [ ] **Step 3:** Validación: `npm run build` + `npm run lint` → PASS. (El repo no tiene infra de tests de frontend.)
 - [ ] **Step 4:** Commit `feat(dueno): UI de unidades de empleado, selector de sede y opcion de rol Dueno`.
 
 ---
