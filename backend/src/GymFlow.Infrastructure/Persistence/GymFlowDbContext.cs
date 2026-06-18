@@ -24,6 +24,7 @@ public class GymFlowDbContext : DbContext
     public DbSet<Clase> Clases => Set<Clase>();
     public DbSet<InscripcionClase> InscripcionesClase => Set<InscripcionClase>();
     public DbSet<HorarioClase> HorariosClase => Set<HorarioClase>();
+    public DbSet<Evento> Eventos => Set<Evento>();
     public DbSet<CodigoRecuperacionMfa> CodigosRecuperacionMfa => Set<CodigoRecuperacionMfa>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

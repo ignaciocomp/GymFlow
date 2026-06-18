@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IClaseRepository, ClaseRepository>();
         services.AddScoped<IHorarioClaseRepository, HorarioClaseRepository>();
         services.AddScoped<IInscripcionClaseRepository, InscripcionClaseRepository>();
+        services.AddScoped<IEventoRepository, EventoRepository>();
         services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddScoped<IGoogleTokenValidator, GoogleIdTokenValidator>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
