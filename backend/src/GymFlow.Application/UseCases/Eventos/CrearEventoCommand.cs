@@ -46,7 +46,7 @@ public class CrearEventoCommand
 
         // Persistir+auditar ANTES de enviar: el evento queda creado aunque los emails fallen.
         var socios = await _socioRepository.GetActivosByUnidadAsync(request.UnidadId);
-        var resultado = await EventoNotificador.NotificarAsync(_emailService, socios, evento);
+        var resultado = await EventoNotificador.NotificarAsync(_emailService, socios, evento, unidad.Nombre);
 
         var detalle = resultado.Fallidos > 0
             ? $"Se creó el evento '{evento.Titulo}' en {unidad.Nombre}. Se notificaron {resultado.Enviados} de {resultado.Total} socios ({resultado.Fallidos} envíos fallaron)."

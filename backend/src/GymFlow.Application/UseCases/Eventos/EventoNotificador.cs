@@ -15,11 +15,11 @@ internal static class EventoNotificador
     internal record ResultadoNotificacion(int Total, int Enviados, int Fallidos);
 
     public static async Task<ResultadoNotificacion> NotificarAsync(
-        IEmailService emailService, IEnumerable<Socio> socios, Evento evento)
+        IEmailService emailService, IEnumerable<Socio> socios, Evento evento, string sedeNombre)
     {
         var emailTasks = socios.Select(socio =>
         {
-            var (asunto, cuerpo) = EventoEmailTemplates.Notificacion(socio, evento);
+            var (asunto, cuerpo) = EventoEmailTemplates.Notificacion(socio, evento, sedeNombre);
             return emailService.EnviarAsync(socio.Correo, asunto, cuerpo);
         });
 

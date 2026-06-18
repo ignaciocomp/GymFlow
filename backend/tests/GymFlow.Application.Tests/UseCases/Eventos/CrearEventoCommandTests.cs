@@ -63,6 +63,31 @@ public class CrearEventoCommandTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_EmailIncluyeLaSede()
+    {
+        var unidad = new Unidad("Gimnasio Nuevo Malvin", "Malvin, Montevideo");
+        var request = new CreateEventoRequest("Torneo de verano", "Torneo abierto",
+            DateTime.UtcNow.AddDays(10), unidad.Id);
+        var socios = new[] { CrearSocio("s1@test.com") };
+
+        _unidadRepo.Setup(r => r.GetByIdAsync(unidad.Id)).ReturnsAsync(unidad);
+        _eventoRepo.Setup(r => r.AddAsync(It.IsAny<Evento>())).Returns(Task.CompletedTask);
+        _eventoRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _socioRepo.Setup(r => r.GetActivosByUnidadAsync(unidad.Id)).ReturnsAsync(socios);
+        _emailService.Setup(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+
+        await CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Admin Test");
+
+        // Regresión: al crear, la navegación Unidad no está poblada, pero el email
+        // igual debe llevar el nombre de la sede (asunto y cuerpo).
+        _emailService.Verify(s => s.EnviarAsync(
+            It.IsAny<string>(),
+            It.Is<string>(asunto => asunto.Contains("Gimnasio Nuevo Malvin")),
+            It.Is<string>(cuerpo => cuerpo.Contains("Gimnasio Nuevo Malvin"))), Times.Once);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_UnidadNoExiste_LanzaArgumentExceptionYNoPersiste()
     {
         var request = new CreateEventoRequest("Torneo", "desc",

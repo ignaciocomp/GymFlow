@@ -33,7 +33,8 @@ public class NotificarEventoCommand
             ?? throw new KeyNotFoundException("El evento no fue encontrado.");
 
         var socios = await _socioRepository.GetActivosByUnidadAsync(evento.UnidadId);
-        var resultado = await EventoNotificador.NotificarAsync(_emailService, socios, evento);
+        // GetByIdAsync incluye la navegación Unidad, así que acá la sede viene cargada.
+        var resultado = await EventoNotificador.NotificarAsync(_emailService, socios, evento, evento.Unidad?.Nombre ?? "");
 
         var detalle = resultado.Fallidos > 0
             ? $"Se reenviaron notificaciones del evento '{evento.Titulo}'. Se notificaron {resultado.Enviados} de {resultado.Total} socios ({resultado.Fallidos} envíos fallaron)."

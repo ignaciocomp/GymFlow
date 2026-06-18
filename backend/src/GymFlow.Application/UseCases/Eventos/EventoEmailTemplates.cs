@@ -9,12 +9,13 @@ namespace GymFlow.Application.UseCases.Eventos;
 /// </summary>
 internal static class EventoEmailTemplates
 {
-    public static (string Asunto, string Cuerpo) Notificacion(Socio socio, Evento evento)
+    public static (string Asunto, string Cuerpo) Notificacion(Socio socio, Evento evento, string sedeNombre)
     {
         var nombre = WebUtility.HtmlEncode(socio.Nombre);
         var titulo = WebUtility.HtmlEncode(evento.Titulo);
         var descripcion = WebUtility.HtmlEncode(evento.Descripcion);
-        var sede = WebUtility.HtmlEncode(evento.Unidad?.Nombre ?? "");
+        // La sede se pasa explícita: al crear un evento la navegación Unidad no está poblada.
+        var sede = WebUtility.HtmlEncode(sedeNombre ?? "");
         var fecha = WebUtility.HtmlEncode(evento.Fecha.ToString("dd/MM/yyyy HH:mm"));
 
         var asunto = $"Nuevo evento en {sede}: {titulo}";
