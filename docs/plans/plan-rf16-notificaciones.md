@@ -43,7 +43,7 @@
 
 - [ ] **Step 1 (RED):** Tests: `CrearAsync` persiste 1 notificación (mock repo, verifica AddRange + SaveChanges una vez); `CrearParaVariosAsync` con N socioIds → AddRange de N + UN solo SaveChanges (no loop).
 - [ ] **Step 2:** Correr → FAIL. Verificar.
-- [ ] **Step 3 (GREEN):** `CrearAsync(socioId, tipo, titulo, mensaje)` y `CrearParaVariosAsync(socioIds, tipo, titulo, mensaje)`. Impl: arma las `Notificacion`, `AddRangeAsync`, **un** `SaveChangesAsync` (commit propio). NO maneja el try/catch (eso lo hace el caller best-effort).
+- [ ] **Step 3 (GREEN):** `CrearAsync(socioId, tipo, titulo, mensaje)` y `CrearParaVariosAsync(socioIds, tipo, titulo, mensaje)`. **CLAVE — aislamiento real:** el impl NO usa el `GymFlowDbContext` scoped compartido (su `SaveChanges` flushearía cambios de negocio pendientes). Usa un **`IDbContextFactory<GymFlowDbContext>`**: crea un contexto efímero (`await using var ctx = await _factory.CreateDbContextAsync()`), `ctx.Notificaciones.AddRange(...)`, **un** `await ctx.SaveChangesAsync()`. Registrar `AddDbContextFactory<GymFlowDbContext>(...)` en DI (además del scoped existente). NO maneja try/catch (lo hace el caller best-effort).
 - [ ] **Step 4:** Tests + suite → PASS. Commit `feat(notificaciones): INotificadorInApp con commit propio`.
 
 ---
@@ -54,10 +54,13 @@
 
 - [ ] **Step 1 (RED):** Tests (mockeando `INotificadorInApp`):
   - `NotificarCuota_EmailOk_CreaNotificacion`: solo si `resultado.Exitoso`. `EmailFalla_NoCrea` (la notif no se crea cuando el mail falla / el flujo lanza).
-  - `ProcesarRecordatorios_CreaNotificacionesEnBatch`: junta los socioId notificados (rama enviados) y llama `CrearParaVariosAsync` UNA vez al final.
+  - `ProcesarRecordatorios_CreaNotificacionesEnBatch`: junta los socioId notificados (rama `Exitoso`) y llama `CrearParaVariosAsync` UNA vez **después** del `SaveChangesAsync` de los recordatorios (l.70).
   - `InscribirSocio_CreaNotificacionConfirmacion` (best-effort: si el notificador lanza, la inscripción igual se confirma).
 - [ ] **Step 2:** Correr → FAIL. Verificar.
-- [ ] **Step 3 (GREEN):** Inyectar `INotificadorInApp`. Crear la notificación **después** del save de negocio, en la rama de éxito, envuelta en try/catch (best-effort). En el job, batch al final. Tipos: `RecordatorioCuota`, `ConfirmacionInscripcion`.
+- [ ] **Step 3 (GREEN):** Inyectar `INotificadorInApp` en los 3 comandos. **Actualizar el helper `CrearCommand()`/constructor de `NotificarCuotaCommandTests`, `ProcesarRecordatoriosCommandTests`, `InscribirSocioCommandTests` agregando `Mock<INotificadorInApp>`** (si no, la suite no compila). Crear la notificación **después** del save de negocio, en la rama de éxito, envuelta en try/catch (best-effort). Detalles por comando:
+  - `NotificarCuotaCommand`: crear la notif **entre** el save (l.64) y el throw por email fallido (l.71), **solo si `resultado.Exitoso`**.
+  - `ProcesarRecordatoriosCommand`: agregar `var sociosNotificados = new List<Guid>()` (no existe hoy), `Add(cuota.SocioId)` solo en la rama `Exitoso` (l.66); tras el `SaveChangesAsync` final, `CrearParaVariosAsync(sociosNotificados, RecordatorioCuota, ...)`. (Por-cuota está bien: puede haber >1 por socio/día, igual que el email.)
+  - `InscribirSocioCommand`: notif `ConfirmacionInscripcion` tras el save (l.49).
 - [ ] **Step 4:** Tests + suite → PASS. Commit `feat(notificaciones): enganche en cuotas e inscripcion`.
 
 ---
@@ -68,7 +71,7 @@
 
 - [ ] **Step 1 (RED):** Tests: cada uno crea notificación(es) para los socios afectados (cambio de horario → inscriptos; cancelación → inscriptos; evento → socios activos de la unidad), best-effort tras el save. Tipos: `CambioHorario`, `CancelacionClase`, `EventoNuevo`.
 - [ ] **Step 2:** Correr → FAIL. Verificar.
-- [ ] **Step 3 (GREEN):** Inyectar `INotificadorInApp`; usar `CrearParaVariosAsync` con los socioIds afectados (ya disponibles: inscripciones con Socio incluido; eventos: `GetActivosByUnidadAsync`). Tras el save de negocio, try/catch.
+- [ ] **Step 3 (GREEN):** Inyectar `INotificadorInApp`; **actualizar los helpers/constructores de `UpdateHorarioCommandTests`, `CancelClaseCommandTests`, `CrearEventoCommandTests` con `Mock<INotificadorInApp>`**. Usar `CrearParaVariosAsync` con los socioIds afectados (ya disponibles: inscripciones con Socio incluido; eventos: `GetActivosByUnidadAsync`). Tras el save de negocio (que en estos 3 ocurre antes de los emails), try/catch best-effort.
 - [ ] **Step 4:** Tests + suite → PASS. Commit `feat(notificaciones): enganche en horarios, clases y eventos`.
 
 ---
@@ -93,7 +96,7 @@
 
 **Files:** Modify `PortalController.cs`; DI.
 
-- [ ] **Step 1:** Registrar en DI. Endpoints (socioId del claim `NameIdentifier`, como `InscripcionesController.GetSocioId()`):
+- [ ] **Step 1:** Registrar en DI. **OJO con el patrón de auth de `PortalController`:** NO tiene `[Authorize]` ni `GetSocioId()`; valida el JWT a mano con `ExtractClaims()` y tiene `GetCurrentUser(claims)` que devuelve el `userId` del `NameIdentifier`. En cada endpoint nuevo: `var claims = ExtractClaims(); if (claims is null) return Unauthorized(...); var socioId = GetCurrentUser(claims).UserId;` (ese `userId` ES el socioId para un socio logueado). Ownership en marcar-leída: `notif.SocioId == socioId`. Endpoints:
   - `GET /api/portal/notificaciones?soloNoLeidas=&take=`
   - `GET /api/portal/notificaciones/no-leidas/count`
   - `POST /api/portal/notificaciones/{id}/leer`
@@ -108,7 +111,7 @@
 
 - [ ] **Step 1:** `portalApi`: `getNotificaciones`, `contarNoLeidas`, `marcarLeida`, `marcarTodasLeidas`. Tipo `Notificacion`.
 - [ ] **Step 2:** Campana en `SocioLayout` con badge de no leídas: `useQuery(['notif-count'])` con `refetchInterval` ~45s + `refetchOnWindowFocus`. Inbox (página o desplegable) con la lista (ícono por tipo, leído/no leído), "marcar leída" por ítem y "marcar todas"; invalidar el contador tras las mutaciones. Para frontend usar el plugin UI/UX Pro Max si aplica.
-- [ ] **Step 3:** `npm run build` + `npx vitest run` → PASS. Commit `feat(notificaciones): campana, badge e inbox en el portal`.
+- [ ] **Step 3:** Validación: **`npm run build` + `npm run lint`** → PASS. (El repo NO tiene infra de tests de frontend —ni script `test` ni vitest config—; no se promete `vitest`.) Commit `feat(notificaciones): campana, badge e inbox en el portal`.
 
 ---
 
