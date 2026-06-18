@@ -12,12 +12,15 @@ public class HorarioClaseRepository : IHorarioClaseRepository
 
     public HorarioClaseRepository(GymFlowDbContext context) => _context = context;
 
-    public async Task<IEnumerable<HorarioClase>> GetAllAsync(Guid? unidadId = null)
+    public async Task<IEnumerable<HorarioClase>> GetAllAsync(Guid? unidadId = null, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
         var query = _context.HorariosClase
             .Include(h => h.Clase)
                 .ThenInclude(c => c.Unidad)
             .AsQueryable();
+
+        if (unidadesPermitidas is not null)
+            query = query.Where(h => unidadesPermitidas.Contains(h.Clase.UnidadId));
 
         if (unidadId.HasValue)
             query = query.Where(h => h.Clase.UnidadId == unidadId.Value);

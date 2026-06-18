@@ -5,7 +5,7 @@ namespace GymFlow.Application.Interfaces;
 
 public interface IHorarioClaseRepository
 {
-    Task<IEnumerable<HorarioClase>> GetAllAsync(Guid? unidadId = null);
+    Task<IEnumerable<HorarioClase>> GetAllAsync(Guid? unidadId = null, IReadOnlyCollection<Guid>? unidadesPermitidas = null);
     Task<HorarioClase?> GetByIdAsync(Guid id);
     Task<IEnumerable<HorarioClase>> GetByClaseIdAsync(Guid claseId);
     Task<IEnumerable<HorarioClase>> GetByUnidadYDiaAsync(Guid unidadId, DiaSemana dia);
