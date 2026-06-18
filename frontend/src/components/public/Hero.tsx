@@ -50,7 +50,7 @@ export default function Hero() {
           <PublicImage
             // TODO (usuario): subir la foto del hero a /img/hero.jpg
             src="/img/hero.jpg"
-            alt="Sala de entrenamiento de GymFlow"
+            alt={`Sala de entrenamiento de ${site.nombre}`}
             icon={Dumbbell}
             label="Foto del gimnasio"
             className="aspect-[4/3] rounded-2xl border border-[var(--public-border)] shadow-2xl"

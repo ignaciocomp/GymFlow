@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /portal
 
-Sitemap: https://gymflow.uy/sitemap.xml
+Sitemap: https://nuevomalvin.com.uy/sitemap.xml

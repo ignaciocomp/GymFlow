@@ -29,7 +29,7 @@ test('header tiene boton Acceder que linkea a /login', () => {
 
 test('la marca linkea al inicio', () => {
   renderHeader()
-  const brand = screen.getByRole('link', { name: /gym\s*flow/i })
+  const brand = screen.getByRole('link', { name: /nuevo\s*malv/i })
   expect(brand).toHaveAttribute('href', '/')
 })
 

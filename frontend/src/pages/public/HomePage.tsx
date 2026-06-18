@@ -20,7 +20,7 @@ const FEATURES = [
   {
     icon: MapPin,
     title: '2 sedes en Montevideo',
-    text: 'Entrená cerca de casa o del trabajo: accedé a Espacio Mora y Gimnasio Nuevo Malvín.',
+    text: 'Entrená cerca de casa o del trabajo: accedé a Espacio Mora y Nuevo Malvín.',
   },
   {
     icon: Clock,
@@ -52,7 +52,7 @@ export default function HomePage() {
 
       {/* Por qué elegirnos */}
       <Section
-        eyebrow="Por qué GymFlow"
+        eyebrow="Por qué elegirnos"
         title="Todo para que entrenes mejor"
         subtitle="Equipamiento, clases y horarios pensados para que cumplas tus objetivos sin excusas."
         centered

@@ -5,7 +5,7 @@ import { Menu, X, Dumbbell } from 'lucide-react'
 /**
  * Header del sitio público (RF-19).
  *
- * - Sticky top bar con la marca "GymFlow" (acento celeste en "FLOW").
+ * - Sticky top bar con la marca "Nuevo Malvín" (acento celeste en "Malvín").
  * - Nav de escritorio con los 5 links + botón "Acceder" → /login.
  * - En mobile colapsa a un menú hamburguesa (estado `useState`, accesible
  *   por teclado: el toggle es un <button> con aria-expanded/aria-controls).
@@ -56,7 +56,7 @@ export default function PublicHeader() {
             <Dumbbell className="h-5 w-5" strokeWidth={2.5} />
           </span>
           <span>
-            Gym<span className="text-[var(--public-accent)]">FLOW</span>
+            Nuevo <span className="text-[var(--public-accent)]">Malvín</span>
           </span>
         </Link>
 

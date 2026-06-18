@@ -35,7 +35,7 @@ export default function PublicFooter() {
               >
                 <Dumbbell className="h-4 w-4" strokeWidth={2.5} />
               </span>
-              Gym<span className="-ml-2 text-[var(--public-accent)]">FLOW</span>
+              Nuevo <span className="text-[var(--public-accent)]">Malvín</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed">{site.tagline}.</p>
           </div>

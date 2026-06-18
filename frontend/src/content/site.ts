@@ -63,6 +63,8 @@ export interface Contacto {
 
 export interface Site {
   nombre: string
+  /** Marca corta para el logo del header/footer, ej. "Nuevo Malvín". */
+  nombreCorto: string
   tagline: string
   descripcion: string
   url: string
@@ -74,16 +76,17 @@ export interface Site {
 }
 
 export const site = {
-  nombre: 'GymFlow',
+  nombre: 'Gimnasio Nuevo Malvín',
+  nombreCorto: 'Nuevo Malvín', // marca corta para el logo
   tagline: 'Entrená sin límites', // PLACEHOLDER — ajustar al claim de la marca
   descripcion:
-    'GymFlow es un gimnasio multi-sede en Montevideo. Planes flexibles, clases grupales y entrenamiento funcional en Espacio Mora y Gimnasio Nuevo Malvín.', // PLACEHOLDER — meta description default
-  url: 'https://gymflow.uy', // PLACEHOLDER — dominio real
+    'Gimnasio Nuevo Malvín es un gimnasio en Montevideo con dos sedes: Nuevo Malvín y Espacio Mora. Planes flexibles, clases grupales y entrenamiento funcional para todos los niveles.', // PLACEHOLDER — meta description default
+  url: 'https://nuevomalvin.com.uy', // PLACEHOLDER — dominio real
 
   contacto: {
     whatsapp: '+59890000000', // PLACEHOLDER — número real (formato wa.me sin signos: ver ContactoPage)
-    email: 'hola@gymflow.uy', // PLACEHOLDER — mail real
-    instagram: 'https://instagram.com/gymflow.uy', // PLACEHOLDER — usuario real
+    email: 'hola@nuevomalvin.com.uy', // PLACEHOLDER — mail real
+    instagram: 'https://instagram.com/nuevomalvin', // PLACEHOLDER — usuario real
   },
 
   sedes: [
@@ -107,7 +110,7 @@ export const site = {
     },
     {
       slug: 'nuevo-malvin',
-      nombre: 'Gimnasio Nuevo Malvín',
+      nombre: 'Nuevo Malvín',
       direccion: 'Av. Bolivia 5678, Montevideo', // PLACEHOLDER — dirección real
       horarios: [
         { dias: 'Lunes a Viernes', horas: '07:00 – 22:00' }, // PLACEHOLDER
@@ -191,7 +194,7 @@ export const site = {
       dia: 'Lunes',
       items: [
         { hora: '19:00', clase: 'Funcional', sede: 'Espacio Mora' }, // PLACEHOLDER
-        { hora: '20:00', clase: 'Spinning', sede: 'Gimnasio Nuevo Malvín' }, // PLACEHOLDER
+        { hora: '20:00', clase: 'Spinning', sede: 'Nuevo Malvín' }, // PLACEHOLDER
       ],
     },
     {
@@ -205,7 +208,7 @@ export const site = {
       dia: 'Miércoles',
       items: [
         { hora: '19:00', clase: 'Funcional', sede: 'Espacio Mora' }, // PLACEHOLDER
-        { hora: '20:00', clase: 'Spinning', sede: 'Gimnasio Nuevo Malvín' }, // PLACEHOLDER
+        { hora: '20:00', clase: 'Spinning', sede: 'Nuevo Malvín' }, // PLACEHOLDER
       ],
     },
     {
@@ -219,13 +222,13 @@ export const site = {
       dia: 'Viernes',
       items: [
         { hora: '19:00', clase: 'Funcional', sede: 'Espacio Mora' }, // PLACEHOLDER
-        { hora: '20:00', clase: 'Spinning', sede: 'Gimnasio Nuevo Malvín' }, // PLACEHOLDER
+        { hora: '20:00', clase: 'Spinning', sede: 'Nuevo Malvín' }, // PLACEHOLDER
       ],
     },
     {
       dia: 'Sábado',
       items: [
-        { hora: '10:00', clase: 'Cross Training', sede: 'Gimnasio Nuevo Malvín' }, // PLACEHOLDER
+        { hora: '10:00', clase: 'Cross Training', sede: 'Nuevo Malvín' }, // PLACEHOLDER
       ],
     },
   ],
