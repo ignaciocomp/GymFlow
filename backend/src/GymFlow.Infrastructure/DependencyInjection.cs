@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IPermisoRepository, PermisoRepository>();
         services.AddScoped<IPermisoCache, PermisoCache>();
         services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+        services.AddScoped<IUnidadesVisiblesResolver, UnidadesVisiblesResolver>();
         services.AddScoped<ICuotaRepository, CuotaRepository>();
         services.AddScoped<ICuotaGeneradorService, CuotaGeneradorService>();
         services.AddScoped<IRecordatorioCuotaRepository, RecordatorioCuotaRepository>();
