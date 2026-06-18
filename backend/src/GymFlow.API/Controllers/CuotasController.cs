@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
+using GymFlow.Application.Interfaces;
 using GymFlow.Application.UseCases.Cuotas;
 using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,7 @@ public class CuotasController : ControllerBase
     private readonly RevertirAnulacionCuotaCommand _revertirAnulacionCommand;
     private readonly NotificarCuotaCommand _notificarCommand;
     private readonly GetSociosConEstadoCuotaQuery _getSociosConEstadoCuotaQuery;
+    private readonly IUnidadesVisiblesResolver _unidadesResolver;
 
     public CuotasController(
         GetCuotasBySocioQuery getCuotasBySocioQuery,
@@ -30,7 +32,8 @@ public class CuotasController : ControllerBase
         RevertirPagoCuotaCommand revertirPagoCommand,
         RevertirAnulacionCuotaCommand revertirAnulacionCommand,
         NotificarCuotaCommand notificarCommand,
-        GetSociosConEstadoCuotaQuery getSociosConEstadoCuotaQuery)
+        GetSociosConEstadoCuotaQuery getSociosConEstadoCuotaQuery,
+        IUnidadesVisiblesResolver unidadesResolver)
     {
         _getCuotasBySocioQuery = getCuotasBySocioQuery;
         _getCuotasAdminQuery = getCuotasAdminQuery;
@@ -40,6 +43,7 @@ public class CuotasController : ControllerBase
         _revertirAnulacionCommand = revertirAnulacionCommand;
         _notificarCommand = notificarCommand;
         _getSociosConEstadoCuotaQuery = getSociosConEstadoCuotaQuery;
+        _unidadesResolver = unidadesResolver;
     }
 
     [HttpGet("mis-cuotas")]
@@ -62,7 +66,9 @@ public class CuotasController : ControllerBase
     {
         try
         {
-            var cuotas = await _getCuotasAdminQuery.ExecuteAsync(documentoIdentidad, estado, mes, anio, unidadId, incluirAnuladas);
+            var (userId, rolId) = GetCurrentActor();
+            var unidadesPermitidas = await _unidadesResolver.ResolverAsync(userId, rolId);
+            var cuotas = await _getCuotasAdminQuery.ExecuteAsync(documentoIdentidad, estado, mes, anio, unidadId, incluirAnuladas, unidadesPermitidas);
             return Ok(cuotas);
         }
         catch (KeyNotFoundException ex)
@@ -99,7 +105,9 @@ public class CuotasController : ControllerBase
     {
         try
         {
-            var cuotas = await _getCuotasAdminQuery.ExecuteBySocioIdAsync(socioId, estado, mes, anio, unidadId, incluirAnuladas);
+            var (userId, rolId) = GetCurrentActor();
+            var unidadesPermitidas = await _unidadesResolver.ResolverAsync(userId, rolId);
+            var cuotas = await _getCuotasAdminQuery.ExecuteBySocioIdAsync(socioId, estado, mes, anio, unidadId, incluirAnuladas, unidadesPermitidas);
             return Ok(cuotas);
         }
         catch (KeyNotFoundException ex)
@@ -185,5 +193,14 @@ public class CuotasController : ControllerBase
         var apellido = User.FindFirst("apellido")?.Value ?? "";
         var fullName = $"{nombre} {apellido}".Trim();
         return (userId, string.IsNullOrWhiteSpace(fullName) ? "Sistema" : fullName);
+    }
+
+    // Identidad del actuante (userId + rolId) tomada del JWT, para resolver server-side
+    // las unidades visibles. Nunca se confía en parámetros de la request para el scoping.
+    private (Guid UserId, Guid RolId) GetCurrentActor()
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var rolId = Guid.TryParse(User.FindFirst("rolId")?.Value, out var r) ? r : Guid.Empty;
+        return (userId, rolId);
     }
 }

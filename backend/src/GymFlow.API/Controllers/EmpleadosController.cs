@@ -1,5 +1,6 @@
 using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
+using GymFlow.Application.Interfaces;
 using GymFlow.Application.UseCases.Empleados;
 using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ public class EmpleadosController : ControllerBase
     private readonly CambiarPasswordCommand _cambiarPassword;
     private readonly DarDeBajaEmpleadoCommand _darDeBaja;
     private readonly ReactivarEmpleadoCommand _reactivar;
+    private readonly IUnidadesVisiblesResolver _unidadesResolver;
 
     public EmpleadosController(
         GetEmpleadosQuery getEmpleados,
@@ -26,7 +28,8 @@ public class EmpleadosController : ControllerBase
         ActualizarEmpleadoCommand actualizar,
         CambiarPasswordCommand cambiarPassword,
         DarDeBajaEmpleadoCommand darDeBaja,
-        ReactivarEmpleadoCommand reactivar)
+        ReactivarEmpleadoCommand reactivar,
+        IUnidadesVisiblesResolver unidadesResolver)
     {
         _getEmpleados = getEmpleados;
         _getEmpleadoById = getEmpleadoById;
@@ -35,12 +38,17 @@ public class EmpleadosController : ControllerBase
         _cambiarPassword = cambiarPassword;
         _darDeBaja = darDeBaja;
         _reactivar = reactivar;
+        _unidadesResolver = unidadesResolver;
     }
 
     [HttpGet]
     [RequierePermiso(Modulo.Empleados, Operacion.Lectura)]
     public async Task<ActionResult<IReadOnlyList<EmpleadoDto>>> GetAll([FromQuery] bool? activo)
-        => Ok(await _getEmpleados.ExecuteAsync(activo));
+    {
+        var (userId, rolId) = GetCurrentActor();
+        var unidadesPermitidas = await _unidadesResolver.ResolverAsync(userId, rolId);
+        return Ok(await _getEmpleados.ExecuteAsync(activo, unidadesPermitidas));
+    }
 
     [HttpGet("{id:guid}")]
     [RequierePermiso(Modulo.Empleados, Operacion.Lectura)]
@@ -57,7 +65,9 @@ public class EmpleadosController : ControllerBase
         try
         {
             var (uid, uname) = GetCurrentUser();
-            var dto = await _crear.ExecuteAsync(request, uid, uname, GetActuanteRolId());
+            var actuanteRolId = GetActuanteRolId();
+            var actuanteUnidades = await _unidadesResolver.ResolverAsync(uid, actuanteRolId);
+            var dto = await _crear.ExecuteAsync(request, uid, uname, actuanteRolId, actuanteUnidades);
             return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
         }
         catch (UnauthorizedAccessException ex) { return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }); }
@@ -72,7 +82,9 @@ public class EmpleadosController : ControllerBase
         try
         {
             var (uid, uname) = GetCurrentUser();
-            var dto = await _actualizar.ExecuteAsync(id, request, uid, uname, GetActuanteRolId());
+            var actuanteRolId = GetActuanteRolId();
+            var actuanteUnidades = await _unidadesResolver.ResolverAsync(uid, actuanteRolId);
+            var dto = await _actualizar.ExecuteAsync(id, request, uid, uname, actuanteRolId, actuanteUnidades);
             return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
@@ -136,4 +148,12 @@ public class EmpleadosController : ControllerBase
 
     private Guid GetActuanteRolId()
         => Guid.TryParse(User.FindFirst("rolId")?.Value, out var rolId) ? rolId : Guid.Empty;
+
+    // Identidad del actuante (userId + rolId) tomada del JWT, para resolver server-side
+    // las unidades visibles. Nunca se confía en parámetros de la request para el scoping.
+    private (Guid UserId, Guid RolId) GetCurrentActor()
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        return (userId, GetActuanteRolId());
+    }
 }
