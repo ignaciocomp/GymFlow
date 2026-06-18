@@ -1,6 +1,7 @@
 using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
+using GymFlow.Application.UseCases.Auth.Mfa;
 using GymFlow.Application.UseCases.Empleados;
 using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,7 @@ public class EmpleadosController : ControllerBase
     private readonly DarDeBajaEmpleadoCommand _darDeBaja;
     private readonly ReactivarEmpleadoCommand _reactivar;
     private readonly IUnidadesVisiblesResolver _unidadesResolver;
+    private readonly ResetearMfaEmpleadoCommand _resetearMfa;
 
     public EmpleadosController(
         GetEmpleadosQuery getEmpleados,
@@ -29,7 +31,8 @@ public class EmpleadosController : ControllerBase
         CambiarPasswordCommand cambiarPassword,
         DarDeBajaEmpleadoCommand darDeBaja,
         ReactivarEmpleadoCommand reactivar,
-        IUnidadesVisiblesResolver unidadesResolver)
+        IUnidadesVisiblesResolver unidadesResolver,
+        ResetearMfaEmpleadoCommand resetearMfa)
     {
         _getEmpleados = getEmpleados;
         _getEmpleadoById = getEmpleadoById;
@@ -39,6 +42,7 @@ public class EmpleadosController : ControllerBase
         _darDeBaja = darDeBaja;
         _reactivar = reactivar;
         _unidadesResolver = unidadesResolver;
+        _resetearMfa = resetearMfa;
     }
 
     [HttpGet]
@@ -135,6 +139,23 @@ public class EmpleadosController : ControllerBase
         catch (UnauthorizedAccessException ex) { return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    [HttpPost("{id:guid}/mfa/reset")]
+    [RequierePermiso(Modulo.Empleados, Operacion.Modificacion)]
+    public async Task<IActionResult> ResetearMfa(Guid id)
+    {
+        var (uid, uname) = GetCurrentUser();
+        if (id == uid)
+            return BadRequest(new { error = "No podés resetear tu propio segundo factor." });
+
+        try
+        {
+            await _resetearMfa.ExecuteAsync(id, uid, uname);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     private (Guid Id, string Nombre) GetCurrentUser()

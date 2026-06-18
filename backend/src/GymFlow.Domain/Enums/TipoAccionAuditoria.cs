@@ -8,5 +8,10 @@ public enum TipoAccionAuditoria
     Reactivacion = 3,
     InicioSesion = 4,
     SolicitudModificacion = 5,
-    SolicitudBaja = 6
+    SolicitudBaja = 6,
+    MfaActivado = 7,
+    MfaVerificado = 8,
+    MfaCodigoRecuperacionUsado = 9,
+    MfaBloqueado = 10,
+    MfaReseteadoPorAdmin = 11
 }

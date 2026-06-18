@@ -34,6 +34,11 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddScoped<IGoogleTokenValidator, GoogleIdTokenValidator>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddScoped<ICodigoRecuperacionMfaRepository, CodigoRecuperacionMfaRepository>();
+        services.AddScoped<ITotpService, TotpService>();
+        services.AddSingleton<IMfaSecretProtector, AesGcmMfaSecretProtector>();
+        services.AddSingleton<IMfaTokenService, MfaTokenService>();
+        services.AddSingleton<IQrCodeGenerator, QrCodeGenerator>();
         services.AddMemoryCache();
 
         return services;
