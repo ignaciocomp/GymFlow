@@ -109,31 +109,31 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 ## 5. Requerimientos Funcionales
 
-| Código | Descripción | Necesidades | Módulo |
-|--------|-------------|-------------|--------|
-| **RF-01** | Registrar socio: alta con nombre, contacto, plan, fecha de alta y espacio (gimnasio, actividades o ambos). | N-01, N-02 | Gestión de Socios |
-| **RF-02** | Listar socios: vista de todos los socios con búsqueda por nombre y filtros por estado de cuota, espacio y plan. Fecha de alta seleccionable ([[spec-rf02-fecha-alta-seleccionable]]). | N-02 | Gestión de Socios |
-| **RF-03** | Editar socio: modificar datos manteniendo historial de cambios. | N-02 | Gestión de Socios |
-| **RF-04** | Baja lógica de socio: marcar como inactivo sin eliminar el registro. | N-02 | Gestión de Socios |
-| **RF-05** | Ver perfil del socio: el socio consulta sus datos, estado de cuota y plan activo. | N-02, N-05 | Gestión de Socios |
-| **RF-06** | Recordatorio de cuota: envío automático a socios con cuota próxima a vencer o vencida. | N-03 | Cuotas y Pagos |
-| **RF-07** | Control de estado de cuota: visualización de socios al día, próximos a vencer o vencidos ([[spec-rf07-gestion-cuotas]]). | N-02, N-03, N-04 | Cuotas y Pagos |
-| **RF-08** | Gestionar clases: crear, editar y eliminar clases/actividades con nombre, horario y cupo máximo. | N-01, N-06 | Clases y Horarios |
-| **RF-09** | Gestionar horarios: definir horarios semanales de clases contemplando ambos espacios. | N-05, N-06 | Clases y Horarios |
-| **RF-10** | Inscribirse a clase: socio se inscribe si hay cupo disponible y cuota al día. | N-05, N-06 | Clases y Horarios |
-| **RF-11** | Ver mis clases: socio visualiza clases a las que está inscripto. | N-05, N-06 | Clases y Horarios |
-| **RF-12** | Gestionar empleados/profesores: fichas con roles y permisos diferenciados. | N-08 | Empleados y Profesores |
-| **RF-13** | Profesor registra socios: alta de socios con permisos limitados y mismas validaciones que admin. | N-02, N-08 | Empleados y Profesores |
-| **RF-14** | Profesor gestiona sus clases: contemplado por roles y permisos configurables desde interfaz. El administrador puede crear un rol Profesor y asignarle permisos por modulo. | N-06, N-08 | Empleados y Profesores |
-| **RF-15** | Gestionar eventos: crear eventos especiales (torneos, charlas, promociones) y notificar socios. | N-11 | Eventos y Notificaciones |
-| **RF-16** | Notificaciones: socio recibe avisos de eventos, recordatorios de cuota y cambios de horario por email y dentro del sistema. | N-03, N-05, N-11 | Eventos y Notificaciones |
-| **RF-17** | Crear rutinas: socio crea/guarda rutinas de entrenamiento con ejercicios, series, repeticiones y peso. | N-09 | Rutinas |
-| **RF-18** | Dashboard en tiempo real: panel con socios activos, cuotas pendientes, clases del día, inscripciones recientes, filtros por unidad. | N-01, N-04 | Dashboard |
-| **RF-19** | Sitio web público: página con info de Espacio Mora, fotos, horarios, planes, ubicación y formulario de contacto. | N-07 | Página Web Pública |
-| **RF-20** | Gestión unificada multi-espacio: administrar ambas unidades desde una plataforma con separación y filtrado por unidad. | N-01 | Multi-Espacio |
-| **RF-21** | Gestionar planes: CRUD de planes de membresía desde el panel de administración. Baja lógica bloqueada si el plan tiene socios asignados. | N-01, N-02 | Gestión de Planes |
-| **RF-22** | Plan por unidad de negocio: al registrar o modificar un socio, asignar un plan independiente por cada unidad seleccionada. Un socio con dos unidades puede tener planes distintos en cada una. | N-01, N-02 | Gestión de Socios |
-| **RF-23** | Pago de cuotas online: el socio puede abonar su cuota a través del portal web utilizando Mercado Pago como pasarela de pago (Checkout Pro). El sistema registra el pago vía webhook, actualiza el estado de la cuota automáticamente y emite confirmación por correo electrónico. | N-02, N-03, N-05 | Cuotas y Pagos |
+| Código    | Descripción                                                                                                                                                                                                                                                                       | Necesidades      | Módulo                   |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------ |
+| **RF-01** | Registrar socio: alta con nombre, contacto, plan, fecha de alta y espacio (gimnasio, actividades o ambos).                                                                                                                                                                        | N-01, N-02       | Gestión de Socios        |
+| **RF-02** | Listar socios: vista de todos los socios con búsqueda por nombre y filtros por estado de cuota, espacio y plan. Fecha de alta seleccionable ([[spec-rf02-fecha-alta-seleccionable]]).                                                                                             | N-02             | Gestión de Socios        |
+| **RF-03** | Editar socio: modificar datos manteniendo historial de cambios.                                                                                                                                                                                                                   | N-02             | Gestión de Socios        |
+| **RF-04** | Baja lógica de socio: marcar como inactivo sin eliminar el registro.                                                                                                                                                                                                              | N-02             | Gestión de Socios        |
+| **RF-05** | Ver perfil del socio: el socio consulta sus datos, estado de cuota y plan activo.                                                                                                                                                                                                 | N-02, N-05       | Gestión de Socios        |
+| **RF-06** | Recordatorio de cuota: envío automático a socios con cuota próxima a vencer o vencida.                                                                                                                                                                                            | N-03             | Cuotas y Pagos           |
+| **RF-07** | Control de estado de cuota: visualización de socios al día, próximos a vencer o vencidos ([[spec-rf07-gestion-cuotas]]).                                                                                                                                                          | N-02, N-03, N-04 | Cuotas y Pagos           |
+| **RF-08** | Gestionar clases: crear, editar y eliminar clases/actividades con nombre, horario y cupo máximo.                                                                                                                                                                                  | N-01, N-06       | Clases y Horarios        |
+| **RF-09** | Gestionar horarios: definir horarios semanales de clases contemplando ambos espacios.                                                                                                                                                                                             | N-05, N-06       | Clases y Horarios        |
+| **RF-10** | Inscribirse a clase: socio se inscribe si hay cupo disponible y cuota al día.                                                                                                                                                                                                     | N-05, N-06       | Clases y Horarios        |
+| **RF-11** | Ver mis clases: socio visualiza clases a las que está inscripto.                                                                                                                                                                                                                  | N-05, N-06       | Clases y Horarios        |
+| **RF-12** | Gestionar empleados/profesores: fichas con roles y permisos diferenciados.                                                                                                                                                                                                        | N-08             | Empleados y Profesores   |
+| **RF-13** | Profesor registra socios: alta de socios con permisos limitados y mismas validaciones que admin.                                                                                                                                                                                  | N-02, N-08       | Empleados y Profesores   |
+| **RF-14** | Profesor gestiona sus clases: contemplado por roles y permisos configurables desde interfaz. El administrador puede crear un rol Profesor y asignarle permisos por modulo.                                                                                                        | N-06, N-08       | Empleados y Profesores   |
+| **RF-15** | Gestionar eventos: crear eventos especiales (torneos, charlas, promociones) y notificar socios.                                                                                                                                                                                   | N-11             | Eventos y Notificaciones |
+| **RF-16** | Notificaciones: socio recibe avisos de eventos, recordatorios de cuota y cambios de horario por email y dentro del sistema.                                                                                                                                                       | N-03, N-05, N-11 | Eventos y Notificaciones |
+| **RF-17** | Crear rutinas: socio crea/guarda rutinas de entrenamiento con ejercicios, series, repeticiones y peso.                                                                                                                                                                            | N-09             | Rutinas                  |
+| **RF-18** | Dashboard en tiempo real: panel con socios activos, cuotas pendientes, clases del día, inscripciones recientes, filtros por unidad.                                                                                                                                               | N-01, N-04       | Dashboard                |
+| **RF-19** | Sitio web público: página con info de Espacio Mora, fotos, horarios, planes, ubicación y formulario de contacto.                                                                                                                                                                  | N-07             | Página Web Pública       |
+| **RF-20** | Gestión unificada multi-espacio: administrar ambas unidades desde una plataforma con separación y filtrado por unidad.                                                                                                                                                            | N-01             | Multi-Espacio            |
+| **RF-21** | Pago de cuotas online: el socio puede abonar su cuota a través del portal web utilizando Mercado Pago como pasarela de pago (Checkout Pro). El sistema registra el pago vía webhook, actualiza el estado de la cuota automáticamente y emite confirmación por correo electrónico. | N-02, N-03, N-05 | Cuotas y Pagos           |
+| **RF-22** | Plan por unidad de negocio: al registrar o modificar un socio, asignar un plan independiente por cada unidad seleccionada. Un socio con dos unidades puede tener planes distintos en cada una.                                                                                    | N-01, N-02       | Gestión de Socios        |
+
 
 ---
 
@@ -501,7 +501,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 ### CU-08 — Pago de Cuota Online mediante Mercado Pago
 
 **Actores:** Socio, Sistema (Mercado Pago — actor externo)
-**RF:** RF-23, RF-05, RF-06, RF-07
+**RF:** RF-21, RF-05, RF-06, RF-07
 **Necesidades:** N-02, N-03, N-05
 
 **Precondiciones:**
@@ -622,6 +622,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-13 (Profesor registra socios)
 - RF-14 (Profesor gestiona sus clases)
 - RNF-03 (Responsive)
+- RF-19 (Sitio web público)
 
 **Nota:** La funcionalidad base de RF-10, RF-11, RF-12 y RF-13 fue implementada en iteraciones anteriores. RF-14 queda contemplado por roles y permisos configurables desde interfaz, permitiendo crear un rol Profesor con permisos especificos por modulo. Esta iteracion se enfoca en mejoras, pulido de UX y testing.
 
@@ -638,6 +639,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 **Requerimientos:**
 - RNF-10 (MFA TOTP para admin/profesor, OAuth 2.0 Google para socios)
 - RNF-01 (Autenticación y autorización por roles — parte socios: Google OAuth + rol Dueño)
+- RF-15 (Gestionar eventos)
 
 **Resultado esperado:** Admin y profesor requieren MFA (TOTP) para iniciar sesión. Socios se autentican con Google OAuth 2.0 sin gestionar contraseña propia. Rol "Dueño" hardcoded con filtro por unidades asignadas.
 
@@ -650,34 +652,17 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 **Prioridad:** DESEABLE
 
 **Requerimientos:**
-- RF-15 (Gestionar eventos)
 - RF-16 (Notificaciones al socio por email)
-- RF-17 (Crear rutinas de entrenamiento)
-- RF-19 (Sitio web público)
 - RNF-03 (Responsive)
 - RNF-04 (SEO: semántica, metaetiquetas, URLs amigables, carga rápida)
 - RNF-06 (Disponibilidad ≥ 95%)
-- RNF-07 (Compatibilidad navegadores)
+- RF-18 (Dashboard en tiempo real multi-espacio)
+- RF-21 (Pago de cuotas online con Mercado Pago)
+- RNF-02 (Actualización sin recarga vía SSE)
 
 **Resultado esperado:** Admin crea eventos; sistema notifica socios por eventos, cambios de horario y recordatorios de cuota. Socio puede crear rutinas. Sitio web público con info institucional, responsive y SEO.
 
 **Dependencias:** Iteraciones 2 y 3.
-
----
-
-### Iteración 7 — Dashboard Gerencial, Métricas en Tiempo Real y Mercado Pago
-**Fechas:** 14/07/2026 → 28/07/2026 (~60 horas)
-**Prioridad:** OBLIGATORIO
-
-**Requerimientos:**
-- RF-18 (Dashboard en tiempo real multi-espacio)
-- RF-21 (Gestionar planes)
-- RF-23 (Pago de cuotas online con Mercado Pago)
-- RNF-02 (Actualización sin recarga vía SSE)
-
-**Resultado esperado:** Admin visualiza métricas clave con filtros por unidad y actualización automática mediante SSE. Integración con Mercado Pago (Checkout Pro + webhooks) para pago de cuotas online.
-
-**Dependencias:** Iteraciones 2, 3 y 4.
 
 ---
 
@@ -686,7 +671,6 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - **NO** acceso automatizado (QR/molinete).
 - **NO** tienda de productos.
 - **NO** programa de fidelización (puntos/premios).
-- ~~**NO** procesamiento/cobro de pagos online~~ → **Incluido como RF-23** (Mercado Pago, Checkout Pro).
 - **NO** migración de datos desde SmartGym.
 - **NO** mantenimiento/hosting posterior a la entrega.
 - **NO** aplicación móvil nativa (es web responsive).
