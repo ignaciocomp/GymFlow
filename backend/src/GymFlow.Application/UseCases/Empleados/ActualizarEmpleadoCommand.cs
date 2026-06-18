@@ -1,6 +1,7 @@
 using GymFlow.Application.DTOs;
 using GymFlow.Application.Interfaces;
 using GymFlow.Domain.Constants;
+using GymFlow.Domain.Entities;
 using GymFlow.Domain.Enums;
 
 namespace GymFlow.Application.UseCases.Empleados;
@@ -21,7 +22,7 @@ public class ActualizarEmpleadoCommand
         _auditLogger = auditLogger;
     }
 
-    public async Task<EmpleadoDto> ExecuteAsync(Guid id, ActualizarEmpleadoRequest request, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
+    public async Task<EmpleadoDto> ExecuteAsync(Guid id, ActualizarEmpleadoRequest request, Guid usuarioId, string usuarioNombre, Guid actuanteRolId, IReadOnlyCollection<Guid>? actuanteUnidades = null, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.Nombre) || string.IsNullOrWhiteSpace(request.Apellido) || string.IsNullOrWhiteSpace(request.Correo))
             throw new ArgumentException("Nombre, apellido y correo son obligatorios.", nameof(request));
@@ -38,8 +39,15 @@ public class ActualizarEmpleadoCommand
         if (rol.Id == RolesSeed.SocioRolId)
             throw new InvalidOperationException("No se puede asignar el rol Socio a un empleado.");
 
+        var unidades = request.UnidadIds ?? [];
+        AsignacionRolEmpleado.ValidarAsignacion(rol.Id, actuanteRolId, unidades, actuanteUnidades);
+
         empleado.ActualizarDatosBase(request.Nombre, request.Apellido, request.Correo);
         empleado.CambiarRol(rol.Id);
+
+        empleado.UnidadesAsignadas.Clear();
+        foreach (var unidadId in unidades.Distinct())
+            empleado.UnidadesAsignadas.Add(new UsuarioUnidad(empleado.Id, unidadId));
 
         await _empleadoRepository.SaveChangesAsync(ct);
 

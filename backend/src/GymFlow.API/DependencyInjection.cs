@@ -1,5 +1,6 @@
 using GymFlow.Application.UseCases.Auditoria;
 using GymFlow.Application.UseCases.Auth;
+using GymFlow.Application.UseCases.Auth.Mfa;
 using GymFlow.Application.UseCases.Empleados;
 using GymFlow.Application.UseCases.Permisos;
 using GymFlow.Application.UseCases.Planes;
@@ -8,8 +9,10 @@ using GymFlow.Application.UseCases.Roles;
 using GymFlow.Application.UseCases.Socios;
 using GymFlow.Application.UseCases.Cuotas;
 using GymFlow.Application.UseCases.Clases;
+using GymFlow.Application.UseCases.Eventos;
 using GymFlow.Application.UseCases.Horarios;
 using GymFlow.Application.UseCases.Inscripciones;
+using GymFlow.Application.UseCases.Notificaciones;
 using GymFlow.Application.UseCases.Unidades;
 
 namespace GymFlow.API;
@@ -71,7 +74,23 @@ public static class DependencyInjection
         services.AddScoped<InscribirSocioCommand>();
         services.AddScoped<CancelarInscripcionCommand>();
         services.AddScoped<GetMisInscripcionesQuery>();
+        services.AddScoped<GetEventosQuery>();
+        services.AddScoped<GetEventoByIdQuery>();
+        services.AddScoped<CrearEventoCommand>();
+        services.AddScoped<ActualizarEventoCommand>();
+        services.AddScoped<CancelarEventoCommand>();
+        services.AddScoped<NotificarEventoCommand>();
+        services.AddScoped<GetEventosPortalQuery>();
+        services.AddScoped<GetNotificacionesQuery>();
+        services.AddScoped<ContarNoLeidasQuery>();
+        services.AddScoped<MarcarNotificacionLeidaCommand>();
+        services.AddScoped<MarcarTodasLeidasCommand>();
         services.AddScoped<LoginConGoogleCommand>();
+        services.AddScoped<IniciarMfaSetupCommand>();
+        services.AddScoped<ActivarMfaCommand>();
+        services.AddScoped<VerificarMfaCommand>();
+        services.AddScoped<UsarCodigoRecuperacionCommand>();
+        services.AddScoped<ResetearMfaEmpleadoCommand>();
         return services;
     }
 }

@@ -70,7 +70,7 @@ public class SocioRepository : ISocioRepository
     }
 
     public async Task<IEnumerable<Socio>> SearchAsync(
-        string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo)
+        string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
         var query = _context.Socios
             .Include(s => s.UnidadesAsignadas)
@@ -88,6 +88,9 @@ public class SocioRepository : ISocioRepository
                 s.Correo.ToLower().Contains(term));
         }
 
+        if (unidadesPermitidas is not null)
+            query = query.Where(s => s.UnidadesAsignadas.Any(uu => unidadesPermitidas.Contains(uu.UnidadId)));
+
         if (unidadId.HasValue)
             query = query.Where(s => s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId.Value));
 
@@ -98,6 +101,18 @@ public class SocioRepository : ISocioRepository
             query = query.Where(s => s.EstaActivo == estaActivo.Value);
 
         return await query.OrderBy(s => s.Apellido).ThenBy(s => s.Nombre).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Socio>> GetActivosByUnidadAsync(Guid unidadId)
+    {
+        return await _context.Socios
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Unidad)
+            .Include(s => s.UnidadesAsignadas)
+                .ThenInclude(uu => uu.Plan)
+            .Where(s => s.EstaActivo && s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId))
+            .OrderBy(s => s.Apellido).ThenBy(s => s.Nombre)
+            .ToListAsync();
     }
 
     public async Task AddAsync(Socio socio)

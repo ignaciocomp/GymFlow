@@ -1,4 +1,5 @@
 using GymFlow.Application.DTOs;
+using GymFlow.Application.Interfaces;
 using GymFlow.Application.UseCases.Clases;
 using GymFlow.API.Authorization;
 using GymFlow.Domain.Enums;
@@ -18,6 +19,7 @@ public class ClasesController : ControllerBase
     private readonly UpdateClaseCommand _updateClaseCommand;
     private readonly CancelClaseCommand _cancelClaseCommand;
     private readonly ReactivarClaseCommand _reactivarClaseCommand;
+    private readonly IUnidadesVisiblesResolver _unidadesResolver;
 
     public ClasesController(
         GetClasesQuery getClasesQuery,
@@ -25,7 +27,8 @@ public class ClasesController : ControllerBase
         CreateClaseCommand createClaseCommand,
         UpdateClaseCommand updateClaseCommand,
         CancelClaseCommand cancelClaseCommand,
-        ReactivarClaseCommand reactivarClaseCommand)
+        ReactivarClaseCommand reactivarClaseCommand,
+        IUnidadesVisiblesResolver unidadesResolver)
     {
         _getClasesQuery = getClasesQuery;
         _getClaseByIdQuery = getClaseByIdQuery;
@@ -33,6 +36,7 @@ public class ClasesController : ControllerBase
         _updateClaseCommand = updateClaseCommand;
         _cancelClaseCommand = cancelClaseCommand;
         _reactivarClaseCommand = reactivarClaseCommand;
+        _unidadesResolver = unidadesResolver;
     }
 
     [HttpGet]
@@ -40,7 +44,9 @@ public class ClasesController : ControllerBase
         [FromQuery] Guid? unidadId,
         [FromQuery] bool includeInactive = false)
     {
-        var clases = await _getClasesQuery.ExecuteAsync(unidadId, includeInactive);
+        var (userId, rolId) = GetCurrentActor();
+        var unidadesPermitidas = await _unidadesResolver.ResolverAsync(userId, rolId);
+        var clases = await _getClasesQuery.ExecuteAsync(unidadId, includeInactive, unidadesPermitidas);
         return Ok(clases);
     }
 
@@ -145,5 +151,14 @@ public class ClasesController : ControllerBase
         var apellido = User.FindFirst("apellido")?.Value ?? "";
         var fullName = $"{nombre} {apellido}".Trim();
         return (userId, string.IsNullOrWhiteSpace(fullName) ? "Sistema" : fullName);
+    }
+
+    // Identidad del actuante (userId + rolId) tomada del JWT, para resolver server-side
+    // las unidades visibles. Nunca se confía en parámetros de la request para el scoping.
+    private (Guid UserId, Guid RolId) GetCurrentActor()
+    {
+        var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var rolId = Guid.TryParse(User.FindFirst("rolId")?.Value, out var r) ? r : Guid.Empty;
+        return (userId, rolId);
     }
 }

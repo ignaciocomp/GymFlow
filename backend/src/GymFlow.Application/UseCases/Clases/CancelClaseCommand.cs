@@ -11,19 +11,22 @@ public class CancelClaseCommand
     private readonly IInscripcionClaseRepository _inscripcionRepository;
     private readonly IAuditLogger _auditLogger;
     private readonly IEmailService _emailService;
+    private readonly INotificadorInApp _notificador;
 
     public CancelClaseCommand(
         IClaseRepository claseRepository,
         IHorarioClaseRepository horarioRepository,
         IInscripcionClaseRepository inscripcionRepository,
         IAuditLogger auditLogger,
-        IEmailService emailService)
+        IEmailService emailService,
+        INotificadorInApp notificador)
     {
         _claseRepository = claseRepository;
         _horarioRepository = horarioRepository;
         _inscripcionRepository = inscripcionRepository;
         _auditLogger = auditLogger;
         _emailService = emailService;
+        _notificador = notificador;
     }
 
     public async Task ExecuteAsync(Guid id, Guid usuarioId, string usuarioNombre)
@@ -66,5 +69,24 @@ public class CancelClaseCommand
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Baja, "Clase", clase.Id,
             detalle);
+
+        // Notificación in-app a los inscriptos tras el save de negocio. Best-effort:
+        // si la creación falla, la cancelación igual queda confirmada.
+        if (inscripciones.Count > 0)
+        {
+            try
+            {
+                var socioIds = inscripciones.Select(insc => insc.SocioId).Distinct();
+                await _notificador.CrearParaVariosAsync(
+                    socioIds,
+                    TipoNotificacion.CancelacionClase,
+                    $"Clase cancelada: {clase.Nombre}",
+                    $"La clase {clase.Nombre} fue cancelada. Tus inscripciones a sus horarios quedaron sin efecto.");
+            }
+            catch
+            {
+                // Best-effort: la creación de las notificaciones in-app nunca rompe la cancelación.
+            }
+        }
     }
 }

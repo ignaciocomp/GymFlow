@@ -14,9 +14,9 @@ public class GetEmpleadosQuery
         _rolRepository = rolRepository;
     }
 
-    public async Task<IReadOnlyList<EmpleadoDto>> ExecuteAsync(bool? estaActivo = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<EmpleadoDto>> ExecuteAsync(bool? estaActivo = null, IReadOnlyCollection<Guid>? unidadesPermitidas = null, CancellationToken ct = default)
     {
-        var empleados = await _empleadoRepository.GetAllAsync(estaActivo, ct);
+        var empleados = await _empleadoRepository.GetAllAsync(estaActivo, unidadesPermitidas, ct);
         var roles = await _rolRepository.GetAllAsync(ct);
         var rolMap = roles.ToDictionary(r => r.Id, r => r.Nombre);
 

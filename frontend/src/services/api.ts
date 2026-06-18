@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase, Evento, CreateEventoRequest, UpdateEventoRequest, Notificacion } from '@/types'
 import type { Permiso } from '@/types/permisos'
 
 const api = axios.create({
@@ -28,14 +28,62 @@ export interface LoginResponse {
   unidadIds: string[]
 }
 
+/**
+ * Resultado del paso 1 del login. Para empleados: `requiereMfa=true` con un `mfaToken`
+ * intermedio (y `setupRequerido` según tenga o no el segundo factor ya activado). Para
+ * socios/legacy: `requiereMfa=false` y la `sesion` con el JWT ya emitido.
+ */
+export interface LoginResultado {
+  requiereMfa: boolean
+  setupRequerido: boolean
+  mfaToken: string | null
+  sesion: LoginResponse | null
+}
+
+/** Datos del alta de MFA: URI otpauth, QR como data URI PNG y la clave manual (base32). */
+export interface MfaSetupResponse {
+  uriOtpauth: string
+  qrDataUri: string
+  claveManual: string
+}
+
+/** Respuesta de la activación: la sesión emitida y los códigos de recuperación (una sola vez). */
+export interface MfaActivarResponse {
+  sesion: LoginResponse
+  codigosRecuperacion: string[]
+}
+
+const bearer = (mfaToken: string) => ({ headers: { Authorization: `Bearer ${mfaToken}` } })
+
 export const authApi = {
-  login: async (correo: string, password: string): Promise<LoginResponse> => {
-    const { data } = await api.post<LoginResponse>('/auth/login', { correo, password })
+  login: async (correo: string, password: string): Promise<LoginResultado> => {
+    const { data } = await api.post<LoginResultado>('/auth/login', { correo, password })
     return data
   },
 
   loginConGoogle: async (idToken: string): Promise<LoginResponse> => {
     const { data } = await api.post<LoginResponse>('/auth/google', { idToken })
+    return data
+  },
+
+  // Endpoints del segundo factor. El mfaToken intermedio viaja por Authorization: Bearer.
+  mfaSetup: async (mfaToken: string): Promise<MfaSetupResponse> => {
+    const { data } = await api.post<MfaSetupResponse>('/auth/mfa/setup', undefined, bearer(mfaToken))
+    return data
+  },
+
+  mfaActivate: async (mfaToken: string, codigo: string): Promise<MfaActivarResponse> => {
+    const { data } = await api.post<MfaActivarResponse>('/auth/mfa/activate', { codigo }, bearer(mfaToken))
+    return data
+  },
+
+  mfaVerify: async (mfaToken: string, codigo: string): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/mfa/verify', { codigo }, bearer(mfaToken))
+    return data
+  },
+
+  mfaRecovery: async (mfaToken: string, codigo: string): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/mfa/recovery', { codigo }, bearer(mfaToken))
     return data
   },
 }
@@ -131,6 +179,29 @@ export const portalApi = {
   solicitarBaja: async (request?: SolicitarBajaRequest): Promise<{ mensaje: string }> => {
     const { data } = await api.post<{ mensaje: string }>('/portal/solicitar-baja', request ?? { motivo: null })
     return data
+  },
+
+  getEventos: async (): Promise<Evento[]> => {
+    const { data } = await api.get<Evento[]>('/portal/eventos')
+    return data
+  },
+
+  getNotificaciones: async (params?: { soloNoLeidas?: boolean; take?: number }): Promise<Notificacion[]> => {
+    const { data } = await api.get<Notificacion[]>('/portal/notificaciones', { params })
+    return data
+  },
+
+  contarNoLeidas: async (): Promise<number> => {
+    const { data } = await api.get<{ count: number }>('/portal/notificaciones/no-leidas/count')
+    return data.count
+  },
+
+  marcarLeida: async (id: string): Promise<void> => {
+    await api.post(`/portal/notificaciones/${id}/leer`)
+  },
+
+  marcarTodasLeidas: async (): Promise<void> => {
+    await api.post('/portal/notificaciones/leer-todas')
   },
 }
 
@@ -233,6 +304,40 @@ export const clasesApi = {
 
   reactivate: async (id: string): Promise<Clase> => {
     const { data } = await api.patch<Clase>(`/clases/${id}/reactivar`)
+    return data
+  },
+}
+
+export const eventosApi = {
+  getAll: async (unidadId?: string, incluirInactivos?: boolean): Promise<Evento[]> => {
+    const params: Record<string, string> = {}
+    if (unidadId) params.unidadId = unidadId
+    if (incluirInactivos) params.incluirInactivos = 'true'
+    const { data } = await api.get<Evento[]>('/eventos', { params })
+    return data
+  },
+
+  getById: async (id: string): Promise<Evento> => {
+    const { data } = await api.get<Evento>(`/eventos/${id}`)
+    return data
+  },
+
+  create: async (request: CreateEventoRequest): Promise<Evento> => {
+    const { data } = await api.post<Evento>('/eventos', request)
+    return data
+  },
+
+  update: async (id: string, request: UpdateEventoRequest): Promise<Evento> => {
+    const { data } = await api.put<Evento>(`/eventos/${id}`, request)
+    return data
+  },
+
+  cancel: async (id: string): Promise<void> => {
+    await api.delete(`/eventos/${id}`)
+  },
+
+  notificar: async (id: string): Promise<{ mensaje: string }> => {
+    const { data } = await api.post<{ mensaje: string }>(`/eventos/${id}/notificar`)
     return data
   },
 }

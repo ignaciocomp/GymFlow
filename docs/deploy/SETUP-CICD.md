@@ -90,3 +90,117 @@ El workflow valida que los secrets existan, guarda la password como secret `smtp
 - Gmail fuerza el `From` a la cuenta autenticada: aunque se configure otro `Email__From`, los mails salen desde la cuenta del `SMTP_USER`.
 - En dev local los mails siguen simulados (`Email:Habilitado=false` en `appsettings.json`) y eso es **intencional**: solo produccion envia mails reales.
 - Si cambia la App Password, alcanza con actualizar el secret `SMTP_PASSWORD` en GitHub y volver a correr el workflow.
+
+## Activar MFA (segundo factor TOTP para empleados)
+
+> One-time: como con SMTP, los env vars del Container App persisten entre deploys de imagen.
+> Ninguna clave toca el repo: ambas viven como secrets del Container App y los env vars
+> `Mfa__EncryptionKey` / `Mfa__TokenSigningKey` las referencian via `secretref`.
+> En dev local las claves de `appsettings.json` (`Mfa:EncryptionKey`, `Mfa:TokenSigningKey`)
+> alcanzan; en produccion se sobreescriben con estos secrets.
+
+### Por que dos claves distintas
+
+- **`Mfa:EncryptionKey`** (base64 de 32 bytes / 256 bits): cifra en reposo el secreto TOTP de
+  cada empleado con AES-256-GCM. Si se pierde/rota, los secretos guardados quedan ilegibles y
+  todos los empleados tienen que volver a enrolarse (reset + re-setup).
+- **`Mfa:TokenSigningKey`** (string UTF-8 de >=32 caracteres): firma el `mfaToken` intermedio del
+  login en dos pasos. **Tiene que ser distinta de `Jwt:Key`**: asi el pipeline JWT global rechaza
+  el `mfaToken` en los endpoints normales (solo sirve para `/auth/mfa/*`). NO reutilizar `Jwt:Key`.
+
+### 1. Generar las dos claves
+
+```bash
+# EncryptionKey: 32 bytes aleatorios en base64 (AES-256)
+openssl rand -base64 32
+
+# TokenSigningKey: >=32 caracteres aleatorios (string UTF-8). Cualquiera de las dos sirve:
+openssl rand -base64 48          # base64 -> de sobra >=32 chars
+# o, si openssl no esta a mano:
+# head -c 36 /dev/urandom | base64
+```
+
+Guardar ambos valores en un gestor de secrets (no en el repo, no en chats). La `TokenSigningKey`
+tiene que ser **distinta** de la `Jwt:Key` de produccion.
+
+### 2. Cargar las claves como secrets del Container App
+
+Con sesion `az` iniciada (el mismo Service Principal del deploy sirve):
+
+```bash
+RG=rg-gymflow
+APP=ca-gymflow
+
+# Guardar las dos claves como secrets del Container App (no se imprimen: --output none)
+az containerapp secret set \
+  --name "$APP" --resource-group "$RG" \
+  --secrets mfa-encryption-key="<EncryptionKey base64>" \
+            mfa-token-signing-key="<TokenSigningKey>" \
+  --output none
+
+# Referenciar los secrets via secretref en los env vars (doble guion bajo = ':' en .NET)
+az containerapp update \
+  --name "$APP" --resource-group "$RG" \
+  --set-env-vars \
+    "Mfa__EncryptionKey=secretref:mfa-encryption-key" \
+    "Mfa__TokenSigningKey=secretref:mfa-token-signing-key" \
+  --output none
+```
+
+Esto dispara una nueva revision. Verificar que arranque sana (`az containerapp revision list ... -o table`)
+y probar un login de empleado: tiene que pedir el segundo factor.
+
+> Tambien se puede automatizar con un workflow manual analogo a `configure-email.yml`
+> (secrets `MFA_ENCRYPTION_KEY` / `MFA_TOKEN_SIGNING_KEY` en GitHub, `az containerapp secret set`
+> + `az containerapp update --set-env-vars ...=secretref:...`). Por ahora alcanza con el comando manual de arriba.
+
+### Notas
+
+- Si se **rota** la `TokenSigningKey`: los `mfaToken` en vuelo se invalidan (login a medias falla),
+  pero los empleados ya enrolados siguen funcionando (solo tienen que rehacer el login). Sin downtime real.
+- Si se **rota o pierde** la `EncryptionKey`: los secretos TOTP guardados quedan ilegibles. Hay que
+  resetear el MFA de cada empleado (ver abajo) y que vuelvan a enrolarse. No rotarla a la ligera.
+- El secreto TOTP nunca viaja en claro a la DB ni a los logs: solo el blob AES-GCM. El QR y la clave
+  manual se muestran una sola vez en el enrolment.
+
+## Reset de emergencia del MFA (admin sin acceso)
+
+El reset normal de MFA de un empleado lo hace otro usuario con permiso de **gestion de empleados**
+(`POST /api/empleados/{id}/mfa/reset`, requiere `Empleados:Modificacion`), y **nadie puede resetearse
+a si mismo**. El problema clasico: el **unico** admin pierde su segundo factor (telefono perdido,
+authenticator borrado, sin codigos de recuperacion) y no queda nadie mas que pueda resetearlo.
+
+### Recomendacion (evita llegar a esto)
+
+- Mantener **>=2 cuentas con permiso de gestion de empleados** (rol con `Empleados:Modificacion`),
+  asi una puede resetear el MFA de la otra sin tocar la base de datos.
+- Guardar los **10 codigos de recuperacion** que se muestran al activar el MFA: cada uno entra una
+  sola vez por `/auth/mfa/recovery` y sirve justamente para cuando el authenticator no esta a mano.
+
+### Reset directo en la base de datos (ultimo recurso)
+
+Si de verdad no queda ninguna cuenta que pueda resetear, se desactiva el MFA del empleado a mano.
+El MFA vive en la tabla TPH **`Usuarios`** (columnas `MfaHabilitado`, `MfaSecret`,
+`MfaIntentosFallidos`, `MfaBloqueadoHasta`) y los codigos en **`CodigosRecuperacionMfa`** (FK `EmpleadoId`).
+
+```bash
+# 1. Conectarse a la base de produccion (psql, con la connection string del Container App)
+
+# 2. Buscar el Id del empleado por su correo
+#    SELECT "Id", "Correo", "MfaHabilitado" FROM "Usuarios" WHERE "Correo" = 'admin@gymflow.com';
+
+# 3. Desactivar el MFA y limpiar el estado (reemplazar <ID> por el Id del paso 2)
+#    UPDATE "Usuarios"
+#       SET "MfaHabilitado" = false,
+#           "MfaSecret" = NULL,
+#           "MfaIntentosFallidos" = 0,
+#           "MfaBloqueadoHasta" = NULL
+#     WHERE "Id" = '<ID>';
+
+# 4. Eliminar los codigos de recuperacion viejos del empleado
+#    DELETE FROM "CodigosRecuperacionMfa" WHERE "EmpleadoId" = '<ID>';
+```
+
+Tras esto, el empleado entra solo con usuario y password, y el proximo login le va a pedir
+**volver a enrolarse** (`SetupRequerido=true`), generando un secreto nuevo. Equivale exactamente al
+reset por API; cambiarlo a mano en la DB es solo el plan B cuando no hay otra cuenta que lo haga.

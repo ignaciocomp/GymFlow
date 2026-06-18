@@ -43,6 +43,92 @@ public class GetCuotasAdminQueryTests
             sut.ExecuteAsync("99999999", null, null, null, null));
     }
 
+    [Fact]
+    public async Task ExecuteAsync_SocioEnUnidadPermitida_RetornaCuotas()
+    {
+        var unidad = Guid.NewGuid();
+        var socio = CrearSocio("12345672");
+        socio.UnidadesAsignadas.Add(new UsuarioUnidad(socio.Id, unidad));
+        var cuotas = new List<Cuota>
+        {
+            new(socio.Id, Guid.NewGuid(), Guid.NewGuid(), "Plan Test", 2500m, DateTime.UtcNow),
+        };
+
+        var socioRepo = new Mock<ISocioRepository>();
+        socioRepo.Setup(r => r.GetByDocumentoIdentidadAsync("12345672")).ReturnsAsync(socio);
+        var cuotaRepo = new Mock<ICuotaRepository>();
+        cuotaRepo.Setup(r => r.SearchAsync(socio.Id, null, null, null, null, true)).ReturnsAsync(cuotas);
+
+        var sut = new GetCuotasAdminQuery(cuotaRepo.Object, socioRepo.Object);
+        var result = (await sut.ExecuteAsync("12345672", null, null, null, null, true,
+            unidadesPermitidas: new[] { unidad })).ToList();
+
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SocioFueraDeUnidadPermitida_RetornaVacio()
+    {
+        var socio = CrearSocio("12345672");
+        socio.UnidadesAsignadas.Add(new UsuarioUnidad(socio.Id, Guid.NewGuid()));
+
+        var socioRepo = new Mock<ISocioRepository>();
+        socioRepo.Setup(r => r.GetByDocumentoIdentidadAsync("12345672")).ReturnsAsync(socio);
+        var cuotaRepo = new Mock<ICuotaRepository>();
+
+        var sut = new GetCuotasAdminQuery(cuotaRepo.Object, socioRepo.Object);
+        var result = await sut.ExecuteAsync("12345672", null, null, null, null, true,
+            unidadesPermitidas: new[] { Guid.NewGuid() });
+
+        Assert.Empty(result);
+        cuotaRepo.Verify(r => r.SearchAsync(
+            It.IsAny<Guid>(), It.IsAny<EstadoCuota?>(), It.IsAny<int?>(), It.IsAny<int?>(),
+            It.IsAny<Guid?>(), It.IsAny<bool>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteBySocioIdAsync_SocioFueraDeUnidadPermitida_RetornaVacio()
+    {
+        var socio = CrearSocio("12345672");
+        socio.UnidadesAsignadas.Add(new UsuarioUnidad(socio.Id, Guid.NewGuid()));
+
+        var socioRepo = new Mock<ISocioRepository>();
+        socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        var cuotaRepo = new Mock<ICuotaRepository>();
+
+        var sut = new GetCuotasAdminQuery(cuotaRepo.Object, socioRepo.Object);
+        var result = await sut.ExecuteBySocioIdAsync(socio.Id, null, null, null, null, true,
+            unidadesPermitidas: new[] { Guid.NewGuid() });
+
+        Assert.Empty(result);
+        cuotaRepo.Verify(r => r.SearchAsync(
+            It.IsAny<Guid>(), It.IsAny<EstadoCuota?>(), It.IsAny<int?>(), It.IsAny<int?>(),
+            It.IsAny<Guid?>(), It.IsAny<bool>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteBySocioIdAsync_SocioEnUnidadPermitida_RetornaCuotas()
+    {
+        var unidad = Guid.NewGuid();
+        var socio = CrearSocio("12345672");
+        socio.UnidadesAsignadas.Add(new UsuarioUnidad(socio.Id, unidad));
+        var cuotas = new List<Cuota>
+        {
+            new(socio.Id, Guid.NewGuid(), Guid.NewGuid(), "Plan Test", 2500m, DateTime.UtcNow),
+        };
+
+        var socioRepo = new Mock<ISocioRepository>();
+        socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        var cuotaRepo = new Mock<ICuotaRepository>();
+        cuotaRepo.Setup(r => r.SearchAsync(socio.Id, null, null, null, null, true)).ReturnsAsync(cuotas);
+
+        var sut = new GetCuotasAdminQuery(cuotaRepo.Object, socioRepo.Object);
+        var result = (await sut.ExecuteBySocioIdAsync(socio.Id, null, null, null, null, true,
+            unidadesPermitidas: new[] { unidad })).ToList();
+
+        Assert.Single(result);
+    }
+
     private static Socio CrearSocio(string documento)
     {
         return new Socio(

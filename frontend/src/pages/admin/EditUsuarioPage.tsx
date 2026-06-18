@@ -3,35 +3,60 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { obtenerEmpleado, actualizarEmpleado } from '@/services/empleados'
 import { listarRoles } from '@/services/roles'
+import { unidadesApi } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
 import type { Rol } from '@/types/permisos'
+import type { Unidad } from '@/types'
 
 export default function EditUsuarioPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const esAdmin = user?.rolNombre === 'Administrador'
   const [roles, setRoles] = useState<Rol[]>([])
+  const [unidades, setUnidades] = useState<Unidad[]>([])
   const [form, setForm] = useState({ nombre: '', apellido: '', correo: '', rolId: '' })
+  const [unidadIds, setUnidadIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
+  // Un Dueño solo puede asignar sus propias unidades; el Admin ve todas.
+  const unidadesDisponibles = esAdmin
+    ? unidades
+    : unidades.filter(u => (user?.unidadIds ?? []).includes(u.id))
+
   useEffect(() => {
     if (!id) return
-    Promise.all([obtenerEmpleado(id), listarRoles()])
-      .then(([emp, rs]) => {
+    Promise.all([obtenerEmpleado(id), listarRoles(), unidadesApi.getAll()])
+      .then(([emp, rs, us]) => {
         setForm({ nombre: emp.nombre, apellido: emp.apellido, correo: emp.correo, rolId: emp.rolId ?? '' })
-        setRoles(rs.filter(r => r.nombre !== 'Socio'))
+        // El rol "Dueño" solo puede asignarlo el Admin; ocultamos también "Socio".
+        setRoles(rs.filter(r => r.nombre !== 'Socio' && (esAdmin || r.nombre !== 'Dueño')))
+        setUnidades(us)
       })
       .catch(e => setError(e?.response?.data?.error ?? 'Error al cargar'))
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, esAdmin])
+
+  const rolSeleccionado = roles.find(r => r.id === form.rolId)
+  const esRolDueno = rolSeleccionado?.nombre === 'Dueño'
+
+  const toggleUnidad = (unidadId: string) => {
+    setUnidadIds(prev => (prev.includes(unidadId) ? prev.filter(x => x !== unidadId) : [...prev, unidadId]))
+  }
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!id) return
     setError(null)
+    if (esRolDueno && unidadIds.length === 0) {
+      setError('Un Dueño debe tener al menos una unidad asignada.')
+      return
+    }
     setSaving(true)
     try {
-      await actualizarEmpleado(id, form)
+      await actualizarEmpleado(id, { ...form, unidadIds })
       navigate('/admin/usuarios')
     } catch (err: unknown) {
       const reqError = err as { response?: { data?: { error?: string } } }
@@ -66,6 +91,34 @@ export default function EditUsuarioPage() {
             <option value="">Seleccionar...</option>
             {roles.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
           </select>
+        </div>
+        <div>
+          <label className="block text-sm mb-1">
+            Unidades{esRolDueno && <span className="text-destructive"> *</span>}
+          </label>
+          {unidadesDisponibles.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No hay unidades disponibles para asignar.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {unidadesDisponibles.map(u => (
+                <label
+                  key={u.id}
+                  className="flex items-center gap-2 cursor-pointer rounded-md border border-border px-3 py-2 hover:bg-muted/50 transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={unidadIds.includes(u.id)}
+                    onChange={() => toggleUnidad(u.id)}
+                    className="h-4 w-4 cursor-pointer"
+                  />
+                  <span className="text-sm">{u.nombre}</span>
+                </label>
+              ))}
+            </div>
+          )}
+          <p className="mt-1 text-xs text-muted-foreground">
+            Las unidades seleccionadas reemplazan las asignaciones actuales del empleado.
+          </p>
         </div>
         <div className="flex gap-2 pt-2">
           <Button type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</Button>
