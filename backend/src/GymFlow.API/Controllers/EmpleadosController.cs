@@ -57,9 +57,10 @@ public class EmpleadosController : ControllerBase
         try
         {
             var (uid, uname) = GetCurrentUser();
-            var dto = await _crear.ExecuteAsync(request, uid, uname);
+            var dto = await _crear.ExecuteAsync(request, uid, uname, GetActuanteRolId());
             return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
         }
+        catch (UnauthorizedAccessException ex) { return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
     }
@@ -71,10 +72,11 @@ public class EmpleadosController : ControllerBase
         try
         {
             var (uid, uname) = GetCurrentUser();
-            var dto = await _actualizar.ExecuteAsync(id, request, uid, uname);
+            var dto = await _actualizar.ExecuteAsync(id, request, uid, uname, GetActuanteRolId());
             return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
     }
@@ -114,10 +116,11 @@ public class EmpleadosController : ControllerBase
         try
         {
             var (uid, uname) = GetCurrentUser();
-            var dto = await _reactivar.ExecuteAsync(id, request.RolId, uid, uname);
+            var dto = await _reactivar.ExecuteAsync(id, request.RolId, uid, uname, GetActuanteRolId());
             return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
     }
@@ -130,4 +133,7 @@ public class EmpleadosController : ControllerBase
         var fullName = $"{nombre} {apellido}".Trim();
         return (userId, string.IsNullOrWhiteSpace(fullName) ? "Sistema" : fullName);
     }
+
+    private Guid GetActuanteRolId()
+        => Guid.TryParse(User.FindFirst("rolId")?.Value, out var rolId) ? rolId : Guid.Empty;
 }

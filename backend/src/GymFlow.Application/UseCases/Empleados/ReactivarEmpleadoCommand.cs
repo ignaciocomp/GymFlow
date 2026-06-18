@@ -21,7 +21,7 @@ public class ReactivarEmpleadoCommand
         _auditLogger = auditLogger;
     }
 
-    public async Task<EmpleadoDto> ExecuteAsync(Guid id, Guid? nuevoRolId, Guid usuarioId, string usuarioNombre, CancellationToken ct = default)
+    public async Task<EmpleadoDto> ExecuteAsync(Guid id, Guid? nuevoRolId, Guid usuarioId, string usuarioNombre, Guid actuanteRolId, CancellationToken ct = default)
     {
         var empleado = await _empleadoRepository.GetByIdAsync(id, ct)
             ?? throw new KeyNotFoundException($"Empleado {id} no encontrado.");
@@ -39,6 +39,8 @@ public class ReactivarEmpleadoCommand
 
             if (rol.Id == RolesSeed.SocioRolId)
                 throw new InvalidOperationException("No se puede asignar el rol Socio a un empleado.");
+
+            AsignacionRolEmpleado.ValidarSoloAdminAsignaDueno(rol.Id, actuanteRolId);
 
             empleado.CambiarRol(nuevoRolId.Value);
         }

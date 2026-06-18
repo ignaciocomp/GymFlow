@@ -4,4 +4,5 @@ public record ActualizarEmpleadoRequest(
     string Nombre,
     string Apellido,
     string Correo,
-    Guid RolId);
+    Guid RolId,
+    Guid[]? UnidadIds = null);
