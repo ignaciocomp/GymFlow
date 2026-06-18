@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.UseCases.Eventos;
+using GymFlow.Application.UseCases.Notificaciones;
 using GymFlow.Application.UseCases.Portal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +18,10 @@ public class PortalController : ControllerBase
     private readonly SolicitarModificacionCommand _solicitarModificacionCommand;
     private readonly SolicitarBajaCommand _solicitarBajaCommand;
     private readonly GetEventosPortalQuery _getEventosPortalQuery;
+    private readonly GetNotificacionesQuery _getNotificacionesQuery;
+    private readonly ContarNoLeidasQuery _contarNoLeidasQuery;
+    private readonly MarcarNotificacionLeidaCommand _marcarNotificacionLeidaCommand;
+    private readonly MarcarTodasLeidasCommand _marcarTodasLeidasCommand;
     private readonly IConfiguration _configuration;
 
     public PortalController(
@@ -24,12 +29,20 @@ public class PortalController : ControllerBase
         SolicitarModificacionCommand solicitarModificacionCommand,
         SolicitarBajaCommand solicitarBajaCommand,
         GetEventosPortalQuery getEventosPortalQuery,
+        GetNotificacionesQuery getNotificacionesQuery,
+        ContarNoLeidasQuery contarNoLeidasQuery,
+        MarcarNotificacionLeidaCommand marcarNotificacionLeidaCommand,
+        MarcarTodasLeidasCommand marcarTodasLeidasCommand,
         IConfiguration configuration)
     {
         _getPerfilQuery = getPerfilQuery;
         _solicitarModificacionCommand = solicitarModificacionCommand;
         _solicitarBajaCommand = solicitarBajaCommand;
         _getEventosPortalQuery = getEventosPortalQuery;
+        _getNotificacionesQuery = getNotificacionesQuery;
+        _contarNoLeidasQuery = contarNoLeidasQuery;
+        _marcarNotificacionLeidaCommand = marcarNotificacionLeidaCommand;
+        _marcarTodasLeidasCommand = marcarTodasLeidasCommand;
         _configuration = configuration;
     }
 
@@ -125,6 +138,72 @@ public class PortalController : ControllerBase
         {
             return NotFound(new { error = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// RF-16: Notificaciones in-system del socio autenticado (orden FechaCreacion desc).
+    /// </summary>
+    [HttpGet("notificaciones")]
+    public async Task<ActionResult<IEnumerable<NotificacionDto>>> GetNotificaciones(
+        [FromQuery] bool soloNoLeidas = false,
+        [FromQuery] int take = 20)
+    {
+        var claims = ExtractClaims();
+        if (claims == null) return Unauthorized(new { error = "Token inválido o expirado." });
+
+        var socioId = GetCurrentUser(claims).UserId;
+        var notificaciones = await _getNotificacionesQuery.ExecuteAsync(socioId, soloNoLeidas, take);
+        return Ok(notificaciones);
+    }
+
+    /// <summary>
+    /// RF-16: Cantidad de notificaciones no leídas del socio (para el badge).
+    /// </summary>
+    [HttpGet("notificaciones/no-leidas/count")]
+    public async Task<IActionResult> ContarNoLeidas()
+    {
+        var claims = ExtractClaims();
+        if (claims == null) return Unauthorized(new { error = "Token inválido o expirado." });
+
+        var socioId = GetCurrentUser(claims).UserId;
+        var count = await _contarNoLeidasQuery.ExecuteAsync(socioId);
+        return Ok(new { count });
+    }
+
+    /// <summary>
+    /// RF-16: Marca una notificación del socio como leída (valida ownership).
+    /// </summary>
+    [HttpPost("notificaciones/{id:guid}/leer")]
+    public async Task<IActionResult> MarcarLeida(Guid id)
+    {
+        var claims = ExtractClaims();
+        if (claims == null) return Unauthorized(new { error = "Token inválido o expirado." });
+
+        var socioId = GetCurrentUser(claims).UserId;
+
+        try
+        {
+            await _marcarNotificacionLeidaCommand.ExecuteAsync(id, socioId);
+            return Ok(new { mensaje = "Notificación marcada como leída." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// RF-16: Marca todas las notificaciones del socio como leídas.
+    /// </summary>
+    [HttpPost("notificaciones/leer-todas")]
+    public async Task<IActionResult> MarcarTodasLeidas()
+    {
+        var claims = ExtractClaims();
+        if (claims == null) return Unauthorized(new { error = "Token inválido o expirado." });
+
+        var socioId = GetCurrentUser(claims).UserId;
+        await _marcarTodasLeidasCommand.ExecuteAsync(socioId);
+        return Ok(new { mensaje = "Todas tus notificaciones fueron marcadas como leídas." });
     }
 
     private ClaimsPrincipal? ExtractClaims()
