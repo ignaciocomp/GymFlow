@@ -24,6 +24,7 @@ public class GymFlowDbContext : DbContext
     public DbSet<Clase> Clases => Set<Clase>();
     public DbSet<InscripcionClase> InscripcionesClase => Set<InscripcionClase>();
     public DbSet<HorarioClase> HorariosClase => Set<HorarioClase>();
+    public DbSet<CodigoRecuperacionMfa> CodigosRecuperacionMfa => Set<CodigoRecuperacionMfa>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -69,7 +70,9 @@ public class GymFlowDbContext : DbContext
             PasswordHash = adminPasswordHashBootstrap,
             RolId = RolesSeed.AdminRolId,
             EstaActivo = true,
-            FechaCreacion = RolSeed.SeedTimestamp
+            FechaCreacion = RolSeed.SeedTimestamp,
+            MfaHabilitado = false,
+            MfaIntentosFallidos = 0
         });
     }
 
