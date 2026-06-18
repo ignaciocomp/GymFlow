@@ -13,9 +13,11 @@ public class CancelClaseCommandTests
     private readonly Mock<IInscripcionClaseRepository> _inscripcionRepo = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
     private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<INotificadorInApp> _notificador = new();
 
     private CancelClaseCommand CrearCommand() =>
-        new(_claseRepo.Object, _horarioRepo.Object, _inscripcionRepo.Object, _auditLogger.Object, _emailService.Object);
+        new(_claseRepo.Object, _horarioRepo.Object, _inscripcionRepo.Object,
+            _auditLogger.Object, _emailService.Object, _notificador.Object);
 
     private static Clase CrearClase() =>
         new("Yoga", "Clase de yoga", 20, 60, "Laura Garcia", Guid.NewGuid());
@@ -134,5 +136,74 @@ public class CancelClaseCommandTests
 
         Assert.False(clase.EstaActivo);
         _emailService.Verify(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ConInscriptos_CreaNotificacionesInApp()
+    {
+        var clase = CrearClase();
+        var horario = CrearHorario(clase);
+        var socio = CrearSocio();
+        var inscripcion = CrearInscripcion(horario, socio);
+
+        _claseRepo.Setup(r => r.GetByIdAsync(clase.Id)).ReturnsAsync(clase);
+        _horarioRepo.Setup(r => r.GetByClaseIdAsync(clase.Id)).ReturnsAsync(new[] { horario });
+        _inscripcionRepo.Setup(r => r.GetActivasByHorarioClaseIdAsync(horario.Id))
+            .ReturnsAsync(new[] { inscripcion });
+        _claseRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _emailService.Setup(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+
+        await CrearCommand().ExecuteAsync(clase.Id, Guid.NewGuid(), "Admin Test");
+
+        _notificador.Verify(n => n.CrearParaVariosAsync(
+            It.Is<IEnumerable<Guid>>(ids => ids.Contains(socio.Id)),
+            TipoNotificacion.CancelacionClase,
+            It.IsAny<string>(),
+            It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SinInscriptos_NoCreaNotificaciones()
+    {
+        var clase = CrearClase();
+        var horario = CrearHorario(clase);
+        _claseRepo.Setup(r => r.GetByIdAsync(clase.Id)).ReturnsAsync(clase);
+        _horarioRepo.Setup(r => r.GetByClaseIdAsync(clase.Id)).ReturnsAsync(new[] { horario });
+        _inscripcionRepo.Setup(r => r.GetActivasByHorarioClaseIdAsync(horario.Id))
+            .ReturnsAsync(Array.Empty<InscripcionClase>());
+        _claseRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
+        await CrearCommand().ExecuteAsync(clase.Id, Guid.NewGuid(), "Admin");
+
+        _notificador.Verify(n => n.CrearParaVariosAsync(
+            It.IsAny<IEnumerable<Guid>>(), It.IsAny<TipoNotificacion>(),
+            It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NotificadorFalla_NoRompeLaCancelacion()
+    {
+        var clase = CrearClase();
+        var horario = CrearHorario(clase);
+        var socio = CrearSocio();
+        var inscripcion = CrearInscripcion(horario, socio);
+
+        _claseRepo.Setup(r => r.GetByIdAsync(clase.Id)).ReturnsAsync(clase);
+        _horarioRepo.Setup(r => r.GetByClaseIdAsync(clase.Id)).ReturnsAsync(new[] { horario });
+        _inscripcionRepo.Setup(r => r.GetActivasByHorarioClaseIdAsync(horario.Id))
+            .ReturnsAsync(new[] { inscripcion });
+        _claseRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _emailService.Setup(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+        _notificador.Setup(n => n.CrearParaVariosAsync(
+                It.IsAny<IEnumerable<Guid>>(), It.IsAny<TipoNotificacion>(),
+                It.IsAny<string>(), It.IsAny<string>()))
+            .ThrowsAsync(new Exception("DB caida"));
+
+        await CrearCommand().ExecuteAsync(clase.Id, Guid.NewGuid(), "Admin Test");
+
+        Assert.False(clase.EstaActivo);
+        _claseRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 }

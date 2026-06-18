@@ -13,9 +13,11 @@ public class UpdateHorarioCommandTests
     private readonly Mock<IInscripcionClaseRepository> _inscripcionRepo = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
     private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<INotificadorInApp> _notificador = new();
 
     private UpdateHorarioCommand CrearCommand() =>
-        new(_horarioRepo.Object, _inscripcionRepo.Object, _auditLogger.Object, _emailService.Object);
+        new(_horarioRepo.Object, _inscripcionRepo.Object, _auditLogger.Object,
+            _emailService.Object, _notificador.Object);
 
     private static (Clase clase, HorarioClase horario) CrearHorarioConClase()
     {
@@ -113,5 +115,105 @@ public class UpdateHorarioCommandTests
         _auditLogger.Verify(a => a.LogAsync(It.IsAny<Guid>(), "Admin Test",
             TipoAccionAuditoria.Modificacion, "Horario", horario.Id,
             It.Is<string>(s => s.Contains("1") && s.Contains("notific")), null), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ConInscriptos_CreaNotificacionesInApp()
+    {
+        var (_, horario) = CrearHorarioConClase();
+        _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
+        _horarioRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _horarioRepo.Setup(r => r.GetByUnidadYDiaAsync(It.IsAny<Guid>(), It.IsAny<DiaSemana>()))
+            .ReturnsAsync(Array.Empty<HorarioClase>());
+
+        var socio = new Socio(
+            rolSocioId: Guid.NewGuid(),
+            nombre: "Juan",
+            apellido: "Perez",
+            correo: "juan@test.com",
+            passwordHash: "hash",
+            fechaAlta: DateTime.UtcNow,
+            consentimientoInformado: true,
+            tipoDocumento: TipoDocumento.CI,
+            telefono: null,
+            documentoIdentidad: "12345672",
+            fechaNacimiento: null);
+        var inscripcion = new InscripcionClase(horario.Id, socio.Id);
+        typeof(InscripcionClase).GetProperty("Socio")!.SetValue(inscripcion, socio);
+        typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(inscripcion, horario);
+
+        _inscripcionRepo.Setup(r => r.GetActivasByHorarioClaseIdAsync(horario.Id))
+            .ReturnsAsync(new[] { inscripcion });
+        _emailService.Setup(e => e.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(true, null));
+
+        var request = new UpdateHorarioClaseRequest(DiaSemana.Viernes, "16:00", "17:00", null);
+        await CrearCommand().ExecuteAsync(horario.Id, request, Guid.NewGuid(), "Admin Test");
+
+        _notificador.Verify(n => n.CrearParaVariosAsync(
+            It.Is<IEnumerable<Guid>>(ids => ids.Contains(socio.Id)),
+            TipoNotificacion.CambioHorario,
+            It.IsAny<string>(),
+            It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SinInscriptos_NoCreaNotificaciones()
+    {
+        var (_, horario) = CrearHorarioConClase();
+        _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
+        _horarioRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _horarioRepo.Setup(r => r.GetByUnidadYDiaAsync(It.IsAny<Guid>(), It.IsAny<DiaSemana>()))
+            .ReturnsAsync(Array.Empty<HorarioClase>());
+        _inscripcionRepo.Setup(r => r.GetActivasByHorarioClaseIdAsync(horario.Id))
+            .ReturnsAsync(Array.Empty<InscripcionClase>());
+
+        var request = new UpdateHorarioClaseRequest(DiaSemana.Viernes, "16:00", "17:00", null);
+        await CrearCommand().ExecuteAsync(horario.Id, request, Guid.NewGuid(), "Admin Test");
+
+        _notificador.Verify(n => n.CrearParaVariosAsync(
+            It.IsAny<IEnumerable<Guid>>(), It.IsAny<TipoNotificacion>(),
+            It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NotificadorFalla_NoRompeLaOperacion()
+    {
+        var (_, horario) = CrearHorarioConClase();
+        _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
+        _horarioRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _horarioRepo.Setup(r => r.GetByUnidadYDiaAsync(It.IsAny<Guid>(), It.IsAny<DiaSemana>()))
+            .ReturnsAsync(Array.Empty<HorarioClase>());
+
+        var socio = new Socio(
+            rolSocioId: Guid.NewGuid(),
+            nombre: "Juan",
+            apellido: "Perez",
+            correo: "juan@test.com",
+            passwordHash: "hash",
+            fechaAlta: DateTime.UtcNow,
+            consentimientoInformado: true,
+            tipoDocumento: TipoDocumento.CI,
+            telefono: null,
+            documentoIdentidad: "12345672",
+            fechaNacimiento: null);
+        var inscripcion = new InscripcionClase(horario.Id, socio.Id);
+        typeof(InscripcionClase).GetProperty("Socio")!.SetValue(inscripcion, socio);
+        typeof(InscripcionClase).GetProperty("HorarioClase")!.SetValue(inscripcion, horario);
+
+        _inscripcionRepo.Setup(r => r.GetActivasByHorarioClaseIdAsync(horario.Id))
+            .ReturnsAsync(new[] { inscripcion });
+        _emailService.Setup(e => e.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(true, null));
+        _notificador.Setup(n => n.CrearParaVariosAsync(
+                It.IsAny<IEnumerable<Guid>>(), It.IsAny<TipoNotificacion>(),
+                It.IsAny<string>(), It.IsAny<string>()))
+            .ThrowsAsync(new Exception("DB caida"));
+
+        var request = new UpdateHorarioClaseRequest(DiaSemana.Viernes, "16:00", "17:00", null);
+        var result = await CrearCommand().ExecuteAsync(horario.Id, request, Guid.NewGuid(), "Admin Test");
+
+        Assert.Equal(DiaSemana.Viernes, result.DiaSemana);
+        _horarioRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 }

@@ -12,6 +12,7 @@ using GymFlow.Application.UseCases.Clases;
 using GymFlow.Application.UseCases.Eventos;
 using GymFlow.Application.UseCases.Horarios;
 using GymFlow.Application.UseCases.Inscripciones;
+using GymFlow.Application.UseCases.Notificaciones;
 using GymFlow.Application.UseCases.Unidades;
 
 namespace GymFlow.API;
@@ -80,6 +81,10 @@ public static class DependencyInjection
         services.AddScoped<CancelarEventoCommand>();
         services.AddScoped<NotificarEventoCommand>();
         services.AddScoped<GetEventosPortalQuery>();
+        services.AddScoped<GetNotificacionesQuery>();
+        services.AddScoped<ContarNoLeidasQuery>();
+        services.AddScoped<MarcarNotificacionLeidaCommand>();
+        services.AddScoped<MarcarTodasLeidasCommand>();
         services.AddScoped<LoginConGoogleCommand>();
         services.AddScoped<IniciarMfaSetupCommand>();
         services.AddScoped<ActivarMfaCommand>();

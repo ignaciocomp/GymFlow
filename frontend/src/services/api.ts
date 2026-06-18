@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase, Evento, CreateEventoRequest, UpdateEventoRequest } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase, Evento, CreateEventoRequest, UpdateEventoRequest, Notificacion } from '@/types'
 import type { Permiso } from '@/types/permisos'
 
 const api = axios.create({
@@ -184,6 +184,24 @@ export const portalApi = {
   getEventos: async (): Promise<Evento[]> => {
     const { data } = await api.get<Evento[]>('/portal/eventos')
     return data
+  },
+
+  getNotificaciones: async (params?: { soloNoLeidas?: boolean; take?: number }): Promise<Notificacion[]> => {
+    const { data } = await api.get<Notificacion[]>('/portal/notificaciones', { params })
+    return data
+  },
+
+  contarNoLeidas: async (): Promise<number> => {
+    const { data } = await api.get<{ count: number }>('/portal/notificaciones/no-leidas/count')
+    return data.count
+  },
+
+  marcarLeida: async (id: string): Promise<void> => {
+    await api.post(`/portal/notificaciones/${id}/leer`)
+  },
+
+  marcarTodasLeidas: async (): Promise<void> => {
+    await api.post('/portal/notificaciones/leer-todas')
   },
 }
 

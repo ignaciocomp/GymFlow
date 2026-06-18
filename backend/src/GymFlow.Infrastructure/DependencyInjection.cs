@@ -15,6 +15,12 @@ public static class DependencyInjection
         services.AddDbContext<GymFlowDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
+        // Factory para contextos efímeros aislados (lo usa INotificadorInApp para commitear
+        // sus notificaciones sin flushear cambios de negocio pendientes del contexto scoped).
+        services.AddDbContextFactory<GymFlowDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")),
+            lifetime: ServiceLifetime.Scoped);
+
         services.AddScoped<IUnidadRepository, UnidadRepository>();
         services.AddScoped<ISocioRepository, SocioRepository>();
         services.AddScoped<IPlanRepository, PlanRepository>();
@@ -32,6 +38,8 @@ public static class DependencyInjection
         services.AddScoped<IHorarioClaseRepository, HorarioClaseRepository>();
         services.AddScoped<IInscripcionClaseRepository, InscripcionClaseRepository>();
         services.AddScoped<IEventoRepository, EventoRepository>();
+        services.AddScoped<INotificacionRepository, NotificacionRepository>();
+        services.AddScoped<INotificadorInApp, NotificadorInApp>();
         services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddScoped<IGoogleTokenValidator, GoogleIdTokenValidator>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();

@@ -15,19 +15,22 @@ public class NotificarCuotaCommand
     private readonly IRecordatorioCuotaRepository _recordatorioRepository;
     private readonly IEmailService _emailService;
     private readonly IAuditLogger _auditLogger;
+    private readonly INotificadorInApp _notificador;
 
     public NotificarCuotaCommand(
         ICuotaRepository cuotaRepository,
         ISocioRepository socioRepository,
         IRecordatorioCuotaRepository recordatorioRepository,
         IEmailService emailService,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        INotificadorInApp notificador)
     {
         _cuotaRepository = cuotaRepository;
         _socioRepository = socioRepository;
         _recordatorioRepository = recordatorioRepository;
         _emailService = emailService;
         _auditLogger = auditLogger;
+        _notificador = notificador;
     }
 
     public async Task ExecuteAsync(Guid cuotaId, Guid usuarioId, string usuarioNombre)
@@ -67,6 +70,24 @@ public class NotificarCuotaCommand
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Modificacion, "Cuota", cuota.Id,
             $"Recordatorio manual enviado a {socio.Nombre} {socio.Apellido} ({socio.Correo}) por la cuota de {cuota.NombrePlan}. Resultado: {(resultado.Exitoso ? "exitoso" : $"fallido — {resultado.Error}")}");
+
+        // Notificación in-app solo en la rama de éxito (no si el mail falla y el flujo termina en 500).
+        // Best-effort: si crear la notificación falla, no rompe el envío del recordatorio.
+        if (resultado.Exitoso)
+        {
+            try
+            {
+                await _notificador.CrearAsync(
+                    socio.Id,
+                    TipoNotificacion.RecordatorioCuota,
+                    $"Recordatorio: tu cuota de {cuota.NombrePlan} está pendiente",
+                    $"Tenés una cuota pendiente de {cuota.NombrePlan} por ${cuota.Monto:N2} con vencimiento {cuota.FechaVencimiento:dd/MM/yyyy}. Por favor regularizá tu pago a la brevedad.");
+            }
+            catch
+            {
+                // Best-effort: la creación de la notificación in-app nunca rompe la operación.
+            }
+        }
 
         if (!resultado.Exitoso)
             throw new InvalidOperationException("No se pudo enviar el email. Reintentá más tarde.");

@@ -11,17 +11,20 @@ public class UpdateHorarioCommand
     private readonly IInscripcionClaseRepository _inscripcionRepo;
     private readonly IAuditLogger _auditLogger;
     private readonly IEmailService _emailService;
+    private readonly INotificadorInApp _notificador;
 
     public UpdateHorarioCommand(
         IHorarioClaseRepository horarioRepo,
         IInscripcionClaseRepository inscripcionRepo,
         IAuditLogger auditLogger,
-        IEmailService emailService)
+        IEmailService emailService,
+        INotificadorInApp notificador)
     {
         _horarioRepo = horarioRepo;
         _inscripcionRepo = inscripcionRepo;
         _auditLogger = auditLogger;
         _emailService = emailService;
+        _notificador = notificador;
     }
 
     public async Task<HorarioClaseDto> ExecuteAsync(Guid id, UpdateHorarioClaseRequest request, Guid usuarioId, string usuarioNombre)
@@ -66,6 +69,22 @@ public class UpdateHorarioCommand
 
             await _auditLogger.LogAsync(usuarioId, usuarioNombre,
                 TipoAccionAuditoria.Modificacion, "Horario", horario.Id, detalle);
+
+            // Notificación in-app a los inscriptos tras el save de negocio. Best-effort:
+            // si la creación falla, el cambio de horario igual queda confirmado.
+            try
+            {
+                var socioIds = inscripciones.Select(insc => insc.SocioId);
+                await _notificador.CrearParaVariosAsync(
+                    socioIds,
+                    TipoNotificacion.CambioHorario,
+                    $"Cambio de horario: {horario.Clase.Nombre}",
+                    $"El horario de la clase {horario.Clase.Nombre} cambió a {horario.DiaSemana} de {horario.HoraInicio:HH:mm} a {horario.HoraFin:HH:mm}.");
+            }
+            catch
+            {
+                // Best-effort: la creación de las notificaciones in-app nunca rompe el cambio de horario.
+            }
         }
         else
         {

@@ -12,19 +12,22 @@ public class CrearEventoCommand
     private readonly ISocioRepository _socioRepository;
     private readonly IAuditLogger _auditLogger;
     private readonly IEmailService _emailService;
+    private readonly INotificadorInApp _notificador;
 
     public CrearEventoCommand(
         IEventoRepository eventoRepository,
         IUnidadRepository unidadRepository,
         ISocioRepository socioRepository,
         IAuditLogger auditLogger,
-        IEmailService emailService)
+        IEmailService emailService,
+        INotificadorInApp notificador)
     {
         _eventoRepository = eventoRepository;
         _unidadRepository = unidadRepository;
         _socioRepository = socioRepository;
         _auditLogger = auditLogger;
         _emailService = emailService;
+        _notificador = notificador;
     }
 
     public async Task<EventoDto> ExecuteAsync(CreateEventoRequest request, Guid usuarioId, string usuarioNombre)
@@ -56,6 +59,26 @@ public class CrearEventoCommand
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Creacion, "Evento", evento.Id,
             detalle);
+
+        // Notificación in-app a los socios activos de la unidad tras el save de negocio.
+        // Best-effort: si la creación falla, el evento igual queda creado.
+        var sociosList = socios.ToList();
+        if (sociosList.Count > 0)
+        {
+            try
+            {
+                var socioIds = sociosList.Select(s => s.Id);
+                await _notificador.CrearParaVariosAsync(
+                    socioIds,
+                    TipoNotificacion.EventoNuevo,
+                    $"Nuevo evento: {evento.Titulo}",
+                    $"Se creó un nuevo evento en {unidad.Nombre}: {evento.Titulo} el {evento.Fecha:dd/MM/yyyy HH:mm}.");
+            }
+            catch
+            {
+                // Best-effort: la creación de las notificaciones in-app nunca rompe la creación del evento.
+            }
+        }
 
         // Poblar la navegación para el DTO (la unidad ya la tenemos cargada).
         return new EventoDto(evento.Id, evento.Titulo, evento.Descripcion, evento.Fecha,

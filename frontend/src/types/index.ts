@@ -218,6 +218,22 @@ export interface UpdateEventoRequest {
   fecha: string
 }
 
+export type TipoNotificacion =
+  | 'RecordatorioCuota'
+  | 'CambioHorario'
+  | 'CancelacionClase'
+  | 'ConfirmacionInscripcion'
+  | 'EventoNuevo'
+
+export interface Notificacion {
+  id: string
+  tipo: TipoNotificacion
+  titulo: string
+  mensaje: string
+  leida: boolean
+  fechaCreacion: string
+}
+
 export type EstadoGeneralCuotas = 'AlDia' | 'Pendiente' | 'Vencido'
 
 export interface SocioConEstadoCuotaDto {

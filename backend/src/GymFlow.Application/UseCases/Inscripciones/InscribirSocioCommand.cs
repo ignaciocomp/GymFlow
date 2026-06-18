@@ -12,19 +12,22 @@ public class InscribirSocioCommand
     private readonly ISocioRepository _socioRepo;
     private readonly IEmailService _emailService;
     private readonly IAuditLogger _auditLogger;
+    private readonly INotificadorInApp _notificador;
 
     public InscribirSocioCommand(
         IInscripcionClaseRepository inscripcionRepo,
         IHorarioClaseRepository horarioRepo,
         ISocioRepository socioRepo,
         IEmailService emailService,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        INotificadorInApp notificador)
     {
         _inscripcionRepo = inscripcionRepo;
         _horarioRepo = horarioRepo;
         _socioRepo = socioRepo;
         _emailService = emailService;
         _auditLogger = auditLogger;
+        _notificador = notificador;
     }
 
     public async Task<InscripcionClaseDto> ExecuteAsync(Guid socioId, Guid horarioClaseId, Guid usuarioId, string usuarioNombre)
@@ -54,6 +57,21 @@ public class InscribirSocioCommand
         {
             var (asunto, cuerpo) = InscripcionEmailTemplates.Confirmacion(socio, horario);
             await _emailService.EnviarAsync(socio.Correo, asunto, cuerpo);
+        }
+
+        // Notificación in-app tras el save de negocio. Best-effort: si la creación falla,
+        // la inscripción igual queda confirmada.
+        try
+        {
+            await _notificador.CrearAsync(
+                socioId,
+                TipoNotificacion.ConfirmacionInscripcion,
+                $"Inscripción confirmada: {clase.Nombre}",
+                $"Tu inscripción a la clase {clase.Nombre} ({horario.DiaSemana} {horario.HoraInicio:HH:mm} - {horario.HoraFin:HH:mm}) fue confirmada.");
+        }
+        catch
+        {
+            // Best-effort: la creación de la notificación in-app nunca rompe la inscripción.
         }
 
         await _auditLogger.LogAsync(usuarioId, usuarioNombre, TipoAccionAuditoria.Creacion,
