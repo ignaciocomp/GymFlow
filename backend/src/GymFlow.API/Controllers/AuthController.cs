@@ -67,7 +67,8 @@ public class AuthController : ControllerBase
                 TipoAccionAuditoria.InicioSesion, "Sesion", null,
                 $"Inicio de sesión de {empleado.Nombre} {empleado.Apellido} ({rolNombre})");
 
-            return Ok(new LoginResponse(token, empleado.Nombre, empleado.Apellido, empleado.Correo, rolNombre, permisosDto));
+            var unidadIdsEmpleado = empleado.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+            return Ok(new LoginResponse(token, empleado.Nombre, empleado.Apellido, empleado.Correo, rolNombre, permisosDto, unidadIdsEmpleado));
         }
 
         var socio = await _socioRepository.GetByCorreoAsync(request.Correo);
@@ -156,7 +157,15 @@ public class AuthController : ControllerBase
             List<Guid>? unidadIds = null;
             var socio = await _socioRepository.GetByCorreoAsync(correo ?? "");
             if (socio != null)
+            {
                 unidadIds = socio.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+            }
+            else
+            {
+                var empleado = await _empleadoRepository.GetByCorreoAsync(correo ?? "");
+                if (empleado != null)
+                    unidadIds = empleado.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+            }
 
             return Ok(new
             {

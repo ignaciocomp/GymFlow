@@ -13,17 +13,17 @@ public class EmpleadoRepository : IEmpleadoRepository
 
     public async Task<IReadOnlyList<Empleado>> GetAllAsync(bool? estaActivo = null, CancellationToken ct = default)
     {
-        var query = _db.Set<Empleado>().AsQueryable();
+        var query = _db.Set<Empleado>().Include(e => e.UnidadesAsignadas).AsQueryable();
         if (estaActivo.HasValue)
             query = query.Where(e => e.EstaActivo == estaActivo.Value);
         return await query.OrderBy(e => e.Apellido).ThenBy(e => e.Nombre).ToListAsync(ct);
     }
 
     public Task<Empleado?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-        _db.Set<Empleado>().FirstOrDefaultAsync(e => e.Id == id, ct);
+        _db.Set<Empleado>().Include(e => e.UnidadesAsignadas).FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public Task<Empleado?> GetByCorreoAsync(string correo, CancellationToken ct = default) =>
-        _db.Set<Empleado>().FirstOrDefaultAsync(e => e.Correo == correo, ct);
+        _db.Set<Empleado>().Include(e => e.UnidadesAsignadas).FirstOrDefaultAsync(e => e.Correo == correo, ct);
 
     public async Task<bool> ExisteCorreoAsync(string correo, Guid? excludeId = null, CancellationToken ct = default) =>
         await _db.Set<Usuario>().AnyAsync(u => u.Correo == correo && (excludeId == null || u.Id != excludeId), ct);
