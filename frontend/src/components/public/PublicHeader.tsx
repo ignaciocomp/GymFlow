@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { Menu, X, Dumbbell } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
+import { site } from '@/content/site'
 
 /**
  * Header del sitio público (RF-19).
  *
- * - Sticky top bar con la marca "Nuevo Malvín" (acento celeste en "Malvín").
+ * - Sticky top bar con la marca "Gimnasio Nuevo Malvín" + logo-mark "GNM" (acento celeste en "Malvín").
  * - Nav de escritorio con los 5 links + botón "Acceder" → /login.
  * - En mobile colapsa a un menú hamburguesa (estado `useState`, accesible
  *   por teclado: el toggle es un <button> con aria-expanded/aria-controls).
@@ -50,13 +51,13 @@ export default function PublicHeader() {
           onClick={() => setOpen(false)}
         >
           <span
-            className="grid h-9 w-9 place-items-center rounded-lg bg-[var(--public-accent)] text-[var(--public-accent-ink)]"
+            className="grid h-9 w-9 place-items-center rounded-lg bg-[var(--public-accent)] text-sm font-extrabold tracking-tight text-[var(--public-accent-ink)]"
             aria-hidden="true"
           >
-            <Dumbbell className="h-5 w-5" strokeWidth={2.5} />
+            {site.sigla}
           </span>
           <span>
-            Nuevo <span className="text-[var(--public-accent)]">Malvín</span>
+            Gimnasio Nuevo <span className="text-[var(--public-accent)]">Malvín</span>
           </span>
         </Link>
 

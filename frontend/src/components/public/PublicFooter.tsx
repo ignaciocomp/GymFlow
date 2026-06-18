@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Dumbbell, Camera, MapPin, Mail } from 'lucide-react'
+import { Camera, MapPin, Mail } from 'lucide-react'
 import { site } from '@/content/site'
 
 /**
@@ -30,12 +30,12 @@ export default function PublicFooter() {
               className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-[var(--public-text)]"
             >
               <span
-                className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--public-accent)] text-[var(--public-accent-ink)]"
+                className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--public-accent)] text-xs font-extrabold text-[var(--public-accent-ink)]"
                 aria-hidden="true"
               >
-                <Dumbbell className="h-4 w-4" strokeWidth={2.5} />
+                {site.sigla}
               </span>
-              Nuevo <span className="text-[var(--public-accent)]">Malvín</span>
+              Gimnasio Nuevo <span className="text-[var(--public-accent)]">Malvín</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed">{site.tagline}.</p>
           </div>

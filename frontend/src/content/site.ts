@@ -63,8 +63,8 @@ export interface Contacto {
 
 export interface Site {
   nombre: string
-  /** Marca corta para el logo del header/footer, ej. "Nuevo Malvín". */
-  nombreCorto: string
+  /** Sigla / iniciales para el logo-mark, ej. "GNM". */
+  sigla: string
   tagline: string
   descripcion: string
   url: string
@@ -77,7 +77,7 @@ export interface Site {
 
 export const site = {
   nombre: 'Gimnasio Nuevo Malvín',
-  nombreCorto: 'Nuevo Malvín', // marca corta para el logo
+  sigla: 'GNM', // iniciales para el logo-mark
   tagline: 'Entrená sin límites', // PLACEHOLDER — ajustar al claim de la marca
   descripcion:
     'Gimnasio Nuevo Malvín es un gimnasio en Montevideo con dos sedes: Nuevo Malvín y Espacio Mora. Planes flexibles, clases grupales y entrenamiento funcional para todos los niveles.', // PLACEHOLDER — meta description default
