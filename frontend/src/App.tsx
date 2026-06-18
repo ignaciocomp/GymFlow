@@ -28,6 +28,7 @@ import EventosPage from '@/pages/admin/EventosPage'
 import HorariosPortalPage from '@/pages/portal/HorariosPortalPage'
 import EventosPortalPage from '@/pages/portal/EventosPortalPage'
 import MisInscripcionesPage from '@/pages/portal/MisInscripcionesPage'
+import NotificacionesPortalPage from '@/pages/portal/NotificacionesPortalPage'
 
 export default function App() {
   return (
@@ -66,6 +67,7 @@ export default function App() {
         <Route path="horarios" element={<HorariosPortalPage />} />
         <Route path="eventos" element={<EventosPortalPage />} />
         <Route path="mis-inscripciones" element={<MisInscripcionesPage />} />
+        <Route path="notificaciones" element={<NotificacionesPortalPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
