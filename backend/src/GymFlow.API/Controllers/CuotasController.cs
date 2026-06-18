@@ -86,7 +86,9 @@ public class CuotasController : ControllerBase
     public async Task<ActionResult<IEnumerable<SocioConEstadoCuotaDto>>> GetSociosEstado(
         [FromQuery] Guid? unidadId)
     {
-        var socios = await _getSociosConEstadoCuotaQuery.ExecuteAsync(unidadId);
+        var (userId, rolId) = GetCurrentActor();
+        var unidadesPermitidas = await _unidadesResolver.ResolverAsync(userId, rolId);
+        var socios = await _getSociosConEstadoCuotaQuery.ExecuteAsync(unidadId, unidadesPermitidas);
         return Ok(socios);
     }
 
