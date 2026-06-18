@@ -1,6 +1,4 @@
-using GymFlow.Application.Interfaces;
-using GymFlow.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using GymFlow.Application.UseCases.Cuotas;
 
 namespace GymFlow.API.BackgroundServices;
 
@@ -62,33 +60,10 @@ public class CuotaGeneracionBackgroundService : BackgroundService
     private async Task GenerarCuotasAsync()
     {
         using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<GymFlowDbContext>();
-        var cuotaGenerador = scope.ServiceProvider.GetRequiredService<ICuotaGeneradorService>();
-        var cuotaRepo = scope.ServiceProvider.GetRequiredService<ICuotaRepository>();
+        var command = scope.ServiceProvider.GetRequiredService<GenerarCuotasCommand>();
 
-        var sociosActivos = await db.Socios
-            .Include(s => s.UnidadesAsignadas)
-            .Where(s => s.EstaActivo)
-            .ToListAsync();
+        var resultado = await command.ExecuteAsync();
 
-        var cuotasGeneradas = 0;
-
-        foreach (var socio in sociosActivos)
-        {
-            foreach (var uu in socio.UnidadesAsignadas.Where(u => u.PlanId.HasValue))
-            {
-                var ultimaCuota = await cuotaRepo.GetUltimaCuotaAsync(socio.Id, uu.UnidadId);
-
-                if (ultimaCuota == null || ultimaCuota.FechaVencimiento <= DateTime.UtcNow)
-                {
-                    var fechaEmision = ultimaCuota?.FechaVencimiento ?? DateTime.UtcNow;
-                    await cuotaGenerador.GenerarCuotaAsync(socio.Id, uu, fechaEmision);
-                    cuotasGeneradas++;
-                }
-            }
-        }
-
-        await cuotaRepo.SaveChangesAsync();
-        _logger.LogInformation("Generación automática completada: {Count} cuotas generadas.", cuotasGeneradas);
+        _logger.LogInformation("Generación automática completada: {Count} cuotas generadas.", resultado.Generadas);
     }
 }
