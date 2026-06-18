@@ -14,9 +14,9 @@ public class GetHorariosQuery
         _inscripcionRepo = inscripcionRepo;
     }
 
-    public async Task<IEnumerable<HorarioClaseDto>> ExecuteAsync(Guid? unidadId = null)
+    public async Task<IEnumerable<HorarioClaseDto>> ExecuteAsync(Guid? unidadId = null, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
-        var horarios = (await _horarioRepo.GetAllAsync(unidadId)).ToList();
+        var horarios = (await _horarioRepo.GetAllAsync(unidadId, unidadesPermitidas)).ToList();
         var horarioIds = horarios.Select(h => h.Id);
         var conteos = await _inscripcionRepo.GetConteoActivasPorHorariosAsync(horarioIds);
         return horarios.Select(h => HorarioMapper.ToDto(h, conteos.GetValueOrDefault(h.Id, 0)));

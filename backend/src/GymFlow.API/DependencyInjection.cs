@@ -1,5 +1,6 @@
 using GymFlow.Application.UseCases.Auditoria;
 using GymFlow.Application.UseCases.Auth;
+using GymFlow.Application.UseCases.Auth.Mfa;
 using GymFlow.Application.UseCases.Empleados;
 using GymFlow.Application.UseCases.Permisos;
 using GymFlow.Application.UseCases.Planes;
@@ -85,6 +86,11 @@ public static class DependencyInjection
         services.AddScoped<MarcarNotificacionLeidaCommand>();
         services.AddScoped<MarcarTodasLeidasCommand>();
         services.AddScoped<LoginConGoogleCommand>();
+        services.AddScoped<IniciarMfaSetupCommand>();
+        services.AddScoped<ActivarMfaCommand>();
+        services.AddScoped<VerificarMfaCommand>();
+        services.AddScoped<UsarCodigoRecuperacionCommand>();
+        services.AddScoped<ResetearMfaEmpleadoCommand>();
         return services;
     }
 }

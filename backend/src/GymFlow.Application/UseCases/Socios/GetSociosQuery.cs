@@ -17,9 +17,10 @@ public class GetSociosQuery
         string? nombre = null,
         Guid? unidadId = null,
         Guid? planId = null,
-        bool? estaActivo = null)
+        bool? estaActivo = null,
+        IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
-        var socios = await _repository.SearchAsync(nombre, unidadId, planId, estaActivo);
+        var socios = await _repository.SearchAsync(nombre, unidadId, planId, estaActivo, unidadesPermitidas);
 
         return socios.Select(s => MapToDto(s));
     }

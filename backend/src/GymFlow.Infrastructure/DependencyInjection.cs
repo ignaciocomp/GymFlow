@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IPermisoRepository, PermisoRepository>();
         services.AddScoped<IPermisoCache, PermisoCache>();
         services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+        services.AddScoped<IUnidadesVisiblesResolver, UnidadesVisiblesResolver>();
         services.AddScoped<ICuotaRepository, CuotaRepository>();
         services.AddScoped<ICuotaGeneradorService, CuotaGeneradorService>();
         services.AddScoped<IRecordatorioCuotaRepository, RecordatorioCuotaRepository>();
@@ -42,6 +43,11 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddScoped<IGoogleTokenValidator, GoogleIdTokenValidator>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddScoped<ICodigoRecuperacionMfaRepository, CodigoRecuperacionMfaRepository>();
+        services.AddScoped<ITotpService, TotpService>();
+        services.AddSingleton<IMfaSecretProtector, AesGcmMfaSecretProtector>();
+        services.AddSingleton<IMfaTokenService, MfaTokenService>();
+        services.AddSingleton<IQrCodeGenerator, QrCodeGenerator>();
         services.AddMemoryCache();
 
         return services;

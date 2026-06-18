@@ -1,4 +1,5 @@
 using GymFlow.Application.DTOs;
+using GymFlow.Application.Interfaces;
 using GymFlow.Application.UseCases.Horarios;
 using GymFlow.API.Authorization;
 using GymFlow.Domain.Enums;
@@ -17,25 +18,30 @@ public class HorariosController : ControllerBase
     private readonly CreateHorarioCommand _createHorarioCommand;
     private readonly UpdateHorarioCommand _updateHorarioCommand;
     private readonly DeleteHorarioCommand _deleteHorarioCommand;
+    private readonly IUnidadesVisiblesResolver _unidadesResolver;
 
     public HorariosController(
         GetHorariosQuery getHorariosQuery,
         GetHorarioByIdQuery getHorarioByIdQuery,
         CreateHorarioCommand createHorarioCommand,
         UpdateHorarioCommand updateHorarioCommand,
-        DeleteHorarioCommand deleteHorarioCommand)
+        DeleteHorarioCommand deleteHorarioCommand,
+        IUnidadesVisiblesResolver unidadesResolver)
     {
         _getHorariosQuery = getHorariosQuery;
         _getHorarioByIdQuery = getHorarioByIdQuery;
         _createHorarioCommand = createHorarioCommand;
         _updateHorarioCommand = updateHorarioCommand;
         _deleteHorarioCommand = deleteHorarioCommand;
+        _unidadesResolver = unidadesResolver;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HorarioClaseDto>>> GetAll([FromQuery] Guid? unidadId)
     {
-        var horarios = await _getHorariosQuery.ExecuteAsync(unidadId);
+        var (userId, rolId) = GetCurrentActor();
+        var unidadesPermitidas = await _unidadesResolver.ResolverAsync(userId, rolId);
+        var horarios = await _getHorariosQuery.ExecuteAsync(unidadId, unidadesPermitidas);
         return Ok(horarios);
     }
 
@@ -120,5 +126,14 @@ public class HorariosController : ControllerBase
         var apellido = User.FindFirst("apellido")?.Value ?? "";
         var fullName = $"{nombre} {apellido}".Trim();
         return (userId, string.IsNullOrWhiteSpace(fullName) ? "Sistema" : fullName);
+    }
+
+    // Identidad del actuante (userId + rolId) tomada del JWT, para resolver server-side
+    // las unidades visibles. Nunca se confía en parámetros de la request para el scoping.
+    private (Guid UserId, Guid RolId) GetCurrentActor()
+    {
+        var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        var rolId = Guid.TryParse(User.FindFirst("rolId")?.Value, out var r) ? r : Guid.Empty;
+        return (userId, rolId);
     }
 }

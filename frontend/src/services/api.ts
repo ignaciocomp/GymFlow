@@ -28,14 +28,62 @@ export interface LoginResponse {
   unidadIds: string[]
 }
 
+/**
+ * Resultado del paso 1 del login. Para empleados: `requiereMfa=true` con un `mfaToken`
+ * intermedio (y `setupRequerido` según tenga o no el segundo factor ya activado). Para
+ * socios/legacy: `requiereMfa=false` y la `sesion` con el JWT ya emitido.
+ */
+export interface LoginResultado {
+  requiereMfa: boolean
+  setupRequerido: boolean
+  mfaToken: string | null
+  sesion: LoginResponse | null
+}
+
+/** Datos del alta de MFA: URI otpauth, QR como data URI PNG y la clave manual (base32). */
+export interface MfaSetupResponse {
+  uriOtpauth: string
+  qrDataUri: string
+  claveManual: string
+}
+
+/** Respuesta de la activación: la sesión emitida y los códigos de recuperación (una sola vez). */
+export interface MfaActivarResponse {
+  sesion: LoginResponse
+  codigosRecuperacion: string[]
+}
+
+const bearer = (mfaToken: string) => ({ headers: { Authorization: `Bearer ${mfaToken}` } })
+
 export const authApi = {
-  login: async (correo: string, password: string): Promise<LoginResponse> => {
-    const { data } = await api.post<LoginResponse>('/auth/login', { correo, password })
+  login: async (correo: string, password: string): Promise<LoginResultado> => {
+    const { data } = await api.post<LoginResultado>('/auth/login', { correo, password })
     return data
   },
 
   loginConGoogle: async (idToken: string): Promise<LoginResponse> => {
     const { data } = await api.post<LoginResponse>('/auth/google', { idToken })
+    return data
+  },
+
+  // Endpoints del segundo factor. El mfaToken intermedio viaja por Authorization: Bearer.
+  mfaSetup: async (mfaToken: string): Promise<MfaSetupResponse> => {
+    const { data } = await api.post<MfaSetupResponse>('/auth/mfa/setup', undefined, bearer(mfaToken))
+    return data
+  },
+
+  mfaActivate: async (mfaToken: string, codigo: string): Promise<MfaActivarResponse> => {
+    const { data } = await api.post<MfaActivarResponse>('/auth/mfa/activate', { codigo }, bearer(mfaToken))
+    return data
+  },
+
+  mfaVerify: async (mfaToken: string, codigo: string): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/mfa/verify', { codigo }, bearer(mfaToken))
+    return data
+  },
+
+  mfaRecovery: async (mfaToken: string, codigo: string): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/mfa/recovery', { codigo }, bearer(mfaToken))
     return data
   },
 }

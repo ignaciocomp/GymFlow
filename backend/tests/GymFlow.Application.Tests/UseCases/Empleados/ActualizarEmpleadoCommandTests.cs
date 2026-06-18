@@ -17,6 +17,9 @@ public class ActualizarEmpleadoCommandTests
     private static Empleado ExistingEmpleado(Guid? rolId = null) =>
         new("Juan", "Pérez", "juan@gymflow.com", "old_hash", rolId ?? Guid.NewGuid());
 
+    private static ActualizarEmpleadoRequest Req(string nombre, string apellido, string correo, Guid rolId, Guid[]? unidadIds = null) =>
+        new(nombre, apellido, correo, rolId, unidadIds ?? []);
+
     [Fact]
     public async Task EmpleadoInexistente_LanzaKeyNotFoundException()
     {
@@ -26,7 +29,7 @@ public class ActualizarEmpleadoCommandTests
         var sut = new ActualizarEmpleadoCommand(emp.Object, rol.Object, audit.Object);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-            sut.ExecuteAsync(id, new ActualizarEmpleadoRequest("Juan", "Pérez", "juan@gymflow.com", Guid.NewGuid()), Guid.NewGuid(), "Admin"));
+            sut.ExecuteAsync(id, Req("Juan", "Pérez", "juan@gymflow.com", Guid.NewGuid()), Guid.NewGuid(), "Admin", RolesSeed.AdminRolId));
     }
 
     [Fact]
@@ -41,7 +44,7 @@ public class ActualizarEmpleadoCommandTests
         var sut = new ActualizarEmpleadoCommand(emp.Object, rol.Object, audit.Object);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            sut.ExecuteAsync(id, new ActualizarEmpleadoRequest("Juan", "Pérez", "juan@gymflow.com", RolesSeed.SocioRolId), Guid.NewGuid(), "Admin"));
+            sut.ExecuteAsync(id, Req("Juan", "Pérez", "juan@gymflow.com", RolesSeed.SocioRolId), Guid.NewGuid(), "Admin", RolesSeed.AdminRolId));
     }
 
     [Fact]
@@ -54,7 +57,7 @@ public class ActualizarEmpleadoCommandTests
         var sut = new ActualizarEmpleadoCommand(emp.Object, rol.Object, audit.Object);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            sut.ExecuteAsync(id, new ActualizarEmpleadoRequest("Juan", "Pérez", "otro@gymflow.com", Guid.NewGuid()), Guid.NewGuid(), "Admin"));
+            sut.ExecuteAsync(id, Req("Juan", "Pérez", "otro@gymflow.com", Guid.NewGuid()), Guid.NewGuid(), "Admin", RolesSeed.AdminRolId));
     }
 
     [Fact]
@@ -69,7 +72,7 @@ public class ActualizarEmpleadoCommandTests
         var sut = new ActualizarEmpleadoCommand(emp.Object, rol.Object, audit.Object);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            sut.ExecuteAsync(id, new ActualizarEmpleadoRequest("Juan", "Pérez", "juan@gymflow.com", rolId), Guid.NewGuid(), "Admin"));
+            sut.ExecuteAsync(id, Req("Juan", "Pérez", "juan@gymflow.com", rolId), Guid.NewGuid(), "Admin", RolesSeed.AdminRolId));
     }
 
     [Fact]
@@ -85,7 +88,7 @@ public class ActualizarEmpleadoCommandTests
             .ReturnsAsync(new Rol(nuevoRolId, "Encargado", false, DateTime.UtcNow));
         var sut = new ActualizarEmpleadoCommand(emp.Object, rol.Object, audit.Object);
 
-        await sut.ExecuteAsync(id, new ActualizarEmpleadoRequest("Juan Carlos", "Pérez", "jc@gymflow.com", nuevoRolId), Guid.NewGuid(), "Admin");
+        await sut.ExecuteAsync(id, Req("Juan Carlos", "Pérez", "jc@gymflow.com", nuevoRolId), Guid.NewGuid(), "Admin", RolesSeed.AdminRolId);
 
         Assert.Equal("Juan Carlos", empleado.Nombre);
         Assert.Equal("jc@gymflow.com", empleado.Correo);
@@ -93,5 +96,24 @@ public class ActualizarEmpleadoCommandTests
         emp.Verify(r => r.SaveChangesAsync(default), Times.Once);
         audit.Verify(a => a.LogAsync(It.IsAny<Guid>(), It.IsAny<string>(),
             TipoAccionAuditoria.Modificacion, "Empleado", id, It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Actualizar_AlRolDueno_PorNoAdmin_Lanza()
+    {
+        var (emp, rol, audit) = Mocks();
+        var id = Guid.NewGuid();
+        var empleado = ExistingEmpleado();
+        emp.Setup(r => r.GetByIdAsync(id, default)).ReturnsAsync(empleado);
+        emp.Setup(r => r.ExisteCorreoAsync(It.IsAny<string>(), id, default)).ReturnsAsync(false);
+        rol.Setup(r => r.GetByIdAsync(RolesSeed.DuenoRolId, default))
+            .ReturnsAsync(new Rol(RolesSeed.DuenoRolId, "Dueño", true, DateTime.UtcNow));
+        var sut = new ActualizarEmpleadoCommand(emp.Object, rol.Object, audit.Object);
+
+        var actuanteNoAdmin = Guid.NewGuid();
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            sut.ExecuteAsync(id, Req("Juan", "Pérez", "juan@gymflow.com", RolesSeed.DuenoRolId, [Guid.NewGuid()]), Guid.NewGuid(), "Dueño", actuanteNoAdmin));
+
+        emp.Verify(r => r.SaveChangesAsync(default), Times.Never);
     }
 }

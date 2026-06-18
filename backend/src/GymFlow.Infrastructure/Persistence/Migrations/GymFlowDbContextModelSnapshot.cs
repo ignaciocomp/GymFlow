@@ -62,6 +62,33 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("Clases", (string)null);
                 });
 
+            modelBuilder.Entity("GymFlow.Domain.Entities.CodigoRecuperacionMfa", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CodigoHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("EmpleadoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("FechaUso")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Usado")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpleadoId");
+
+                    b.ToTable("CodigosRecuperacionMfa", (string)null);
+                });
+
             modelBuilder.Entity("GymFlow.Domain.Entities.Cuota", b =>
                 {
                     b.Property<Guid>("Id")
@@ -618,6 +645,13 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                             EsSistema = true,
                             FechaCreacion = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Nombre = "Socio"
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            EsSistema = true,
+                            FechaCreacion = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Nombre = "Dueño"
                         });
                 });
 
@@ -795,6 +829,111 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         {
                             RolId = new Guid("11111111-1111-1111-1111-111111111111"),
                             PermisoId = new Guid("e7b29507-cf1a-313e-812c-62d8eec15a1a")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("0e3ccb52-631e-ab01-1b03-19eb3e0c166c")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("1a3c6f4b-04a1-5fab-f185-742b93489621")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("3db14f2d-e631-5d1f-998e-918eef77a623")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("46b1b86f-d5a2-efd5-a14b-f6e6cef155f1")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("47bf3159-8b32-a19a-0d37-af59a58a5f73")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("49569ee3-9b6b-e594-865a-6dd30f40aa88")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("5171a06c-b17d-4f3d-3d99-8aa4d8321c38")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("52c1feb8-98a7-3caa-35f5-df0f93d2a453")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("5301567d-6106-30f0-f64c-726bfe81634c")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("637b6d39-ebbf-9e16-8d7e-396861bd62ed")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("7259fbb5-4c0b-1df4-e552-20fb3c1c9e94")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("85236a48-46f3-3411-c68b-48b7d0bde83e")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("a31cd786-255b-16ac-e980-b899ee3e377b")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("a84626b4-4e1f-d4df-62c1-bd5b66ed2da7")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("c2700c7b-8aab-aff5-ad24-07f27b77f43b")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("c75a7329-9ecf-23de-168b-df43e5d82268")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("c8aa70e1-cd1a-b8d7-e3d8-5fb9c20eb0c8")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("cbeec377-4e4e-a9ec-c7e1-992e1b5fc994")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("d44e2085-d440-af40-9121-82c745f8e7c8")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("ef6441ba-c16e-cc6b-45a5-9e6375feb16d")
+                        },
+                        new
+                        {
+                            RolId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PermisoId = new Guid("efd06b26-0147-c35f-9b0e-a7d6b57194e1")
                         });
                 });
 
@@ -900,6 +1039,18 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("GymFlow.Domain.Entities.Usuario");
 
+                    b.Property<DateTime?>("MfaBloqueadoHasta")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("MfaHabilitado")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MfaIntentosFallidos")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MfaSecret")
+                        .HasColumnType("text");
+
                     b.HasDiscriminator().HasValue("Empleado");
 
                     b.HasData(
@@ -912,7 +1063,9 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                             FechaCreacion = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Nombre = "Admin",
                             PasswordHash = "$2a$11$8TnD1uScCjtswRRfjtIMDufn8npEr3r1lKxd/aJ6LCv9wFtEPjvXS",
-                            RolId = new Guid("11111111-1111-1111-1111-111111111111")
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            MfaHabilitado = false,
+                            MfaIntentosFallidos = 0
                         });
                 });
 
@@ -959,6 +1112,15 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Unidad");
+                });
+
+            modelBuilder.Entity("GymFlow.Domain.Entities.CodigoRecuperacionMfa", b =>
+                {
+                    b.HasOne("GymFlow.Domain.Entities.Empleado", null)
+                        .WithMany()
+                        .HasForeignKey("EmpleadoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("GymFlow.Domain.Entities.Cuota", b =>
