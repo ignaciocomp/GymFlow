@@ -12,9 +12,9 @@ public class GetEventosQuery
         _repository = repository;
     }
 
-    public async Task<IEnumerable<EventoDto>> ExecuteAsync(Guid? unidadId = null, bool incluirInactivos = false)
+    public async Task<IEnumerable<EventoDto>> ExecuteAsync(Guid? unidadId = null, bool incluirInactivos = false, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
-        var eventos = await _repository.GetAllAsync(unidadId, incluirInactivos);
+        var eventos = await _repository.GetAllAsync(unidadId, incluirInactivos, unidadesPermitidas);
         return eventos.Select(EventoMapper.ToDto);
     }
 }

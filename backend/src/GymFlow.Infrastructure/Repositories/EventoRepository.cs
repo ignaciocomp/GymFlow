@@ -11,11 +11,15 @@ public class EventoRepository : IEventoRepository
 
     public EventoRepository(GymFlowDbContext context) => _context = context;
 
-    public async Task<IEnumerable<Evento>> GetAllAsync(Guid? unidadId, bool incluirInactivos)
+    public async Task<IEnumerable<Evento>> GetAllAsync(Guid? unidadId, bool incluirInactivos, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
         var query = _context.Eventos
             .Include(e => e.Unidad)
             .AsQueryable();
+
+        // Filtro de unidades visibles (rol Dueño): null = sin restricción (Admin ve todas).
+        if (unidadesPermitidas is not null)
+            query = query.Where(e => unidadesPermitidas.Contains(e.UnidadId));
 
         if (unidadId.HasValue)
             query = query.Where(e => e.UnidadId == unidadId.Value);

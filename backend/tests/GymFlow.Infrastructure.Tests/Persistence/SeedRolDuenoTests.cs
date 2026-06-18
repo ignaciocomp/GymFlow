@@ -66,7 +66,7 @@ public class SeedRolDuenoTests
     public void Seed_Dueno_TieneTodasLasOperacionesDeModulosOperativos()
     {
         var permisos = PermisosDelRol(RolesSeed.DuenoRolId);
-        var modulosCompletos = new[] { Modulo.Socios, Modulo.Planes, Modulo.Clases, Modulo.Cuotas, Modulo.Empleados };
+        var modulosCompletos = new[] { Modulo.Socios, Modulo.Planes, Modulo.Clases, Modulo.Cuotas, Modulo.Empleados, Modulo.Eventos };
 
         foreach (var modulo in modulosCompletos)
         {
@@ -95,9 +95,10 @@ public class SeedRolDuenoTests
     }
 
     [Fact]
-    public void Seed_Dueno_TieneExactamente21Permisos()
+    public void Seed_Dueno_TieneExactamente25Permisos()
     {
-        // 4 modulos completos x 4 operaciones = 20, mas Unidades Lectura = 21.
-        Assert.Equal(21, PermisosDelRol(RolesSeed.DuenoRolId).Count);
+        // 6 modulos completos (Socios, Planes, Clases, Cuotas, Empleados, Eventos) x 4 operaciones = 24,
+        // mas Unidades Lectura = 25.
+        Assert.Equal(25, PermisosDelRol(RolesSeed.DuenoRolId).Count);
     }
 }
