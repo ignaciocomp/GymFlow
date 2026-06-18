@@ -1,5 +1,6 @@
 using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
+using GymFlow.Application.Interfaces;
 using GymFlow.Application.UseCases.Auth.Mfa;
 using GymFlow.Application.UseCases.Empleados;
 using GymFlow.Domain.Enums;
@@ -19,6 +20,7 @@ public class EmpleadosController : ControllerBase
     private readonly CambiarPasswordCommand _cambiarPassword;
     private readonly DarDeBajaEmpleadoCommand _darDeBaja;
     private readonly ReactivarEmpleadoCommand _reactivar;
+    private readonly IUnidadesVisiblesResolver _unidadesResolver;
     private readonly ResetearMfaEmpleadoCommand _resetearMfa;
 
     public EmpleadosController(
@@ -29,6 +31,7 @@ public class EmpleadosController : ControllerBase
         CambiarPasswordCommand cambiarPassword,
         DarDeBajaEmpleadoCommand darDeBaja,
         ReactivarEmpleadoCommand reactivar,
+        IUnidadesVisiblesResolver unidadesResolver,
         ResetearMfaEmpleadoCommand resetearMfa)
     {
         _getEmpleados = getEmpleados;
@@ -38,13 +41,18 @@ public class EmpleadosController : ControllerBase
         _cambiarPassword = cambiarPassword;
         _darDeBaja = darDeBaja;
         _reactivar = reactivar;
+        _unidadesResolver = unidadesResolver;
         _resetearMfa = resetearMfa;
     }
 
     [HttpGet]
     [RequierePermiso(Modulo.Empleados, Operacion.Lectura)]
     public async Task<ActionResult<IReadOnlyList<EmpleadoDto>>> GetAll([FromQuery] bool? activo)
-        => Ok(await _getEmpleados.ExecuteAsync(activo));
+    {
+        var (userId, rolId) = GetCurrentActor();
+        var unidadesPermitidas = await _unidadesResolver.ResolverAsync(userId, rolId);
+        return Ok(await _getEmpleados.ExecuteAsync(activo, unidadesPermitidas));
+    }
 
     [HttpGet("{id:guid}")]
     [RequierePermiso(Modulo.Empleados, Operacion.Lectura)]
@@ -61,9 +69,12 @@ public class EmpleadosController : ControllerBase
         try
         {
             var (uid, uname) = GetCurrentUser();
-            var dto = await _crear.ExecuteAsync(request, uid, uname);
+            var actuanteRolId = GetActuanteRolId();
+            var actuanteUnidades = await _unidadesResolver.ResolverAsync(uid, actuanteRolId);
+            var dto = await _crear.ExecuteAsync(request, uid, uname, actuanteRolId, actuanteUnidades);
             return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
         }
+        catch (UnauthorizedAccessException ex) { return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
     }
@@ -75,10 +86,13 @@ public class EmpleadosController : ControllerBase
         try
         {
             var (uid, uname) = GetCurrentUser();
-            var dto = await _actualizar.ExecuteAsync(id, request, uid, uname);
+            var actuanteRolId = GetActuanteRolId();
+            var actuanteUnidades = await _unidadesResolver.ResolverAsync(uid, actuanteRolId);
+            var dto = await _actualizar.ExecuteAsync(id, request, uid, uname, actuanteRolId, actuanteUnidades);
             return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
     }
@@ -118,10 +132,11 @@ public class EmpleadosController : ControllerBase
         try
         {
             var (uid, uname) = GetCurrentUser();
-            var dto = await _reactivar.ExecuteAsync(id, request.RolId, uid, uname);
+            var dto = await _reactivar.ExecuteAsync(id, request.RolId, uid, uname, GetActuanteRolId());
             return Ok(dto);
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
     }
@@ -150,5 +165,16 @@ public class EmpleadosController : ControllerBase
         var apellido = User.FindFirst("apellido")?.Value ?? "";
         var fullName = $"{nombre} {apellido}".Trim();
         return (userId, string.IsNullOrWhiteSpace(fullName) ? "Sistema" : fullName);
+    }
+
+    private Guid GetActuanteRolId()
+        => Guid.TryParse(User.FindFirst("rolId")?.Value, out var rolId) ? rolId : Guid.Empty;
+
+    // Identidad del actuante (userId + rolId) tomada del JWT, para resolver server-side
+    // las unidades visibles. Nunca se confía en parámetros de la request para el scoping.
+    private (Guid UserId, Guid RolId) GetCurrentActor()
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+        return (userId, GetActuanteRolId());
     }
 }

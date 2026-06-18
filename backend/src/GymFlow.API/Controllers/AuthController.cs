@@ -85,6 +85,8 @@ public class AuthController : ControllerBase
             var purpose = setupRequerido ? PurposeSetup : PurposePending;
             var mfaToken = _mfaTokenService.Emitir(empleado.Id, purpose);
 
+            // Con MFA, el empleado no recibe sesión acá: completa el segundo factor y la sesión
+            // (con sus unidadIds, para el rol Dueño) se emite en CrearSesionEmpleadoAsync.
             return Ok(new LoginResultado(RequiereMfa: true, SetupRequerido: setupRequerido, MfaToken: mfaToken, Sesion: null));
         }
 
@@ -292,7 +294,15 @@ public class AuthController : ControllerBase
             List<Guid>? unidadIds = null;
             var socio = await _socioRepository.GetByCorreoAsync(correo ?? "");
             if (socio != null)
+            {
                 unidadIds = socio.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+            }
+            else
+            {
+                var empleado = await _empleadoRepository.GetByCorreoAsync(correo ?? "");
+                if (empleado != null)
+                    unidadIds = empleado.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+            }
 
             return Ok(new
             {
@@ -343,7 +353,9 @@ public class AuthController : ControllerBase
             TipoAccionAuditoria.InicioSesion, "Sesion", null,
             $"Inicio de sesión de {empleado.Nombre} {empleado.Apellido} ({rolNombre})");
 
-        return new LoginResponse(token, empleado.Nombre, empleado.Apellido, empleado.Correo, rolNombre, permisosDto);
+        // Las unidades asignadas del empleado (rol Dueño) viajan en la sesión, igual que el socio.
+        var unidadIds = empleado.UnidadesAsignadas.Select(u => u.UnidadId).ToList();
+        return new LoginResponse(token, empleado.Nombre, empleado.Apellido, empleado.Correo, rolNombre, permisosDto, unidadIds);
     }
 
     private string GenerateJwt(Guid id, string correo, Guid rolId, string rolNombre, string nombre, string apellido)

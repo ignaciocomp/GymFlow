@@ -28,17 +28,18 @@ public class RolesController : ControllerBase
         _eliminarRol = eliminarRol;
     }
 
-    // Reutiliza el permiso Auditoria como proxy de "gestión administrativa".
-    // En seed, solo el Administrador lo tiene. Si más adelante se necesita aislar,
-    // agregar Modulo.Roles al enum siguiendo la convención de docs/agent_Context.md.
+    // La gestión de roles es parte de la gestión del equipo, por eso se exige el permiso
+    // Empleados (no Auditoría). El Admin tiene ambos módulos sembrados → no se ve afectado,
+    // y el Dueño (que tiene Empleados pero NO Auditoría) puede gestionar roles dinámicos
+    // sin acceder al módulo de Auditoría.
 
     [HttpGet]
-    [RequierePermiso(Modulo.Auditoria, Operacion.Lectura)]
+    [RequierePermiso(Modulo.Empleados, Operacion.Lectura)]
     public async Task<ActionResult<IReadOnlyList<RolDto>>> GetAll() =>
         Ok(await _getRoles.ExecuteAsync());
 
     [HttpGet("{id:guid}")]
-    [RequierePermiso(Modulo.Auditoria, Operacion.Lectura)]
+    [RequierePermiso(Modulo.Empleados, Operacion.Lectura)]
     public async Task<ActionResult<RolDto>> GetById(Guid id)
     {
         try { return Ok(await _getRolById.ExecuteAsync(id)); }
@@ -46,7 +47,7 @@ public class RolesController : ControllerBase
     }
 
     [HttpPost]
-    [RequierePermiso(Modulo.Auditoria, Operacion.Escritura)]
+    [RequierePermiso(Modulo.Empleados, Operacion.Escritura)]
     public async Task<ActionResult<RolDto>> Create([FromBody] CrearRolRequest request)
     {
         try
@@ -60,7 +61,7 @@ public class RolesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [RequierePermiso(Modulo.Auditoria, Operacion.Modificacion)]
+    [RequierePermiso(Modulo.Empleados, Operacion.Modificacion)]
     public async Task<ActionResult<RolDto>> Update(Guid id, [FromBody] ActualizarRolRequest request)
     {
         try
@@ -75,7 +76,7 @@ public class RolesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [RequierePermiso(Modulo.Auditoria, Operacion.Eliminacion)]
+    [RequierePermiso(Modulo.Empleados, Operacion.Eliminacion)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

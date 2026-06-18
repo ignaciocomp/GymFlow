@@ -3,6 +3,7 @@ using System;
 using GymFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GymFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(GymFlowDbContext))]
-    partial class GymFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260618005710_AgregarRolDueno")]
+    partial class AgregarRolDueno
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,33 +63,6 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                     b.HasIndex("UnidadId");
 
                     b.ToTable("Clases", (string)null);
-                });
-
-            modelBuilder.Entity("GymFlow.Domain.Entities.CodigoRecuperacionMfa", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CodigoHash")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<Guid>("EmpleadoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("FechaUso")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Usado")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmpleadoId");
-
-                    b.ToTable("CodigosRecuperacionMfa", (string)null);
                 });
 
             modelBuilder.Entity("GymFlow.Domain.Entities.Cuota", b =>
@@ -918,18 +894,6 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("GymFlow.Domain.Entities.Usuario");
 
-                    b.Property<DateTime?>("MfaBloqueadoHasta")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("MfaHabilitado")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("MfaIntentosFallidos")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MfaSecret")
-                        .HasColumnType("text");
-
                     b.HasDiscriminator().HasValue("Empleado");
 
                     b.HasData(
@@ -942,9 +906,7 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                             FechaCreacion = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Nombre = "Admin",
                             PasswordHash = "$2a$11$8TnD1uScCjtswRRfjtIMDufn8npEr3r1lKxd/aJ6LCv9wFtEPjvXS",
-                            RolId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            MfaHabilitado = false,
-                            MfaIntentosFallidos = 0
+                            RolId = new Guid("11111111-1111-1111-1111-111111111111")
                         });
                 });
 
@@ -991,15 +953,6 @@ namespace GymFlow.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Unidad");
-                });
-
-            modelBuilder.Entity("GymFlow.Domain.Entities.CodigoRecuperacionMfa", b =>
-                {
-                    b.HasOne("GymFlow.Domain.Entities.Empleado", null)
-                        .WithMany()
-                        .HasForeignKey("EmpleadoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("GymFlow.Domain.Entities.Cuota", b =>

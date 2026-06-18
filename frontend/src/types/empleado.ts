@@ -14,6 +14,7 @@ export interface CrearEmpleadoRequest {
   apellido: string
   correo: string
   rolId: string
+  unidadIds?: string[]
 }
 
 export interface ActualizarEmpleadoRequest {
@@ -21,6 +22,7 @@ export interface ActualizarEmpleadoRequest {
   apellido: string
   correo: string
   rolId: string
+  unidadIds?: string[]
 }
 
 export interface CambiarPasswordRequest {

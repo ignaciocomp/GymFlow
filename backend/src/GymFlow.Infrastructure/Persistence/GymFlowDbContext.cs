@@ -34,7 +34,8 @@ public class GymFlowDbContext : DbContext
         // Seed Roles del sistema
         modelBuilder.Entity<Rol>().HasData(
             new { Id = RolSeed.AdminRolId, Nombre = "Administrador", EsSistema = true, FechaCreacion = RolSeed.SeedTimestamp },
-            new { Id = RolSeed.SocioRolId, Nombre = "Socio", EsSistema = true, FechaCreacion = RolSeed.SeedTimestamp }
+            new { Id = RolSeed.SocioRolId, Nombre = "Socio", EsSistema = true, FechaCreacion = RolSeed.SeedTimestamp },
+            new { Id = RolSeed.DuenoRolId, Nombre = "Dueño", EsSistema = true, FechaCreacion = RolSeed.SeedTimestamp }
         );
 
         // Seed Permisos: producto cartesiano de Modulo × Operacion
@@ -56,6 +57,17 @@ public class GymFlowDbContext : DbContext
         var rolPermisoSeeds = permisoIds.Values
             .Select(pid => (object)new { RolId = RolSeed.AdminRolId, PermisoId = pid })
             .ToList();
+
+        // Seed RolPermisos: Dueno opera sus unidades — todas las operaciones de Socios,
+        // Planes, Clases, Cuotas y Empleados, mas Unidades Lectura. SIN Auditoria (exclusiva del Admin).
+        var modulosOperativosDueno = new[] { Modulo.Socios, Modulo.Planes, Modulo.Clases, Modulo.Cuotas, Modulo.Empleados };
+        var permisosDueno = permisoIds
+            .Where(kvp => modulosOperativosDueno.Contains(kvp.Key.Item1)
+                || (kvp.Key.Item1 == Modulo.Unidades && kvp.Key.Item2 == Operacion.Lectura))
+            .OrderBy(kvp => kvp.Value)
+            .Select(kvp => (object)new { RolId = RolSeed.DuenoRolId, PermisoId = kvp.Value });
+        rolPermisoSeeds.AddRange(permisosDueno);
+
         modelBuilder.Entity<RolPermiso>().HasData(rolPermisoSeeds);
 
         // Seed Empleado admin de bootstrap
@@ -88,6 +100,7 @@ public static class RolSeed
 {
     public static readonly Guid AdminRolId = RolesSeed.AdminRolId;
     public static readonly Guid SocioRolId = RolesSeed.SocioRolId;
+    public static readonly Guid DuenoRolId = RolesSeed.DuenoRolId;
     public static readonly DateTime SeedTimestamp = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 }
 

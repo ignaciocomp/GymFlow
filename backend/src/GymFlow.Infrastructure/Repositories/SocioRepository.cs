@@ -70,7 +70,7 @@ public class SocioRepository : ISocioRepository
     }
 
     public async Task<IEnumerable<Socio>> SearchAsync(
-        string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo)
+        string? nombre, Guid? unidadId, Guid? planId, bool? estaActivo, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
         var query = _context.Socios
             .Include(s => s.UnidadesAsignadas)
@@ -87,6 +87,9 @@ public class SocioRepository : ISocioRepository
                 s.Apellido.ToLower().Contains(term) ||
                 s.Correo.ToLower().Contains(term));
         }
+
+        if (unidadesPermitidas is not null)
+            query = query.Where(s => s.UnidadesAsignadas.Any(uu => unidadesPermitidas.Contains(uu.UnidadId)));
 
         if (unidadId.HasValue)
             query = query.Where(s => s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId.Value));

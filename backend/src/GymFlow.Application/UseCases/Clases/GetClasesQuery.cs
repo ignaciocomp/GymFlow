@@ -16,11 +16,11 @@ public class GetClasesQuery
         _inscripcionRepo = inscripcionRepo;
     }
 
-    public async Task<IEnumerable<ClaseDto>> ExecuteAsync(Guid? unidadId = null, bool includeInactive = false)
+    public async Task<IEnumerable<ClaseDto>> ExecuteAsync(Guid? unidadId = null, bool includeInactive = false, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
         var clases = (unidadId.HasValue
-            ? await _repository.GetByUnidadIdAsync(unidadId.Value, includeInactive)
-            : await _repository.GetAllAsync(includeInactive)).ToList();
+            ? await _repository.GetByUnidadIdAsync(unidadId.Value, includeInactive, unidadesPermitidas)
+            : await _repository.GetAllAsync(includeInactive, unidadesPermitidas)).ToList();
 
         var allHorarios = new List<Guid>();
         var claseHorarioIds = new Dictionary<Guid, List<Guid>>();

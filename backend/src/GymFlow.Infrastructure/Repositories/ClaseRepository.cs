@@ -11,7 +11,7 @@ public class ClaseRepository : IClaseRepository
 
     public ClaseRepository(GymFlowDbContext context) => _context = context;
 
-    public async Task<IEnumerable<Clase>> GetAllAsync(bool includeInactive = false)
+    public async Task<IEnumerable<Clase>> GetAllAsync(bool includeInactive = false, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
         var query = _context.Clases
             .Include(c => c.Unidad)
@@ -19,6 +19,9 @@ public class ClaseRepository : IClaseRepository
 
         if (!includeInactive)
             query = query.Where(c => c.EstaActivo);
+
+        if (unidadesPermitidas is not null)
+            query = query.Where(c => unidadesPermitidas.Contains(c.UnidadId));
 
         return await query.OrderBy(c => c.Nombre).ToListAsync();
     }
@@ -30,7 +33,7 @@ public class ClaseRepository : IClaseRepository
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<IEnumerable<Clase>> GetByUnidadIdAsync(Guid unidadId, bool includeInactive = false)
+    public async Task<IEnumerable<Clase>> GetByUnidadIdAsync(Guid unidadId, bool includeInactive = false, IReadOnlyCollection<Guid>? unidadesPermitidas = null)
     {
         var query = _context.Clases
             .Include(c => c.Unidad)
@@ -38,6 +41,9 @@ public class ClaseRepository : IClaseRepository
 
         if (!includeInactive)
             query = query.Where(c => c.EstaActivo);
+
+        if (unidadesPermitidas is not null)
+            query = query.Where(c => unidadesPermitidas.Contains(c.UnidadId));
 
         return await query.OrderBy(c => c.Nombre).ToListAsync();
     }
