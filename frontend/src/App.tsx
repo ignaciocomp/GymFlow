@@ -24,6 +24,7 @@ import ClasesPage from '@/pages/admin/ClasesPage'
 import NuevaClasePage from '@/pages/admin/NuevaClasePage'
 import EditClasePage from '@/pages/admin/EditClasePage'
 import HorariosPage from '@/pages/admin/HorariosPage'
+import EventosPage from '@/pages/admin/EventosPage'
 import HorariosPortalPage from '@/pages/portal/HorariosPortalPage'
 import MisInscripcionesPage from '@/pages/portal/MisInscripcionesPage'
 
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="clases/nueva" element={<NuevaClasePage />} />
         <Route path="clases/:id/editar" element={<EditClasePage />} />
         <Route path="horarios" element={<HorariosPage />} />
+        <Route path="eventos" element={<EventosPage />} />
       </Route>
       <Route path="/portal" element={<SocioLayout />}>
         <Route index element={<PerfilSocioPage />} />

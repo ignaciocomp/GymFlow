@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase, Evento, CreateEventoRequest, UpdateEventoRequest } from '@/types'
 import type { Permiso } from '@/types/permisos'
 
 const api = axios.create({
@@ -233,6 +233,40 @@ export const clasesApi = {
 
   reactivate: async (id: string): Promise<Clase> => {
     const { data } = await api.patch<Clase>(`/clases/${id}/reactivar`)
+    return data
+  },
+}
+
+export const eventosApi = {
+  getAll: async (unidadId?: string, incluirInactivos?: boolean): Promise<Evento[]> => {
+    const params: Record<string, string> = {}
+    if (unidadId) params.unidadId = unidadId
+    if (incluirInactivos) params.incluirInactivos = 'true'
+    const { data } = await api.get<Evento[]>('/eventos', { params })
+    return data
+  },
+
+  getById: async (id: string): Promise<Evento> => {
+    const { data } = await api.get<Evento>(`/eventos/${id}`)
+    return data
+  },
+
+  create: async (request: CreateEventoRequest): Promise<Evento> => {
+    const { data } = await api.post<Evento>('/eventos', request)
+    return data
+  },
+
+  update: async (id: string, request: UpdateEventoRequest): Promise<Evento> => {
+    const { data } = await api.put<Evento>(`/eventos/${id}`, request)
+    return data
+  },
+
+  cancel: async (id: string): Promise<void> => {
+    await api.delete(`/eventos/${id}`)
+  },
+
+  notificar: async (id: string): Promise<{ mensaje: string }> => {
+    const { data } = await api.post<{ mensaje: string }>(`/eventos/${id}/notificar`)
     return data
   },
 }
