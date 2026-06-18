@@ -1,0 +1,89 @@
+name: Configurar MFA (claves)
+
+# Workflow MANUAL (one-time): carga las claves del MFA en el Container App de
+# produccion sin que ninguna clave toque el repo.
+# - Mfa:EncryptionKey  -> cifra/descifra el secreto TOTP de cada empleado (AES-256-GCM).
+# - Mfa:TokenSigningKey -> firma el mfaToken intermedio del login en dos pasos
+#   (clave SEPARADA de Jwt:Key, para que el pipeline JWT global lo rechace).
+# Ambas se guardan como secrets del Container App y los env vars Mfa__* las
+# referencian via secretref. Los env vars PERSISTEN entre deploys de imagen,
+# asi que alcanza con correrlo una sola vez (o si rotan las claves).
+#
+# IMPORTANTE: correr esto ANTES (o inmediatamente despues) del primer deploy que
+# incluya MFA. Sin estas claves, el /login de un empleado devuelve 500 (necesita
+# Mfa:TokenSigningKey) y los endpoints /mfa/* fallan (necesitan Mfa:EncryptionKey).
+#
+# Requiere los secrets de GitHub: AZURE_CREDENTIALS, MFA_ENCRYPTION_KEY, MFA_TOKEN_SIGNING_KEY.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: configure-mfa-production
+  cancel-in-progress: false
+
+jobs:
+  configure:
+    name: Cargar claves de MFA en el Container App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar secrets requeridos
+        env:
+          MFA_ENCRYPTION_KEY: ${{ secrets.MFA_ENCRYPTION_KEY }}
+          MFA_TOKEN_SIGNING_KEY: ${{ secrets.MFA_TOKEN_SIGNING_KEY }}
+        run: |
+          FALTAN=""
+          if [ -z "$MFA_ENCRYPTION_KEY" ]; then FALTAN="$FALTAN MFA_ENCRYPTION_KEY"; fi
+          if [ -z "$MFA_TOKEN_SIGNING_KEY" ]; then FALTAN="$FALTAN MFA_TOKEN_SIGNING_KEY"; fi
+          if [ -n "$FALTAN" ]; then
+            echo "::error::Faltan secrets de GitHub:$FALTAN"
+            echo "Cargalos en Settings -> Secrets and variables -> Actions -> New repository secret y volve a correr el workflow."
+            exit 1
+          fi
+          # Chequeo minimo de longitud (la EncryptionKey debe ser base64 de 32 bytes).
+          if [ "${#MFA_TOKEN_SIGNING_KEY}" -lt 32 ]; then
+            echo "::error::MFA_TOKEN_SIGNING_KEY debe tener al menos 32 caracteres."
+            exit 1
+          fi
+          echo "Secrets de MFA presentes."
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Guardar las claves como secrets del Container App
+        env:
+          MFA_ENCRYPTION_KEY: ${{ secrets.MFA_ENCRYPTION_KEY }}
+          MFA_TOKEN_SIGNING_KEY: ${{ secrets.MFA_TOKEN_SIGNING_KEY }}
+        run: |
+          # Las claves viajan solo como env vars hacia az; NUNCA se imprimen
+          # (--output none evita que az devuelva la lista de secrets).
+          az containerapp secret set \
+            --name ${{ vars.AZURE_ACA_APP }} \
+            --resource-group ${{ vars.AZURE_RG }} \
+            --secrets mfa-encryption-key="$MFA_ENCRYPTION_KEY" mfa-token-signing-key="$MFA_TOKEN_SIGNING_KEY" \
+            --output none
+          echo "Secrets mfa-encryption-key y mfa-token-signing-key guardados en el Container App."
+
+      - name: Aplicar los env vars de MFA (via secretref)
+        run: |
+          # Los env vars Mfa__* referencian los secrets del Container App (secretref),
+          # nunca el valor en texto plano.
+          az containerapp update \
+            --name ${{ vars.AZURE_ACA_APP }} \
+            --resource-group ${{ vars.AZURE_RG }} \
+            --set-env-vars \
+              "Mfa__EncryptionKey=secretref:mfa-encryption-key" \
+              "Mfa__TokenSigningKey=secretref:mfa-token-signing-key" \
+            --output none
+          echo "Env vars de MFA aplicados. Nueva revision en camino."
+
+      - name: Resumen
+        if: success()
+        run: |
+          echo "## MFA configurado" >> $GITHUB_STEP_SUMMARY
+          echo "- App: \`${{ vars.AZURE_ACA_APP }}\` (RG \`${{ vars.AZURE_RG }}\`)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`Mfa__EncryptionKey\` -> secret del Container App \`mfa-encryption-key\` (secretref)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`Mfa__TokenSigningKey\` -> secret del Container App \`mfa-token-signing-key\` (secretref)" >> $GITHUB_STEP_SUMMARY
+          echo "- Sin valores en logs. Persiste entre deploys: no hace falta volver a correrlo." >> $GITHUB_STEP_SUMMARY

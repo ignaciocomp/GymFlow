@@ -150,9 +150,17 @@ az containerapp update \
 Esto dispara una nueva revision. Verificar que arranque sana (`az containerapp revision list ... -o table`)
 y probar un login de empleado: tiene que pedir el segundo factor.
 
-> Tambien se puede automatizar con un workflow manual analogo a `configure-email.yml`
-> (secrets `MFA_ENCRYPTION_KEY` / `MFA_TOKEN_SIGNING_KEY` en GitHub, `az containerapp secret set`
-> + `az containerapp update --set-env-vars ...=secretref:...`). Por ahora alcanza con el comando manual de arriba.
+### 2-bis. (Recomendado) Hacerlo con el workflow `configure-mfa.yml` — sin `az` local
+
+Igual que el SMTP, hay un workflow manual que hace los dos pasos de arriba sin que ninguna clave toque el repo ni tu maquina:
+
+1. Generar las dos claves (paso 1 de arriba; en Windows sin `openssl`, en PowerShell: `[Convert]::ToBase64String((1..32 | % {Get-Random -Max 256}))` para la EncryptionKey, y `[Convert]::ToBase64String((1..36 | % {Get-Random -Max 256}))` para la TokenSigningKey).
+2. Cargar en GitHub (Settings → Secrets and variables → Actions → New repository secret) los secrets **`MFA_ENCRYPTION_KEY`** y **`MFA_TOKEN_SIGNING_KEY`**.
+3. Con `configure-mfa.yml` ya en `main` (entra con el deploy), correrlo: pestaña **Actions → "Configurar MFA (claves)" → Run workflow**.
+
+El workflow guarda las claves como secrets del Container App (`mfa-encryption-key`, `mfa-token-signing-key`) y setea los env vars `Mfa__*` por `secretref`. Persiste entre deploys: una sola vez.
+
+> **Orden vs. deploy:** correr esto **antes** del primer deploy con MFA (via `az`, paso 2) o **apenas termine** (via el workflow). Sin las claves, el `/login` de un empleado devuelve 500. Como los secrets/env-vars del Container App ya existen aunque la imagen vieja no los use, lo mas seguro es cargarlos por `az` (paso 2) **antes** del deploy.
 
 ### Notas
 
