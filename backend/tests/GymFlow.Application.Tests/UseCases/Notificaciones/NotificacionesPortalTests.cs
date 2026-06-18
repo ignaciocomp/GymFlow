@@ -36,6 +36,31 @@ public class NotificacionesPortalTests
     }
 
     [Fact]
+    public async Task GetNotificaciones_ClampeaTakeExcesivo()
+    {
+        var socioId = Guid.NewGuid();
+        _repo.Setup(r => r.GetBySocioAsync(socioId, false, 100)).ReturnsAsync(Array.Empty<Notificacion>());
+
+        var sut = new GetNotificacionesQuery(_repo.Object);
+        await sut.ExecuteAsync(socioId, soloNoLeidas: false, take: 1_000_000);
+
+        // Un take desmedido se acota a 100 (evita pedir cargas enormes).
+        _repo.Verify(r => r.GetBySocioAsync(socioId, false, 100), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetNotificaciones_TakeNoPositivo_SeAcotaA1()
+    {
+        var socioId = Guid.NewGuid();
+        _repo.Setup(r => r.GetBySocioAsync(socioId, false, 1)).ReturnsAsync(Array.Empty<Notificacion>());
+
+        var sut = new GetNotificacionesQuery(_repo.Object);
+        await sut.ExecuteAsync(socioId, soloNoLeidas: false, take: 0);
+
+        _repo.Verify(r => r.GetBySocioAsync(socioId, false, 1), Times.Once);
+    }
+
+    [Fact]
     public async Task GetNotificaciones_PasaSoloNoLeidasYTakeAlRepo()
     {
         var socioId = Guid.NewGuid();

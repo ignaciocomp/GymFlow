@@ -12,7 +12,9 @@ public class GetNotificacionesQuery
 
     public async Task<IEnumerable<NotificacionDto>> ExecuteAsync(Guid socioId, bool soloNoLeidas, int take)
     {
-        var notificaciones = await _repository.GetBySocioAsync(socioId, soloNoLeidas, take);
+        // Acotar el take para evitar pedidos de cargas desmedidas.
+        var efectivo = Math.Clamp(take, 1, 100);
+        var notificaciones = await _repository.GetBySocioAsync(socioId, soloNoLeidas, efectivo);
         return notificaciones.Select(MapToDto);
     }
 
