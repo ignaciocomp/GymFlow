@@ -29,10 +29,24 @@ import HorariosPortalPage from '@/pages/portal/HorariosPortalPage'
 import EventosPortalPage from '@/pages/portal/EventosPortalPage'
 import MisInscripcionesPage from '@/pages/portal/MisInscripcionesPage'
 import NotificacionesPortalPage from '@/pages/portal/NotificacionesPortalPage'
+import PublicLayout from '@/components/public/PublicLayout'
+import HomePage from '@/pages/public/HomePage'
+import SedesPage from '@/pages/public/SedesPage'
+import PlanesPublicPage from '@/pages/public/PlanesPublicPage'
+import ClasesPublicPage from '@/pages/public/ClasesPublicPage'
+import ContactoPage from '@/pages/public/ContactoPage'
+import NotFoundPage from '@/pages/public/NotFoundPage'
 
 export default function App() {
   return (
     <Routes>
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/sedes" element={<SedesPage />} />
+        <Route path="/planes" element={<PlanesPublicPage />} />
+        <Route path="/clases" element={<ClasesPublicPage />} />
+        <Route path="/contacto" element={<ContactoPage />} />
+      </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Navigate to="socios" replace />} />
@@ -69,8 +83,7 @@ export default function App() {
         <Route path="mis-inscripciones" element={<MisInscripcionesPage />} />
         <Route path="notificaciones" element={<NotificacionesPortalPage />} />
       </Route>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }
