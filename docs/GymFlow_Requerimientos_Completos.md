@@ -640,19 +640,20 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RNF-10 (MFA TOTP para admin/profesor, OAuth 2.0 Google para socios)
 - RNF-01 (Autenticación y autorización por roles — parte socios: Google OAuth + rol Dueño)
 - RF-15 (Gestionar eventos)
+- RF-16 (Notificaciones al socio — adelantado desde Iteración 6)
 
-**Resultado esperado:** Admin y profesor requieren MFA (TOTP) para iniciar sesión. Socios se autentican con Google OAuth 2.0 sin gestionar contraseña propia. Rol "Dueño" hardcoded con filtro por unidades asignadas.
+**Resultado esperado:** Admin y profesor requieren MFA (TOTP) para iniciar sesión. Socios se autentican con Google OAuth 2.0 sin gestionar contraseña propia. Rol "Dueño" hardcoded con filtro por unidades asignadas. Centro de notificaciones in-system para socios (eventos, cambios de horario y recordatorios de cuota).
 
 **Dependencias:** Iteraciones 1 y 4.
 
 ---
 
-### Iteración 6 — Eventos, Notificaciones, Rutinas y Sitio Web Público
+### Iteración 6 — Notificaciones por Email, Rutinas y Sitio Web Público
 **Fechas:** 29/06/2026 → 13/07/2026 (~60 horas)
 **Prioridad:** DESEABLE
 
 **Requerimientos:**
-- RF-16 (Notificaciones al socio por email)
+- RF-16 (canal email — el centro in-system se adelantó a Iteración 5)
 - RNF-03 (Responsive)
 - RNF-04 (SEO: semántica, metaetiquetas, URLs amigables, carga rápida)
 - RNF-06 (Disponibilidad ≥ 95%)
