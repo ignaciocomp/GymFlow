@@ -100,8 +100,9 @@ export default function HorariosPage() {
     : unidades
 
   const { data: clases } = useQuery({
-    queryKey: ['clases-activas'],
-    queryFn: () => clasesApi.getAll(undefined, false),
+    queryKey: ['clases-activas', unidadFilter],
+    queryFn: () => clasesApi.getAll(unidadFilter, false),
+    enabled: !!unidadFilter,
   })
 
   const updateMutation = useMutation({
