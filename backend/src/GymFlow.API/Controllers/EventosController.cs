@@ -21,6 +21,7 @@ public class EventosController : ControllerBase
     private readonly CancelarEventoCommand _cancelarEventoCommand;
     private readonly NotificarEventoCommand _notificarEventoCommand;
     private readonly IUnidadesVisiblesResolver _unidadesResolver;
+    private readonly ISocioRepository _socioRepository;
 
     public EventosController(
         GetEventosQuery getEventosQuery,
@@ -29,7 +30,8 @@ public class EventosController : ControllerBase
         ActualizarEventoCommand actualizarEventoCommand,
         CancelarEventoCommand cancelarEventoCommand,
         NotificarEventoCommand notificarEventoCommand,
-        IUnidadesVisiblesResolver unidadesResolver)
+        IUnidadesVisiblesResolver unidadesResolver,
+        ISocioRepository socioRepository)
     {
         _getEventosQuery = getEventosQuery;
         _getEventoByIdQuery = getEventoByIdQuery;
@@ -38,6 +40,7 @@ public class EventosController : ControllerBase
         _cancelarEventoCommand = cancelarEventoCommand;
         _notificarEventoCommand = notificarEventoCommand;
         _unidadesResolver = unidadesResolver;
+        _socioRepository = socioRepository;
     }
 
     [HttpGet]
@@ -127,6 +130,22 @@ public class EventosController : ControllerBase
         }
     }
 
+    [HttpGet("{id:guid}/destinatarios")]
+    [RequierePermiso(Modulo.Eventos, Operacion.Lectura)]
+    public async Task<IActionResult> GetDestinatarios(Guid id)
+    {
+        try
+        {
+            var evento = await _getEventoByIdQuery.ExecuteAsync(id);
+            var cantidad = await _socioRepository.CountActivosByUnidadAsync(evento.UnidadId);
+            return Ok(new { cantidad, sede = evento.UnidadNombre });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
     [HttpPost("{id:guid}/notificar")]
     [RequierePermiso(Modulo.Eventos, Operacion.Escritura)]
     public async Task<IActionResult> Notificar(Guid id)
@@ -134,13 +153,29 @@ public class EventosController : ControllerBase
         try
         {
             var (userId, userName) = GetCurrentUser();
-            await _notificarEventoCommand.ExecuteAsync(id, userId, userName);
-            return Ok(new { mensaje = "Se reenviaron las notificaciones a los socios de la sede." });
+            var resultado = await _notificarEventoCommand.ExecuteAsync(id, userId, userName);
+            var mensaje = ConstruirMensajeNotificacion(resultado);
+            return Ok(new { mensaje });
         }
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { error = ex.Message });
         }
+    }
+
+    // Mensaje para el banner de la UI: cuántos socios se notificaron y de qué sede.
+    private static string ConstruirMensajeNotificacion(NotificarEventoResultado resultado)
+    {
+        var sede = string.IsNullOrWhiteSpace(resultado.SedeNombre) ? "la sede" : resultado.SedeNombre;
+
+        if (resultado.Total == 0)
+            return $"No hay socios activos en {sede} para notificar.";
+
+        var socios = resultado.Enviados == 1 ? "socio" : "socios";
+
+        return resultado.Fallidos > 0
+            ? $"Se notificó a {resultado.Enviados} de {resultado.Total} {socios} de {sede} ({resultado.Fallidos} envíos fallaron)."
+            : $"Se notificó a {resultado.Enviados} {socios} de {sede}.";
     }
 
     private (Guid Id, string Nombre) GetCurrentUser()

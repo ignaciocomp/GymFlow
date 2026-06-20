@@ -4,6 +4,12 @@ using GymFlow.Domain.Enums;
 namespace GymFlow.Application.UseCases.Eventos;
 
 /// <summary>
+/// Resultado del reenvío de notificaciones de un evento: cuántos socios se
+/// notificaron y a qué sede pertenecen, para informarlo en la UI y la auditoría.
+/// </summary>
+public record NotificarEventoResultado(int Total, int Enviados, int Fallidos, string SedeNombre);
+
+/// <summary>
 /// Reenvía la notificación de un evento a los socios activos de su unidad.
 /// Reusa el helper compartido <see cref="EventoNotificador"/> (envío best-effort,
 /// mismo patrón que <c>CancelClaseCommand</c>).
@@ -27,14 +33,15 @@ public class NotificarEventoCommand
         _emailService = emailService;
     }
 
-    public async Task ExecuteAsync(Guid id, Guid usuarioId, string usuarioNombre)
+    public async Task<NotificarEventoResultado> ExecuteAsync(Guid id, Guid usuarioId, string usuarioNombre)
     {
         var evento = await _eventoRepository.GetByIdAsync(id)
             ?? throw new KeyNotFoundException("El evento no fue encontrado.");
 
         var socios = await _socioRepository.GetActivosByUnidadAsync(evento.UnidadId);
         // GetByIdAsync incluye la navegación Unidad, así que acá la sede viene cargada.
-        var resultado = await EventoNotificador.NotificarAsync(_emailService, socios, evento, evento.Unidad?.Nombre ?? "");
+        var sedeNombre = evento.Unidad?.Nombre ?? "";
+        var resultado = await EventoNotificador.NotificarAsync(_emailService, socios, evento, sedeNombre);
 
         var detalle = resultado.Fallidos > 0
             ? $"Se reenviaron notificaciones del evento '{evento.Titulo}'. Se notificaron {resultado.Enviados} de {resultado.Total} socios ({resultado.Fallidos} envíos fallaron)."
@@ -44,5 +51,7 @@ public class NotificarEventoCommand
             usuarioId, usuarioNombre,
             TipoAccionAuditoria.Modificacion, "Evento", evento.Id,
             detalle);
+
+        return new NotificarEventoResultado(resultado.Total, resultado.Enviados, resultado.Fallidos, sedeNombre);
     }
 }
