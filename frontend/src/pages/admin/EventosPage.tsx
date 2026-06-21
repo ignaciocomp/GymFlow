@@ -52,6 +52,13 @@ export default function EventosPage() {
     enabled: !!unidadFilter,
   })
 
+  // Cantidad de socios activos que recibirán el correo, para mostrarlo en el diálogo de confirmación (#51).
+  const { data: destinatarios, isLoading: isLoadingDestinatarios } = useQuery({
+    queryKey: ['evento-destinatarios', notificarDialog?.id],
+    queryFn: () => eventosApi.getDestinatarios(notificarDialog!.id),
+    enabled: !!notificarDialog,
+  })
+
   const onMutationError = (fallback: string) => (err: unknown) => {
     if (err && typeof err === 'object' && 'response' in err) {
       const axiosErr = err as { response?: { data?: { error?: string } } }
@@ -458,8 +465,28 @@ export default function EventosPage() {
           <DialogHeader>
             <DialogTitle className="text-foreground">Reenviar notificación</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              ¿Reenviar la notificación del evento <strong className="text-foreground">{notificarDialog?.titulo}</strong> por
-              email a los socios de la sede?
+              {isLoadingDestinatarios ? (
+                <>
+                  ¿Reenviar la notificación del evento{' '}
+                  <strong className="text-foreground">{notificarDialog?.titulo}</strong> por email a los socios de la sede?
+                </>
+              ) : destinatarios && destinatarios.cantidad > 0 ? (
+                <>
+                  Se enviará la notificación del evento{' '}
+                  <strong className="text-foreground">{notificarDialog?.titulo}</strong> por email a{' '}
+                  <strong className="text-foreground">
+                    {destinatarios.cantidad} socio{destinatarios.cantidad !== 1 ? 's' : ''}
+                  </strong>{' '}
+                  de la sede <strong className="text-foreground">{destinatarios.sede}</strong>.
+                </>
+              ) : (
+                <>
+                  No hay socios activos en la sede{' '}
+                  <strong className="text-foreground">{destinatarios?.sede || notificarDialog?.unidadNombre}</strong>{' '}
+                  para notificar del evento{' '}
+                  <strong className="text-foreground">{notificarDialog?.titulo}</strong>.
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           {formError && (
@@ -473,7 +500,7 @@ export default function EventosPage() {
             </Button>
             <Button
               onClick={() => { if (notificarDialog) notificarMutation.mutate(notificarDialog.id) }}
-              disabled={notificarMutation.isPending}
+              disabled={notificarMutation.isPending || isLoadingDestinatarios || destinatarios?.cantidad === 0}
               className="cursor-pointer gap-2"
             >
               <Mail className="h-4 w-4" />

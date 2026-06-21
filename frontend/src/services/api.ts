@@ -340,6 +340,11 @@ export const eventosApi = {
     const { data } = await api.post<{ mensaje: string }>(`/eventos/${id}/notificar`)
     return data
   },
+
+  getDestinatarios: async (id: string): Promise<{ cantidad: number; sede: string }> => {
+    const { data } = await api.get<{ cantidad: number; sede: string }>(`/eventos/${id}/destinatarios`)
+    return data
+  },
 }
 
 export const horariosApi = {

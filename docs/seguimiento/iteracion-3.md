@@ -284,6 +284,34 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 | Inscripciones (RF-10/RF-11) | 8         | Pasaron           |
 
 
+## Pruebas automatizadas (xUnit)
+
+Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`. Se ejecutan con `dotnet test` desde `backend/`. El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4 está en [[pruebas-automatizadas-it1-4]].
+
+**Pruebas de dominio (`GymFlow.Domain.Tests`):**
+
+| Clase de test | Entidad / área | Casos (aprox.) |
+|-|-|-|
+| `Entities/ClaseTests.cs` | `Clase`: validaciones, capacidad, baja lógica, reactivación | ~13 |
+| `Entities/HorarioClaseTests.cs` | `HorarioClase`: día/hora, rango válido, conflicto de sala | ~14 |
+| `Entities/InscripcionClaseTests.cs` | `InscripcionClase`: estado activa/cancelada (base) | ~3 |
+
+**Pruebas de aplicación (`GymFlow.Application.Tests`):**
+
+| Clase de test | Caso de uso / área | Casos (aprox.) |
+|-|-|-|
+| `UseCases/Clases/CreateClaseCommandTests.cs` | Crear clase (RF-08) | ~2 |
+| `UseCases/Clases/UpdateClaseCommandTests.cs` | Editar clase, validación capacidad vs inscripciones | ~3 |
+| `UseCases/Clases/CancelClaseCommandTests.cs` | Cancelar clase, cancelar inscripciones, notificar | ~8 |
+| `UseCases/Clases/ReactivarClaseCommandTests.cs` | Reactivar clase cancelada | ~3 |
+| `UseCases/Clases/GetClasesQueryTests.cs` | Listado de clases con filtros | ~3 |
+| `UseCases/Horarios/CreateHorarioCommandTests.cs` | Crear horario con validación de conflicto de sala (RF-09) | ~5 |
+| `UseCases/Horarios/UpdateHorarioCommandTests.cs` | Editar horario, revalidar conflicto, notificar inscriptos | ~7 |
+| `UseCases/Horarios/DeleteHorarioCommandTests.cs` | Eliminar horario | ~2 |
+| `UseCases/Horarios/GetHorariosQueryTests.cs` | Listado de horarios con filtros | ~2 |
+
+**Total aproximado de la iteración:** ~57 casos `[Fact]`/`[Theory]` (dominio ~30 + application ~27).
+
 ## Pruebas funcionales de frontend
 
 ### Prueba 3.1 --- Crear clase desde panel de administración
