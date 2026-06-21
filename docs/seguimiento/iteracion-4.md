@@ -228,6 +228,27 @@ Durante la ejecución de los tests de Postman se detectaron y corrigieron los si
 | Test RNF-01 fallaba al loguear empleado restringido (401) | `CrearEmpleadoRequest` ya no acepta password (it4: credenciales autogeneradas). El test intentaba loguear con un password hardcodeado que no coincidía con el generado por el sistema. | Se agregó un paso intermedio `PATCH /api/empleados/{id}/password` en el setup de RNF-01 para asignar un password conocido al empleado antes del login. |
 | Test `unidadIds` fallaba para admin (expected array, got null) | `unidadIds` es `null` para usuarios que no son socios (admin, empleados), ya que solo los socios tienen unidades asignadas. | Se actualizó la aserción en los tests de login y `/auth/me` para aceptar `null` (admin/empleados) o `array` (socios). |
 
+## Pruebas automatizadas (xUnit)
+
+Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`. Se ejecutan con `dotnet test` desde `backend/`. El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4 está en [[pruebas-automatizadas-it1-4]].
+
+**Pruebas de aplicación (`GymFlow.Application.Tests`):**
+
+| Clase de test | Caso de uso / área | Casos (aprox.) |
+|-|-|-|
+| `UseCases/Inscripciones/InscribirSocioCommandTests.cs` | Inscribir a un horario (RF-10): cupo, duplicados RN-09, cuota al día, clase activa | ~4 |
+| `UseCases/Inscripciones/CancelarInscripcionCommandTests.cs` | Cancelar inscripción, liberar cupo | ~2 |
+| `UseCases/Inscripciones/GetMisInscripcionesQueryTests.cs` | "Mis Inscripciones" (RF-11): conteo batch sin N+1 | ~1 |
+| `UseCases/Empleados/CrearEmpleadoCommandTests.cs` | Alta de empleado con credenciales temporales autogeneradas + email (RF-12) | ~9 |
+| `UseCases/Empleados/ActualizarEmpleadoCommandTests.cs` | Editar empleado | ~6 |
+| `UseCases/Empleados/CambiarPasswordCommandTests.cs` | Cambio de password de empleado | ~3 |
+| `UseCases/Empleados/DarDeBajaEmpleadoCommandTests.cs` | Baja lógica de empleado | ~3 |
+| `UseCases/Empleados/ReactivarEmpleadoCommandTests.cs` | Reactivar empleado | ~2 |
+| `UseCases/Empleados/GetEmpleadosQueryTests.cs` | Listado de empleados | ~2 |
+| `Common/GeneradorPasswordTests.cs` | `GeneradorPassword`: contraseñas temporales seguras | ~2 |
+
+**Total aproximado de la iteración:** ~34 casos `[Fact]`/`[Theory]` (todos en Application). RF-13 y RF-14 quedan cubiertos por las pruebas de roles y permisos de la iteración 2 (`RequierePermisoAttributeTests`, commands de `Roles/`), ya que el profesor se modela como un rol configurable.
+
 ## Pruebas funcionales de frontend
 
 ### Prueba 4.1 --- Inscripción a horario específico desde portal del socio

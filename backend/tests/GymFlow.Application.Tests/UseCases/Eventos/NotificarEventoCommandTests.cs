@@ -48,7 +48,7 @@ public class NotificarEventoCommandTests
         _emailService.Setup(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new EmailResultado(Exitoso: true));
 
-        await CrearCommand().ExecuteAsync(evento.Id, Guid.NewGuid(), "Admin Test");
+        var resultado = await CrearCommand().ExecuteAsync(evento.Id, Guid.NewGuid(), "Admin Test");
 
         _socioRepo.Verify(r => r.GetActivosByUnidadAsync(unidad.Id), Times.Once);
         _emailService.Verify(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
@@ -56,6 +56,12 @@ public class NotificarEventoCommandTests
         _auditLogger.Verify(a => a.LogAsync(It.IsAny<Guid>(), "Admin Test",
             It.IsAny<TipoAccionAuditoria>(), "Evento", evento.Id,
             It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+
+        // El comando ahora devuelve el conteo y la sede para informarlo en la UI (issue #51).
+        Assert.Equal(socios.Length, resultado.Total);
+        Assert.Equal(socios.Length, resultado.Enviados);
+        Assert.Equal(0, resultado.Fallidos);
+        Assert.Equal(unidad.Nombre, resultado.SedeNombre);
     }
 
     [Fact]

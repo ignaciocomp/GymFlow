@@ -115,6 +115,12 @@ public class SocioRepository : ISocioRepository
             .ToListAsync();
     }
 
+    public async Task<int> CountActivosByUnidadAsync(Guid unidadId)
+    {
+        return await _context.Socios
+            .CountAsync(s => s.EstaActivo && s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId));
+    }
+
     public async Task AddAsync(Socio socio)
     {
         await _context.Socios.AddAsync(socio);

@@ -4,6 +4,7 @@ import { inscripcionesApi } from '@/services/api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, Loader2, CalendarDays } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
 
 export default function MisInscripcionesPage() {
   const queryClient = useQueryClient()
@@ -59,7 +60,7 @@ export default function MisInscripcionesPage() {
                     {i.sala && <> &middot; {i.sala}</>}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Inscripto el {new Date(i.fechaInscripcion).toLocaleDateString('es-UY')}
+                    Inscripto el {formatDate(i.fechaInscripcion)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
