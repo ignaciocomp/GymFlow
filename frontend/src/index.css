@@ -85,6 +85,25 @@
     --sidebar-ring: #38bdf8;
 }
 
+/*
+ * Tokens del sitio web público (RF-19).
+ * Scopeados a `.public-site` (envuelve el PublicLayout) para no alterar el
+ * tema del panel admin/portal. Dark + acento celeste.
+ * --public-accent reusa el celeste de la marca (--primary). El valor exacto
+ * se calibra cuando llegue el logo: cambiarlo acá impacta todo el sitio.
+ */
+.public-site {
+    --public-bg: #0a1622;          /* casi negro azulado (fondo general) */
+    --public-surface: #111f30;     /* superficies / cards */
+    --public-surface-2: #16263a;   /* superficie elevada / hover */
+    --public-text: #e8eef6;        /* texto principal */
+    --public-muted: #94a3b8;       /* texto secundario / mutado */
+    --public-border: #223349;      /* bordes sutiles */
+    --public-accent: #38bdf8;      /* celeste de la marca (= --primary) */
+    --public-accent-hover: #0ea5e9;/* hover del acento */
+    --public-accent-ink: #07131f;  /* texto sobre el acento (alto contraste) */
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;

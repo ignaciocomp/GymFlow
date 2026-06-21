@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /portal
+
+Sitemap: https://nuevomalvin.com.uy/sitemap.xml

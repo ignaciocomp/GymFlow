@@ -59,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<RevertirAnulacionCuotaCommand>();
         services.AddScoped<NotificarCuotaCommand>();
         services.AddScoped<ProcesarRecordatoriosCommand>();
+        services.AddScoped<GenerarCuotasCommand>();
         services.AddScoped<GetSociosConEstadoCuotaQuery>();
         services.AddScoped<GetClasesQuery>();
         services.AddScoped<GetClaseByIdQuery>();

@@ -23,6 +23,8 @@ public class CuotasController : ControllerBase
     private readonly NotificarCuotaCommand _notificarCommand;
     private readonly GetSociosConEstadoCuotaQuery _getSociosConEstadoCuotaQuery;
     private readonly IUnidadesVisiblesResolver _unidadesResolver;
+    private readonly ProcesarRecordatoriosCommand _procesarRecordatoriosCommand;
+    private readonly GenerarCuotasCommand _generarCuotasCommand;
 
     public CuotasController(
         GetCuotasBySocioQuery getCuotasBySocioQuery,
@@ -33,7 +35,9 @@ public class CuotasController : ControllerBase
         RevertirAnulacionCuotaCommand revertirAnulacionCommand,
         NotificarCuotaCommand notificarCommand,
         GetSociosConEstadoCuotaQuery getSociosConEstadoCuotaQuery,
-        IUnidadesVisiblesResolver unidadesResolver)
+        IUnidadesVisiblesResolver unidadesResolver,
+        ProcesarRecordatoriosCommand procesarRecordatoriosCommand,
+        GenerarCuotasCommand generarCuotasCommand)
     {
         _getCuotasBySocioQuery = getCuotasBySocioQuery;
         _getCuotasAdminQuery = getCuotasAdminQuery;
@@ -44,6 +48,8 @@ public class CuotasController : ControllerBase
         _notificarCommand = notificarCommand;
         _getSociosConEstadoCuotaQuery = getSociosConEstadoCuotaQuery;
         _unidadesResolver = unidadesResolver;
+        _procesarRecordatoriosCommand = procesarRecordatoriosCommand;
+        _generarCuotasCommand = generarCuotasCommand;
     }
 
     [HttpGet("mis-cuotas")]
@@ -186,6 +192,33 @@ public class CuotasController : ControllerBase
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+    }
+
+    /// <summary>
+    /// Dispara manualmente el job de recordatorios de cuotas (mismo trabajo que corre a diario
+    /// el RecordatorioBackgroundService). Pensado para pruebas on-demand (#24/#28) y como base
+    /// para un scheduler externo bajo scale-to-zero. Idempotente: no duplica recordatorios del día.
+    /// </summary>
+    [HttpPost("procesar-recordatorios")]
+    [RequierePermiso(Modulo.Cuotas, Operacion.Modificacion)]
+    public async Task<IActionResult> ProcesarRecordatorios()
+    {
+        var resultado = await _procesarRecordatoriosCommand.ExecuteAsync(DateTime.UtcNow);
+        return Ok(resultado);
+    }
+
+    /// <summary>
+    /// Dispara manualmente el job de generación de cuotas (mismo trabajo que corre a diario
+    /// el CuotaGeneracionBackgroundService). Pensado para pruebas on-demand (#24/#28) y como base
+    /// para un scheduler externo bajo scale-to-zero. Idempotente: no genera cuotas si la última
+    /// sigue vigente.
+    /// </summary>
+    [HttpPost("generar")]
+    [RequierePermiso(Modulo.Cuotas, Operacion.Modificacion)]
+    public async Task<IActionResult> Generar()
+    {
+        var resultado = await _generarCuotasCommand.ExecuteAsync();
+        return Ok(resultado);
     }
 
     private (Guid Id, string Nombre) GetCurrentUser()
