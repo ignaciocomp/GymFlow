@@ -9,6 +9,8 @@
 | *RF cubiertos* | RF-06 (recordatorios automáticos), RF-07 (control de estado de cuota) |
 | *Iteración(es) de entrega* | IT-2 — Generación automática de cuotas + vista admin/socio + recordatorios por email |
 | *Referencia original* | [GymFlow_Requerimientos_Completos.md § CU-03](../GymFlow_Requerimientos_Completos.md#cu-03--gestión-de-cuotas-y-recordatorios-automáticos) |
+| *Referencia spec* | [spec-rf06-recordatorios-cuota](../specs/spec-rf06-recordatorios-cuota.md), [spec-rf07-gestion-cuotas](../specs/spec-rf07-gestion-cuotas.md) |
+| *Referencia plan* | [plan-rf07-gestion-cuotas](../plans/plan-rf07-gestion-cuotas.md) |
 | *Documento de iteración* | [Documentacion_It.2.docx](../seguimiento/Documentacion_It.2.docx) |
 
 **Flujo principal — Generación automática de cuotas (RF-07):**

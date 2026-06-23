@@ -9,6 +9,8 @@
 | *RF cubiertos* | RNF-01 (autenticación + autorización por roles), RF-12 (credenciales temporales), RF-13 (profesor registra socios), RF-14 (profesor gestiona clases) |
 | *Iteración(es) de entrega* | IT-2 — Sistema de roles dinámicos con permisos por módulo + ABM de empleados + entidad `Empleado` con BCrypt. IT-4 — Alta de empleado sin password manual: el sistema autogenera credenciales temporales y las envía por email. Roles "Profesor" cubiertos por permisos configurables. IT-5 — Rol "Dueño" entre Admin y los roles dinámicos, con filtrado automático por sedes asignadas. |
 | *Referencia original* | [GymFlow_Requerimientos_Completos.md § CU-07](../GymFlow_Requerimientos_Completos.md#cu-07--gestión-de-empleados-y-profesores) |
+| *Referencia spec* | [spec-it4-inscripciones-empleados-horarios](../specs/spec-it4-inscripciones-empleados-horarios.md), [spec-it5-rol-dueno](../specs/spec-it5-rol-dueno.md) |
+| *Referencia plan* | [plan-it4-inscripciones-empleados-horarios](../plans/plan-it4-inscripciones-empleados-horarios.md), [plan-it5-rol-dueno](../plans/plan-it5-rol-dueno.md) |
 | *Documentos de iteración* | [Documentacion_It.2.docx](../seguimiento/Documentacion_It.2.docx), [iteracion-4.md](../seguimiento/iteracion-4.md), [iteracion-5.md](../seguimiento/iteracion-5.md) |
 
 **Flujo principal — Alta de Empleado con credenciales temporales (IT-4):**

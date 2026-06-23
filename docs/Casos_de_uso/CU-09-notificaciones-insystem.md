@@ -9,6 +9,8 @@
 | *RF cubiertos* | RF-16 |
 | *Iteración(es) de entrega* | IT-5 — Centro de notificaciones dentro de la app para el socio (adelantado de IT-6). Campanita con contador de no leídas + inbox en el portal. El guardado de cada notificación se hace en transacción propia: si falla, la operación de negocio que la disparó queda confirmada igual. |
 | *Referencia original* | Funcionalidad documentada en [iteracion-5.md § CU-09](../seguimiento/iteracion-5.md). No figura como CU detallado en el documento original de requerimientos. |
+| *Referencia spec* | [spec-rf16-notificaciones](../specs/spec-rf16-notificaciones.md) |
+| *Referencia plan* | [plan-rf16-notificaciones](../plans/plan-rf16-notificaciones.md) |
 | *Documento de iteración* | [iteracion-5.md](../seguimiento/iteracion-5.md) |
 
 **Comportamiento general:**
