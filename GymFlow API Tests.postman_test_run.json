@@ -1,0 +1,4711 @@
+{
+	"id": "7834e0fa-cd4e-4e8e-9045-a2c770ec0893",
+	"name": "GymFlow API Tests",
+	"timestamp": "2026-06-24T23:25:01.941Z",
+	"collection_id": "32928777-d3eb974d-c9ab-401b-a6db-7135c8aa9538",
+	"folder_id": 0,
+	"environment_id": "0",
+	"totalPass": 244,
+	"delay": 0,
+	"persist": true,
+	"status": "finished",
+	"startedAt": "2026-06-24T23:24:40.092Z",
+	"totalFail": 0,
+	"results": [
+		{
+			"id": "49adb917-1a76-4773-b78c-104477fd7b24",
+			"name": "200 - Login exitoso (Admin) - paso 1 credenciales",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 312,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"Respuesta tiene forma LoginResultado (requiereMfa, mfaToken, sesion)": true,
+				"Admin requiere MFA (es Empleado)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Respuesta tiene forma LoginResultado (requiereMfa, mfaToken, sesion)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Admin requiere MFA (es Empleado)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				312
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"Respuesta tiene forma LoginResultado (requiereMfa, mfaToken, sesion)": true,
+					"Admin requiere MFA (es Empleado)": true
+				}
+			]
+		},
+		{
+			"id": "b62d9cc8-4ac3-4d7a-af0b-34544efa0772",
+			"name": "200 - Login exitoso (Admin) - paso 2 MFA",
+			"url": "http://localhost:5173/api/auth/me",
+			"time": 12,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA setup admin@gymflow.com": true,
+				"MFA activate admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA setup admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA activate admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA setup admin@gymflow.com": true,
+					"MFA activate admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "22954caf-0459-48ae-b2cf-e0226989e082",
+			"name": "401 - Login con credenciales inválidas",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 20,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				20
+			],
+			"allTests": [
+				{
+					"Status code is 401": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "94d67b7c-f03e-42c5-ba92-610fb1c3fe4a",
+			"name": "400 - Login sin campos requeridos",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 43,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				43
+			],
+			"allTests": [
+				{
+					"Status code is 400": true
+				}
+			]
+		},
+		{
+			"id": "33fc3020-f6ea-4b25-9109-753199cbe75d",
+			"name": "200 - Obtener perfil autenticado",
+			"url": "http://localhost:5173/api/auth/me",
+			"time": 34,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta tiene la estructura de usuario esperada": true,
+				"La respuesta contiene unidadIds (null para admin, array para socio)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta tiene la estructura de usuario esperada": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta contiene unidadIds (null para admin, array para socio)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				34
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta tiene la estructura de usuario esperada": true,
+					"La respuesta contiene unidadIds (null para admin, array para socio)": true
+				}
+			]
+		},
+		{
+			"id": "77ddcbfb-61a5-4660-9353-a23d1cfac005",
+			"name": "401 - Perfil sin autenticación",
+			"url": "http://localhost:5173/api/auth/me",
+			"time": 13,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "7ad7602c-5f1d-4d66-a61e-ef145ba8d118",
+			"name": "200 - Lista Unidades",
+			"url": "http://localhost:5173/api/unidades",
+			"time": 80,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta es un array con la estructura de UnidadDto": true,
+				"Existen las 2 unidades seed (Gimnasio + Espacio Mora)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array con la estructura de UnidadDto": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Existen las 2 unidades seed (Gimnasio + Espacio Mora)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				80
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta es un array con la estructura de UnidadDto": true,
+					"Existen las 2 unidades seed (Gimnasio + Espacio Mora)": true
+				}
+			]
+		},
+		{
+			"id": "558aa839-4917-4b45-9921-1c8a6a8be68d",
+			"name": "200 - Lista Planes",
+			"url": "http://localhost:5173/api/planes",
+			"time": 83,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta es un array con la estructura de PlanDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array con la estructura de PlanDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				83
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta es un array con la estructura de PlanDto": true
+				}
+			]
+		},
+		{
+			"id": "0f0f94db-e046-4d11-bce7-3d840a2f2924",
+			"name": "200 - Plan por ID",
+			"url": "http://localhost:5173/api/planes/f24dca59-677d-4a96-9ac5-9d9000015af0",
+			"time": 35,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La respuesta tiene la estructura de PlanDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta tiene la estructura de PlanDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				35
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La respuesta tiene la estructura de PlanDto": true
+				}
+			]
+		},
+		{
+			"id": "fc460e40-d1c8-4fe2-a733-db296a657112",
+			"name": "404 - Plan no encontrado",
+			"url": "http://localhost:5173/api/planes/00000000-0000-0000-0000-000000000000",
+			"time": 24,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				24
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "9735012e-9087-439d-9de3-fde28811a29f",
+			"name": "201 - Crear Plan",
+			"url": "http://localhost:5173/api/planes",
+			"time": 109,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"El plan creado tiene la estructura esperada": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El plan creado tiene la estructura esperada": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				109
+			],
+			"allTests": [
+				{
+					"Status code is 201": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"El plan creado tiene la estructura esperada": true
+				}
+			]
+		},
+		{
+			"id": "ceaff205-37b3-4425-b171-1da74b563a6e",
+			"name": "400 - Crear Plan sin nombre",
+			"url": "http://localhost:5173/api/planes",
+			"time": 40,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"El mensaje de error es descriptivo": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El mensaje de error es descriptivo": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				40
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"El mensaje de error es descriptivo": true
+				}
+			]
+		},
+		{
+			"id": "a04eb4b2-731a-4a8c-9a98-70583e1bac23",
+			"name": "400 - Crear Plan con unidad inexistente",
+			"url": "http://localhost:5173/api/planes",
+			"time": 20,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400 o 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400 o 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				20
+			],
+			"allTests": [
+				{
+					"Status code is 400 o 404": true
+				}
+			]
+		},
+		{
+			"id": "2c3a9915-1c75-4bbf-a455-1cdbef49acb8",
+			"name": "200 - Actualizar Plan",
+			"url": "http://localhost:5173/api/planes/8d2f6910-8b46-4345-9727-1abf9caf8f07",
+			"time": 52,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El plan se actualizó correctamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El plan se actualizó correctamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				52
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El plan se actualizó correctamente": true
+				}
+			]
+		},
+		{
+			"id": "53808eb5-8467-49f8-a1b9-eb63e08560fa",
+			"name": "204 - Eliminar Plan",
+			"url": "http://localhost:5173/api/planes/8d2f6910-8b46-4345-9727-1abf9caf8f07",
+			"time": 39,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Status code is 204 o 200": true
+			},
+			"testPassFailCounts": {
+				"Status code is 204 o 200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				39
+			],
+			"allTests": [
+				{
+					"Status code is 204 o 200": true
+				}
+			]
+		},
+		{
+			"id": "674bcf25-a94a-4432-b027-ee1707bd1fc3",
+			"name": "404 - Eliminar Plan inexistente",
+			"url": "http://localhost:5173/api/planes/00000000-0000-0000-0000-000000000000",
+			"time": 24,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				24
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "81c11e62-e4cc-4415-a839-66bc7029415e",
+			"name": "200 - Lista Socios",
+			"url": "http://localhost:5173/api/socios",
+			"time": 88,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta es un array (puede estar vacío si no hay socios)": true,
+				"Si hay socios, la estructura de SocioDto es correcta": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array (puede estar vacío si no hay socios)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Si hay socios, la estructura de SocioDto es correcta": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				88
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta es un array (puede estar vacío si no hay socios)": true,
+					"Si hay socios, la estructura de SocioDto es correcta": true
+				}
+			]
+		},
+		{
+			"id": "768b1f59-07ff-4ba3-b1de-ae0be8b904db",
+			"name": "201 - Crear Socio",
+			"url": "http://localhost:5173/api/socios",
+			"time": 213,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"El socio creado tiene la estructura de SocioDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El socio creado tiene la estructura de SocioDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				213
+			],
+			"allTests": [
+				{
+					"Status code is 201": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"El socio creado tiene la estructura de SocioDto": true
+				}
+			]
+		},
+		{
+			"id": "ed004b30-faeb-4948-86ec-dd9641fb1039",
+			"name": "400 - Crear Socio sin nombre",
+			"url": "http://localhost:5173/api/socios",
+			"time": 36,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"El error es descriptivo": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error es descriptivo": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				36
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"El error es descriptivo": true
+				}
+			]
+		},
+		{
+			"id": "bcab700d-229e-46ce-984f-08aad55e5539",
+			"name": "400 - Crear Socio sin consentimiento (Ley 18.331)",
+			"url": "http://localhost:5173/api/socios",
+			"time": 17,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"El error menciona el consentimiento": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error menciona el consentimiento": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				17
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"El error menciona el consentimiento": true
+				}
+			]
+		},
+		{
+			"id": "c97a8b23-506c-49bf-92d2-415eaf01690a",
+			"name": "400 - Crear Socio con correo duplicado",
+			"url": "http://localhost:5173/api/socios",
+			"time": 23,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"Status code is 400 o 409": true,
+				"El error indica correo duplicado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400 o 409": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error indica correo duplicado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				23
+			],
+			"allTests": [
+				{
+					"Status code is 400 o 409": true,
+					"El error indica correo duplicado": true
+				}
+			]
+		},
+		{
+			"id": "61b01198-b942-4eec-9e90-fa54fa083266",
+			"name": "200 - Socio por ID",
+			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c",
+			"time": 20,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La respuesta tiene la estructura de SocioDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta tiene la estructura de SocioDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				20
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La respuesta tiene la estructura de SocioDto": true
+				}
+			]
+		},
+		{
+			"id": "9138f0d0-cc07-47ca-ac21-bb0d1b27c1c1",
+			"name": "404 - Socio no encontrado",
+			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000000",
+			"time": 16,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "5f2c3d33-9bdb-43fe-82b8-665fab0ce842",
+			"name": "200 - Actualizar Socio",
+			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c",
+			"time": 85,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El socio se actualizó correctamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El socio se actualizó correctamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				85
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El socio se actualizó correctamente": true
+				}
+			]
+		},
+		{
+			"id": "7def0d14-5c53-476e-abf4-d243b9aedb5d",
+			"name": "404 - Actualizar Socio inexistente",
+			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000000",
+			"time": 32,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				32
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "c0ab9af8-d660-4bcb-bcf2-e67c82527779",
+			"name": "200 - Baja lógica de Socio",
+			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c",
+			"time": 54,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Status code is 200 o 204": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200 o 204": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				54
+			],
+			"allTests": [
+				{
+					"Status code is 200 o 204": true
+				}
+			]
+		},
+		{
+			"id": "e01ca74f-e58b-48a9-8622-bb7b480380f7",
+			"name": "200 - Verificar socio inactivo tras baja",
+			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c",
+			"time": 24,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El socio está inactivo (baja lógica, no eliminado)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El socio está inactivo (baja lógica, no eliminado)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				24
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El socio está inactivo (baja lógica, no eliminado)": true
+				}
+			]
+		},
+		{
+			"id": "221bdf47-c30e-45e6-b7b2-aae09e7f5a7d",
+			"name": "200 - Reactivar Socio",
+			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c/reactivar",
+			"time": 33,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El socio está activo nuevamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El socio está activo nuevamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				33
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El socio está activo nuevamente": true
+				}
+			]
+		},
+		{
+			"id": "bc9afdb3-607f-4e8d-94e5-e98d09075cd5",
+			"name": "404 - Reactivar Socio inexistente",
+			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000000/reactivar",
+			"time": 17,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				17
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "f0061cb0-ff99-4de3-b4b9-f2c2b4722a5e",
+			"name": "200 - Lista Auditoría (sin filtros)",
+			"url": "http://localhost:5173/api/auditoria",
+			"time": 60,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta es un array con estructura de AuditoriaDto": true,
+				"Hay registros de auditoría (las operaciones anteriores generaron logs)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array con estructura de AuditoriaDto": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Hay registros de auditoría (las operaciones anteriores generaron logs)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				60
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta es un array con estructura de AuditoriaDto": true,
+					"Hay registros de auditoría (las operaciones anteriores generaron logs)": true
+				}
+			]
+		},
+		{
+			"id": "75a7323c-d2b4-4d43-92d2-d062beaaa974",
+			"name": "200 - Auditoría con filtro por tipoAccion",
+			"url": "http://localhost:5173/api/auditoria?tipoAccion=Creacion",
+			"time": 31,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Todos los registros son del tipo filtrado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Todos los registros son del tipo filtrado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				31
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Todos los registros son del tipo filtrado": true
+				}
+			]
+		},
+		{
+			"id": "12269b29-1d30-4043-89ec-21bad353d459",
+			"name": "200 - Auditoría con filtro por fechas",
+			"url": "http://localhost:5173/api/auditoria?desde=2026-01-01&hasta=2026-12-31",
+			"time": 40,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La respuesta es un array": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				40
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La respuesta es un array": true
+				}
+			]
+		},
+		{
+			"id": "eba0403e-618b-4813-9737-ed81282ed669",
+			"name": "1. Login Admin",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 136,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA verify admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA verify admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				136
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA verify admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "bdaeb23f-4ba2-4a06-b222-710e6ab5338d",
+			"name": "2. Obtener Permisos disponibles",
+			"url": "http://localhost:5173/api/permisos",
+			"time": 25,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Se obtuvieron permisos del sistema": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Se obtuvieron permisos del sistema": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				25
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Se obtuvieron permisos del sistema": true
+				}
+			]
+		},
+		{
+			"id": "670e94f5-e642-485a-acd0-f2f4c565670a",
+			"name": "3. Obtener Unidades (datos auxiliares)",
+			"url": "http://localhost:5173/api/unidades",
+			"time": 18,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				18
+			],
+			"allTests": [
+				{
+					"Status code is 200": true
+				}
+			]
+		},
+		{
+			"id": "03f6b5ef-6ba2-486a-bb62-16a08d91a27e",
+			"name": "4. Crear Rol Restringido (Recepcionista Test)",
+			"url": "http://localhost:5173/api/roles",
+			"time": 52,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Rol restringido creado exitosamente (201)": true,
+				"El rol tiene los permisos correctos": true
+			},
+			"testPassFailCounts": {
+				"Rol restringido creado exitosamente (201)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El rol tiene los permisos correctos": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				52
+			],
+			"allTests": [
+				{
+					"Rol restringido creado exitosamente (201)": true,
+					"El rol tiene los permisos correctos": true
+				}
+			]
+		},
+		{
+			"id": "acdf5723-40b7-46bf-8b8f-1abbf0bf6520",
+			"name": "5. Crear Empleado con Rol Restringido",
+			"url": "http://localhost:5173/api/empleados",
+			"time": 206,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Empleado restringido creado exitosamente (201)": true,
+				"El empleado tiene el rol correcto": true
+			},
+			"testPassFailCounts": {
+				"Empleado restringido creado exitosamente (201)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El empleado tiene el rol correcto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				206
+			],
+			"allTests": [
+				{
+					"Empleado restringido creado exitosamente (201)": true,
+					"El empleado tiene el rol correcto": true
+				}
+			]
+		},
+		{
+			"id": "6de0b4a0-6f73-4e92-88c2-7011437f0963",
+			"name": "5.5. Asignar password conocido al empleado (PATCH)",
+			"url": "http://localhost:5173/api/empleados/3a396a29-1e56-4bdb-b520-d7802aca566c/password",
+			"time": 186,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Password asignado exitosamente (204)": true
+			},
+			"testPassFailCounts": {
+				"Password asignado exitosamente (204)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				186
+			],
+			"allTests": [
+				{
+					"Password asignado exitosamente (204)": true
+				}
+			]
+		},
+		{
+			"id": "4bca77b4-2f21-4982-a6fc-5e76d1533104",
+			"name": "6. Login como Empleado Restringido",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 171,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login recepcionista.test.1782343487414@gymflow.com (200)": true,
+				"MFA setup recepcionista.test.1782343487414@gymflow.com": true,
+				"MFA activate recepcionista.test.1782343487414@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login recepcionista.test.1782343487414@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA setup recepcionista.test.1782343487414@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA activate recepcionista.test.1782343487414@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				171
+			],
+			"allTests": [
+				{
+					"Login recepcionista.test.1782343487414@gymflow.com (200)": true,
+					"MFA setup recepcionista.test.1782343487414@gymflow.com": true,
+					"MFA activate recepcionista.test.1782343487414@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "6e427aa8-1f5b-4231-94e6-ffe4c67d86ba",
+			"name": "200 - Leer Socios (tiene Socios.Lectura)",
+			"url": "http://localhost:5173/api/socios",
+			"time": 13,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200 - Permiso Socios.Lectura concedido": true,
+				"La respuesta es un array de socios": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200 - Permiso Socios.Lectura concedido": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array de socios": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"Status code is 200 - Permiso Socios.Lectura concedido": true,
+					"La respuesta es un array de socios": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "9b0bf49c-8615-4662-a89a-5246eb3af6bd",
+			"name": "200 - Leer Planes (tiene Planes.Lectura)",
+			"url": "http://localhost:5173/api/planes",
+			"time": 19,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200 - Permiso Planes.Lectura concedido": true,
+				"La respuesta es un array de planes": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200 - Permiso Planes.Lectura concedido": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array de planes": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				19
+			],
+			"allTests": [
+				{
+					"Status code is 200 - Permiso Planes.Lectura concedido": true,
+					"La respuesta es un array de planes": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "38a40a7c-56fd-46e3-bf5c-e32c3ff1a996",
+			"name": "201 - Crear Plan (tiene Planes.Escritura)",
+			"url": "http://localhost:5173/api/planes",
+			"time": 18,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201 - Permiso Planes.Escritura concedido": true,
+				"El plan fue creado por el usuario restringido": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201 - Permiso Planes.Escritura concedido": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El plan fue creado por el usuario restringido": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				18
+			],
+			"allTests": [
+				{
+					"Status code is 201 - Permiso Planes.Escritura concedido": true,
+					"El plan fue creado por el usuario restringido": true
+				}
+			]
+		},
+		{
+			"id": "9dcdef4a-88f9-47df-8131-1e92fa823645",
+			"name": "403 - Crear Socio (sin Socios.Escritura)",
+			"url": "http://localhost:5173/api/socios",
+			"time": 20,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Permiso Socios.Escritura DENEGADO": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Permiso Socios.Escritura DENEGADO": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				20
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Permiso Socios.Escritura DENEGADO": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "d1876c93-2039-4bcc-ba91-c9f5c556dadb",
+			"name": "403 - Modificar Socio (sin Socios.Modificacion)",
+			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000001",
+			"time": 10,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Permiso Socios.Modificacion DENEGADO": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Permiso Socios.Modificacion DENEGADO": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Permiso Socios.Modificacion DENEGADO": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "ddb48df1-6c27-439a-aec3-f90ff018ef4b",
+			"name": "403 - Eliminar Socio (sin Socios.Eliminacion)",
+			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000001",
+			"time": 12,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Permiso Socios.Eliminacion DENEGADO": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Permiso Socios.Eliminacion DENEGADO": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Permiso Socios.Eliminacion DENEGADO": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "eb12c426-ccdd-4d5e-b8ac-46d44e35b21f",
+			"name": "403 - Modificar Plan (sin Planes.Modificacion)",
+			"url": "http://localhost:5173/api/planes/33a09dc6-357e-4742-9d7e-2d9cb23334c0",
+			"time": 8,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Permiso Planes.Modificacion DENEGADO": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Permiso Planes.Modificacion DENEGADO": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				8
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Permiso Planes.Modificacion DENEGADO": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "4a3a7f83-f89f-455d-9e3d-ff0a04ed1cbb",
+			"name": "403 - Eliminar Plan (sin Planes.Eliminacion)",
+			"url": "http://localhost:5173/api/planes/33a09dc6-357e-4742-9d7e-2d9cb23334c0",
+			"time": 16,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Permiso Planes.Eliminacion DENEGADO": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Permiso Planes.Eliminacion DENEGADO": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Permiso Planes.Eliminacion DENEGADO": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "158e1259-0e52-4e31-bb17-f6ab85e4a699",
+			"name": "403 - Leer Auditoría (sin acceso al módulo Auditoria)",
+			"url": "http://localhost:5173/api/auditoria",
+			"time": 14,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Sin acceso al módulo Auditoría": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Sin acceso al módulo Auditoría": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Sin acceso al módulo Auditoría": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "4fd4a574-9b25-4837-b8fc-ecdb53a76852",
+			"name": "403 - Leer Empleados (sin acceso al módulo Empleados)",
+			"url": "http://localhost:5173/api/empleados",
+			"time": 16,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Sin acceso al módulo Empleados": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Sin acceso al módulo Empleados": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Sin acceso al módulo Empleados": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "b7f9ce90-62ff-4dff-9c17-0060b8d60eb4",
+			"name": "403 - Leer Unidades (sin acceso al módulo Unidades)",
+			"url": "http://localhost:5173/api/unidades",
+			"time": 14,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Sin acceso al módulo Unidades": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Sin acceso al módulo Unidades": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Sin acceso al módulo Unidades": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "4de60238-d2c2-48d1-ba97-f62fa1a72843",
+			"name": "403 - Crear Rol (sin acceso al módulo Auditoria)",
+			"url": "http://localhost:5173/api/roles",
+			"time": 10,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Sin permiso para gestionar roles": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Sin permiso para gestionar roles": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Sin permiso para gestionar roles": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "75b1290b-1e43-4971-9352-2be980b5ee17",
+			"name": "403 - Crear Empleado (sin acceso al módulo Empleados)",
+			"url": "http://localhost:5173/api/empleados",
+			"time": 11,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403 - Sin permiso para crear empleados": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403 - Sin permiso para crear empleados": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				11
+			],
+			"allTests": [
+				{
+					"Status code is 403 - Sin permiso para crear empleados": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "1f5256f1-52f7-4b43-a5e5-b330a7ad86f7",
+			"name": "401 - Acceder a Socios sin autenticación",
+			"url": "http://localhost:5173/api/socios",
+			"time": 9,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401 - Sin token de autenticación": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401 - Sin token de autenticación": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				9
+			],
+			"allTests": [
+				{
+					"Status code is 401 - Sin token de autenticación": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "d21e6993-9255-4f8e-b15f-50c22ca397f6",
+			"name": "401 - Acceder a Planes sin autenticación",
+			"url": "http://localhost:5173/api/planes",
+			"time": 13,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401 - Sin token de autenticación": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401 - Sin token de autenticación": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"Status code is 401 - Sin token de autenticación": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "436c5f69-8113-43d7-81ff-fe6f0abad4bb",
+			"name": "401 - Crear Socio con token inválido",
+			"url": "http://localhost:5173/api/socios",
+			"time": 18,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401 - Token inválido rechazado": true,
+				"Tiempo de respuesta menor a 500ms": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401 - Token inválido rechazado": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				18
+			],
+			"allTests": [
+				{
+					"Status code is 401 - Token inválido rechazado": true,
+					"Tiempo de respuesta menor a 500ms": true
+				}
+			]
+		},
+		{
+			"id": "095fe77e-9e64-4c23-9ee9-96d061423c2d",
+			"name": "1. Login Admin para cleanup",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 163,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA verify admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA verify admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				163
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA verify admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "91b0bc5b-8f7c-4083-bbc7-f42e2ff9e0b6",
+			"name": "2. Eliminar Plan creado en test",
+			"url": "http://localhost:5173/api/planes/33a09dc6-357e-4742-9d7e-2d9cb23334c0",
+			"time": 25,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Plan de test eliminado (200 o 204)": true
+			},
+			"testPassFailCounts": {
+				"Plan de test eliminado (200 o 204)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				25
+			],
+			"allTests": [
+				{
+					"Plan de test eliminado (200 o 204)": true
+				}
+			]
+		},
+		{
+			"id": "54697a47-4e01-41c1-8701-4fb4551bb480",
+			"name": "3. Reasignar Empleado al rol Admin (evitar FK)",
+			"url": "http://localhost:5173/api/empleados/3a396a29-1e56-4bdb-b520-d7802aca566c",
+			"time": 68,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Rol del empleado reasignado al Admin (200 o 204)": true
+			},
+			"testPassFailCounts": {
+				"Rol del empleado reasignado al Admin (200 o 204)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				68
+			],
+			"allTests": [
+				{
+					"Rol del empleado reasignado al Admin (200 o 204)": true
+				}
+			]
+		},
+		{
+			"id": "11d70fcd-b8ce-46e0-84ed-bbf6c07bd1a2",
+			"name": "4. Dar de baja Empleado test",
+			"url": "http://localhost:5173/api/empleados/3a396a29-1e56-4bdb-b520-d7802aca566c",
+			"time": 37,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Empleado de test dado de baja (200 o 204)": true
+			},
+			"testPassFailCounts": {
+				"Empleado de test dado de baja (200 o 204)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				37
+			],
+			"allTests": [
+				{
+					"Empleado de test dado de baja (200 o 204)": true
+				}
+			]
+		},
+		{
+			"id": "88078cc6-ce4c-4f00-8032-aabe691b73aa",
+			"name": "5. Eliminar Rol test",
+			"url": "http://localhost:5173/api/roles/b8a9e0db-2f33-496a-97a8-b39414e286f2",
+			"time": 100,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Rol de test eliminado (200 o 204)": true
+			},
+			"testPassFailCounts": {
+				"Rol de test eliminado (200 o 204)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				100
+			],
+			"allTests": [
+				{
+					"Rol de test eliminado (200 o 204)": true
+				}
+			]
+		},
+		{
+			"id": "fe78c13d-7e6e-4571-b757-10fb147404a2",
+			"name": "201 - Crear Clase",
+			"url": "http://localhost:5173/api/clases",
+			"time": 198,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La clase creada tiene la estructura de ClaseDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La clase creada tiene la estructura de ClaseDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				198
+			],
+			"allTests": [
+				{
+					"Status code is 201": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La clase creada tiene la estructura de ClaseDto": true
+				}
+			]
+		},
+		{
+			"id": "1914dcfa-16c5-4ea1-8d68-6af16db1d43a",
+			"name": "400 - Crear Clase sin nombre",
+			"url": "http://localhost:5173/api/clases",
+			"time": 15,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"El error es descriptivo": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error es descriptivo": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				15
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"El error es descriptivo": true
+				}
+			]
+		},
+		{
+			"id": "cc44a3a0-4440-4c14-97ab-fa88bae30c0b",
+			"name": "200 - Lista Clases",
+			"url": "http://localhost:5173/api/clases",
+			"time": 330,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta es un array con estructura de ClaseDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array con estructura de ClaseDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				330
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta es un array con estructura de ClaseDto": true
+				}
+			]
+		},
+		{
+			"id": "c827038a-e74e-4487-b83e-cfc12a69c304",
+			"name": "200 - Lista Clases filtradas por unidad",
+			"url": "http://localhost:5173/api/clases?unidadId=11433f70-415f-4902-a56e-d1961af13fcc",
+			"time": 98,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Todas las clases pertenecen a la unidad filtrada": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Todas las clases pertenecen a la unidad filtrada": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				98
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Todas las clases pertenecen a la unidad filtrada": true
+				}
+			]
+		},
+		{
+			"id": "d5f90471-ff1d-4202-9716-b8391bb56476",
+			"name": "200 - Lista Clases incluyendo inactivas",
+			"url": "http://localhost:5173/api/clases?includeInactive=true",
+			"time": 66,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La respuesta es un array": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				66
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La respuesta es un array": true
+				}
+			]
+		},
+		{
+			"id": "0c20ab22-c040-490d-a804-c297354371d6",
+			"name": "200 - Clase por ID",
+			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70",
+			"time": 34,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La respuesta tiene la estructura de ClaseDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta tiene la estructura de ClaseDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				34
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La respuesta tiene la estructura de ClaseDto": true
+				}
+			]
+		},
+		{
+			"id": "465ff609-e951-4064-ae28-cc376bca25dd",
+			"name": "404 - Clase no encontrada",
+			"url": "http://localhost:5173/api/clases/00000000-0000-0000-0000-000000000000",
+			"time": 11,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				11
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "388b3754-af91-476a-b45e-d336c9befb1e",
+			"name": "200 - Actualizar Clase",
+			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70",
+			"time": 52,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La clase se actualizó correctamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La clase se actualizó correctamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				52
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La clase se actualizó correctamente": true
+				}
+			]
+		},
+		{
+			"id": "23d9024a-f09d-410b-a995-82c306884efa",
+			"name": "404 - Actualizar Clase inexistente",
+			"url": "http://localhost:5173/api/clases/00000000-0000-0000-0000-000000000000",
+			"time": 14,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "7ace3257-3ffa-4e8a-ab29-c2d9397f029f",
+			"name": "204 - Cancelar Clase",
+			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70",
+			"time": 50,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Status code is 204": true
+			},
+			"testPassFailCounts": {
+				"Status code is 204": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				50
+			],
+			"allTests": [
+				{
+					"Status code is 204": true
+				}
+			]
+		},
+		{
+			"id": "e2b0c7e4-a232-4803-af9b-d9d5999fb11e",
+			"name": "409 - Cancelar Clase ya cancelada",
+			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70",
+			"time": 16,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"Status code is 409": true,
+				"El error indica que ya está cancelada": true
+			},
+			"testPassFailCounts": {
+				"Status code is 409": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error indica que ya está cancelada": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"Status code is 409": true,
+					"El error indica que ya está cancelada": true
+				}
+			]
+		},
+		{
+			"id": "2c7cd86d-147e-4373-88d0-28fad71200dc",
+			"name": "200 - Reactivar Clase",
+			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70/reactivar",
+			"time": 40,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La clase está activa nuevamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La clase está activa nuevamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				40
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La clase está activa nuevamente": true
+				}
+			]
+		},
+		{
+			"id": "478e25fe-d093-476b-ae7e-141c675caa9a",
+			"name": "409 - Reactivar Clase ya activa",
+			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70/reactivar",
+			"time": 22,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"Status code is 409": true,
+				"El error indica que ya está activa": true
+			},
+			"testPassFailCounts": {
+				"Status code is 409": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error indica que ya está activa": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				22
+			],
+			"allTests": [
+				{
+					"Status code is 409": true,
+					"El error indica que ya está activa": true
+				}
+			]
+		},
+		{
+			"id": "d069e065-c2dd-4342-830b-1207c57d9199",
+			"name": "201 - Crear Horario (Lunes 18:00-19:00, Sala 1)",
+			"url": "http://localhost:5173/api/horarios",
+			"time": 188,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"El horario tiene la estructura de HorarioClaseDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El horario tiene la estructura de HorarioClaseDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				188
+			],
+			"allTests": [
+				{
+					"Status code is 201": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"El horario tiene la estructura de HorarioClaseDto": true
+				}
+			]
+		},
+		{
+			"id": "20a2b063-92c5-4eb2-b6f4-f21a4eba3ea2",
+			"name": "409 - Crear Horario con conflicto de sala",
+			"url": "http://localhost:5173/api/horarios",
+			"time": 19,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"Status code is 409": true,
+				"El error indica conflicto de sala": true
+			},
+			"testPassFailCounts": {
+				"Status code is 409": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error indica conflicto de sala": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				19
+			],
+			"allTests": [
+				{
+					"Status code is 409": true,
+					"El error indica conflicto de sala": true
+				}
+			]
+		},
+		{
+			"id": "73ad1277-f10c-484b-a0b3-92d8b9072ca6",
+			"name": "400 - Crear Horario con hora fin antes de inicio",
+			"url": "http://localhost:5173/api/horarios",
+			"time": 32,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"El error indica hora inválida": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error indica hora inválida": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				32
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"El error indica hora inválida": true
+				}
+			]
+		},
+		{
+			"id": "6d6b2452-903e-44f3-8869-136ac98836b4",
+			"name": "201 - Crear Horario sin sala (válido)",
+			"url": "http://localhost:5173/api/horarios",
+			"time": 28,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true,
+				"Horario creado sin sala": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Horario creado sin sala": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				28
+			],
+			"allTests": [
+				{
+					"Status code is 201": true,
+					"Horario creado sin sala": true
+				}
+			]
+		},
+		{
+			"id": "eba5e61f-fe1e-4ae1-b9db-01b75cb17349",
+			"name": "200 - Lista Horarios",
+			"url": "http://localhost:5173/api/horarios",
+			"time": 45,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta es un array con estructura de HorarioClaseDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array con estructura de HorarioClaseDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				45
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta es un array con estructura de HorarioClaseDto": true
+				}
+			]
+		},
+		{
+			"id": "f7297f96-6de7-4ca7-b4cc-7e32d8f5d658",
+			"name": "200 - Lista Horarios filtrados por unidad",
+			"url": "http://localhost:5173/api/horarios?unidadId=11433f70-415f-4902-a56e-d1961af13fcc",
+			"time": 39,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Todos los horarios pertenecen a la unidad filtrada": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Todos los horarios pertenecen a la unidad filtrada": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				39
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Todos los horarios pertenecen a la unidad filtrada": true
+				}
+			]
+		},
+		{
+			"id": "140770f9-3fa3-4859-80ef-13884bb46f49",
+			"name": "200 - Horario por ID",
+			"url": "http://localhost:5173/api/horarios/31efbcda-cafd-459b-9839-c7f86686dccf",
+			"time": 36,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El horario tiene la estructura correcta": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El horario tiene la estructura correcta": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				36
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El horario tiene la estructura correcta": true
+				}
+			]
+		},
+		{
+			"id": "d4f8511e-1e66-4d0c-ac94-a3aed24d4663",
+			"name": "404 - Horario no encontrado",
+			"url": "http://localhost:5173/api/horarios/00000000-0000-0000-0000-000000000000",
+			"time": 22,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				22
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "9838b23f-05c9-4cc8-9574-680539246f50",
+			"name": "200 - Actualizar Horario",
+			"url": "http://localhost:5173/api/horarios/31efbcda-cafd-459b-9839-c7f86686dccf",
+			"time": 54,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El horario se actualizó correctamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El horario se actualizó correctamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				54
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El horario se actualizó correctamente": true
+				}
+			]
+		},
+		{
+			"id": "96fb7783-5db7-41b0-b6e6-bf651f3d8703",
+			"name": "404 - Actualizar Horario inexistente",
+			"url": "http://localhost:5173/api/horarios/00000000-0000-0000-0000-000000000000",
+			"time": 23,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				23
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "545e294a-ffa0-4fd4-99db-d87127ea9c27",
+			"name": "204 - Eliminar Horario",
+			"url": "http://localhost:5173/api/horarios/31efbcda-cafd-459b-9839-c7f86686dccf",
+			"time": 48,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Status code is 204": true
+			},
+			"testPassFailCounts": {
+				"Status code is 204": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				48
+			],
+			"allTests": [
+				{
+					"Status code is 204": true
+				}
+			]
+		},
+		{
+			"id": "55956a6c-fa76-440d-8c13-6a71947a4e9d",
+			"name": "404 - Eliminar Horario inexistente",
+			"url": "http://localhost:5173/api/horarios/00000000-0000-0000-0000-000000000000",
+			"time": 14,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "f1b71f30-3cee-4e1d-9da2-d2fa944486b2",
+			"name": "1. Login Admin (crear horario para test)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 170,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA verify admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA verify admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				170
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA verify admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "3cdaf02f-1a1f-4641-8289-03828cdc58c8",
+			"name": "2. Crear Horario para test de inscripciones",
+			"url": "http://localhost:5173/api/horarios",
+			"time": 51,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Horario creado para inscripciones (201)": true
+			},
+			"testPassFailCounts": {
+				"Horario creado para inscripciones (201)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				51
+			],
+			"allTests": [
+				{
+					"Horario creado para inscripciones (201)": true
+				}
+			]
+		},
+		{
+			"id": "c287acc4-e4df-4d3a-8698-db2b8d43f135",
+			"name": "3. Login como Socio",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 148,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login socio@gymflow.com (200)": true
+			},
+			"testPassFailCounts": {
+				"Login socio@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				148
+			],
+			"allTests": [
+				{
+					"Login socio@gymflow.com (200)": true
+				}
+			]
+		},
+		{
+			"id": "13c1c3c9-1898-406f-9e37-976ee41a0fdb",
+			"name": "200 - Inscribir socio a horario",
+			"url": "http://localhost:5173/api/inscripciones",
+			"time": 124,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La inscripción tiene la estructura de InscripcionClaseDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La inscripción tiene la estructura de InscripcionClaseDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				124
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La inscripción tiene la estructura de InscripcionClaseDto": true
+				}
+			]
+		},
+		{
+			"id": "cb757ecd-7beb-476c-9240-6ebfb25f286c",
+			"name": "409 - Inscripción duplicada al mismo horario",
+			"url": "http://localhost:5173/api/inscripciones",
+			"time": 35,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"Status code is 409": true,
+				"El error indica inscripción duplicada": true
+			},
+			"testPassFailCounts": {
+				"Status code is 409": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error indica inscripción duplicada": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				35
+			],
+			"allTests": [
+				{
+					"Status code is 409": true,
+					"El error indica inscripción duplicada": true
+				}
+			]
+		},
+		{
+			"id": "b8f44220-2496-4a17-8947-dd2ac3153937",
+			"name": "404 - Inscribir a horario inexistente",
+			"url": "http://localhost:5173/api/inscripciones",
+			"time": 26,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				26
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "5bf3235c-7c54-49e3-ad8e-48934da37abc",
+			"name": "200 - Obtener mis inscripciones con día/hora/sala",
+			"url": "http://localhost:5173/api/inscripciones/mis-inscripciones",
+			"time": 46,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta es un array con inscripciones": true,
+				"Las inscripciones incluyen día, hora, sala y datos del horario": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array con inscripciones": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Las inscripciones incluyen día, hora, sala y datos del horario": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				46
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta es un array con inscripciones": true,
+					"Las inscripciones incluyen día, hora, sala y datos del horario": true
+				}
+			]
+		},
+		{
+			"id": "ae098f08-a34c-4369-93ae-0e215708b108",
+			"name": "204 - Cancelar inscripción",
+			"url": "http://localhost:5173/api/inscripciones/300452b6-0d30-466f-afd1-4ada2209da05",
+			"time": 70,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Status code is 204": true
+			},
+			"testPassFailCounts": {
+				"Status code is 204": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				70
+			],
+			"allTests": [
+				{
+					"Status code is 204": true
+				}
+			]
+		},
+		{
+			"id": "40fc38c9-8c26-40c9-80ab-b06f400fa478",
+			"name": "404 - Cancelar inscripción inexistente",
+			"url": "http://localhost:5173/api/inscripciones/00000000-0000-0000-0000-000000000000",
+			"time": 23,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				23
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "10e7af40-9f63-4108-b085-a1f829d9e5c7",
+			"name": "1. Login Admin para cleanup",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 214,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA verify admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA verify admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				214
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA verify admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "cc3a5fb7-4495-45df-9857-c1c278290a48",
+			"name": "2. Eliminar Horario de test inscripciones",
+			"url": "http://localhost:5173/api/horarios/4a8d2eff-560b-461b-835d-3c37cccce030",
+			"time": 27,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Horario de test eliminado (204)": true
+			},
+			"testPassFailCounts": {
+				"Horario de test eliminado (204)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				27
+			],
+			"allTests": [
+				{
+					"Horario de test eliminado (204)": true
+				}
+			]
+		},
+		{
+			"id": "05765002-3bb2-40df-b35a-0bfbc5d0340c",
+			"name": "0. Login Admin",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 156,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA verify admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA verify admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				156
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA verify admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "6e90d627-2216-4550-9ca3-497efde85b8a",
+			"name": "201 - Crear empleado sin password",
+			"url": "http://localhost:5173/api/empleados",
+			"time": 149,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"El empleado fue creado sin password en request": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El empleado fue creado sin password en request": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				149
+			],
+			"allTests": [
+				{
+					"Status code is 201": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"El empleado fue creado sin password en request": true
+				}
+			]
+		},
+		{
+			"id": "843fe9ec-e692-4205-8990-974788f8124d",
+			"name": "409 - Crear empleado con correo duplicado",
+			"url": "http://localhost:5173/api/empleados",
+			"time": 21,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"Status code is 409": true,
+				"El error indica correo duplicado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 409": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El error indica correo duplicado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				21
+			],
+			"allTests": [
+				{
+					"Status code is 409": true,
+					"El error indica correo duplicado": true
+				}
+			]
+		},
+		{
+			"id": "02a3397e-c1ff-4792-a00f-4bf891599940",
+			"name": "200 - Listar empleados",
+			"url": "http://localhost:5173/api/empleados",
+			"time": 37,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Tiempo de respuesta menor a 500ms": true,
+				"La respuesta es un array de empleados": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Tiempo de respuesta menor a 500ms": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La respuesta es un array de empleados": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				37
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Tiempo de respuesta menor a 500ms": true,
+					"La respuesta es un array de empleados": true
+				}
+			]
+		},
+		{
+			"id": "43a75b35-2e82-41b6-873a-38d6b55038e3",
+			"name": "401 - Crear empleado sin autenticación",
+			"url": "http://localhost:5173/api/empleados",
+			"time": 12,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "0da6ce2b-d9bb-4f95-9868-7b20fec6fb74",
+			"name": "Cleanup - Eliminar empleado test",
+			"url": "http://localhost:5173/api/empleados/6cd053a6-4221-41cc-a0e6-0742f38e7e96",
+			"time": 19,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Empleado de test eliminado (200 o 204)": true
+			},
+			"testPassFailCounts": {
+				"Empleado de test eliminado (200 o 204)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				19
+			],
+			"allTests": [
+				{
+					"Empleado de test eliminado (200 o 204)": true
+				}
+			]
+		},
+		{
+			"id": "680465b3-b454-4494-90a9-330e736fafd7",
+			"name": "400 - Token de Google vacío",
+			"url": "http://localhost:5173/api/auth/google",
+			"time": 20,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"Mensaje de error": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Mensaje de error": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				20
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"Mensaje de error": true
+				}
+			]
+		},
+		{
+			"id": "affc5f36-9b30-4835-924a-9a193f597bb8",
+			"name": "401 - Token de Google malformado/inválido",
+			"url": "http://localhost:5173/api/auth/google",
+			"time": 16,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true,
+				"Mensaje genérico (no revela detalle)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Mensaje genérico (no revela detalle)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"Status code is 401": true,
+					"Mensaje genérico (no revela detalle)": true
+				}
+			]
+		},
+		{
+			"id": "5ffa3e51-9f88-4178-9edd-3c70942d16e9",
+			"name": "400 - Admin no puede resetear su propio MFA",
+			"url": "http://localhost:5173/api/empleados/33333333-3333-3333-3333-333333333333/mfa/reset",
+			"time": 24,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true,
+				"Mensaje indica que no puede resetear su propio MFA": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Mensaje indica que no puede resetear su propio MFA": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				24
+			],
+			"allTests": [
+				{
+					"Status code is 400": true,
+					"Mensaje indica que no puede resetear su propio MFA": true
+				}
+			]
+		},
+		{
+			"id": "459c2352-c5bd-4bb9-b5d1-59054336a0b0",
+			"name": "404 - Reset MFA empleado inexistente",
+			"url": "http://localhost:5173/api/empleados/00000000-0000-0000-0000-000000000000/mfa/reset",
+			"time": 22,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				22
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "b0751c11-8fd8-4b18-9675-e2c22094959a",
+			"name": "401 - Reset MFA sin token",
+			"url": "http://localhost:5173/api/empleados/00000000-0000-0000-0000-000000000001/mfa/reset",
+			"time": 8,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				8
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "5e17a693-3e53-481d-b76f-b962560a06c2",
+			"name": "Setup - Capturar unidad para eventos",
+			"url": "http://localhost:5173/api/unidades",
+			"time": 17,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Existe al menos una unidad": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Existe al menos una unidad": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				17
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Existe al menos una unidad": true
+				}
+			]
+		},
+		{
+			"id": "30a12068-ec45-42d4-97d3-32362f57bc50",
+			"name": "201 - Crear evento",
+			"url": "http://localhost:5173/api/eventos",
+			"time": 102,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true,
+				"Body tiene shape EventoDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body tiene shape EventoDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				102
+			],
+			"allTests": [
+				{
+					"Status code is 201": true,
+					"Body tiene shape EventoDto": true
+				}
+			]
+		},
+		{
+			"id": "11eef8fd-131a-4f24-9201-06a991fc4a1b",
+			"name": "400 - Crear evento con fecha pasada",
+			"url": "http://localhost:5173/api/eventos",
+			"time": 16,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"Status code is 400": true
+			},
+			"testPassFailCounts": {
+				"Status code is 400": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"Status code is 400": true
+				}
+			]
+		},
+		{
+			"id": "e6295bf6-43db-4ee5-83d4-857fdafd9308",
+			"name": "200 - Listar eventos (por unidad)",
+			"url": "http://localhost:5173/api/eventos?unidadId=2bc1816a-27be-4c3e-ba39-675be0f408c5",
+			"time": 38,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Respuesta es array": true,
+				"Incluye el evento recién creado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Respuesta es array": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Incluye el evento recién creado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				38
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Respuesta es array": true,
+					"Incluye el evento recién creado": true
+				}
+			]
+		},
+		{
+			"id": "4da9fdd5-cd59-451e-a723-80fccb91cbb5",
+			"name": "200 - Detalle de evento",
+			"url": "http://localhost:5173/api/eventos/ddd27bca-ba34-4618-a986-2bcc03fa4c63",
+			"time": 34,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Es el evento creado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Es el evento creado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				34
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Es el evento creado": true
+				}
+			]
+		},
+		{
+			"id": "f0109feb-b142-4a4c-be6b-f823529d9b1e",
+			"name": "404 - Detalle evento inexistente",
+			"url": "http://localhost:5173/api/eventos/00000000-0000-0000-0000-000000000000",
+			"time": 17,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				17
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "83255eab-eb62-4dde-a858-debc911e9035",
+			"name": "200 - Actualizar evento",
+			"url": "http://localhost:5173/api/eventos/ddd27bca-ba34-4618-a986-2bcc03fa4c63",
+			"time": 27,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Título actualizado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Título actualizado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				27
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Título actualizado": true
+				}
+			]
+		},
+		{
+			"id": "95d3d999-c14b-42ae-8d8b-7f5b84699b31",
+			"name": "200 - Re-notificar evento",
+			"url": "http://localhost:5173/api/eventos/ddd27bca-ba34-4618-a986-2bcc03fa4c63/notificar",
+			"time": 35,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Body trae mensaje resumen": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body trae mensaje resumen": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				35
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Body trae mensaje resumen": true
+				}
+			]
+		},
+		{
+			"id": "16db4386-6e02-4b9c-bc48-c6ae7d43e7be",
+			"name": "204 - Cancelar evento (baja lógica)",
+			"url": "http://localhost:5173/api/eventos/ddd27bca-ba34-4618-a986-2bcc03fa4c63",
+			"time": 43,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Status code is 204 o 200": true
+			},
+			"testPassFailCounts": {
+				"Status code is 204 o 200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				43
+			],
+			"allTests": [
+				{
+					"Status code is 204 o 200": true
+				}
+			]
+		},
+		{
+			"id": "084c95c4-1679-4fea-9937-ec05f3d96bab",
+			"name": "200 - Listar incluyendo cancelados",
+			"url": "http://localhost:5173/api/eventos?unidadId=2bc1816a-27be-4c3e-ba39-675be0f408c5&incluirInactivos=true",
+			"time": 21,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Incluye el evento cancelado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Incluye el evento cancelado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				21
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Incluye el evento cancelado": true
+				}
+			]
+		},
+		{
+			"id": "0d8daaf1-854e-4e03-b976-a630c87fe1f5",
+			"name": "401 - Listar eventos sin token",
+			"url": "http://localhost:5173/api/eventos",
+			"time": 10,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "82047ce2-4bab-4615-beef-979e5a0ebe5f",
+			"name": "Setup - Login socio (sin MFA)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 144,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Socio NO requiere MFA y trae sesion directa": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Socio NO requiere MFA y trae sesion directa": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				144
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Socio NO requiere MFA y trae sesion directa": true
+				}
+			]
+		},
+		{
+			"id": "33989950-afb5-42dd-b305-88d31511f35d",
+			"name": "Setup - Capturar count inicial de no-leídas",
+			"url": "http://localhost:5173/api/portal/notificaciones/no-leidas/count",
+			"time": 24,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Body trae { count }": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body trae { count }": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				24
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Body trae { count }": true
+				}
+			]
+		},
+		{
+			"id": "faa6f433-f254-4764-ad6f-4681a7badf08",
+			"name": "Trigger - Admin crea evento en la sede del socio",
+			"url": "http://localhost:5173/api/eventos",
+			"time": 35,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				35
+			],
+			"allTests": [
+				{
+					"Status code is 201": true
+				}
+			]
+		},
+		{
+			"id": "f0b2f91c-92f8-4357-bac7-eacd9c8b4c40",
+			"name": "200 - Count de no-leídas incrementó tras el evento",
+			"url": "http://localhost:5173/api/portal/notificaciones/no-leidas/count",
+			"time": 15,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Count incrementó al menos 1 vs inicial (2)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Count incrementó al menos 1 vs inicial (2)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				15
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Count incrementó al menos 1 vs inicial (2)": true
+				}
+			]
+		},
+		{
+			"id": "557725f6-8631-45b0-bdc3-6ca52fa76b32",
+			"name": "200 - Listar notificaciones (soloNoLeidas=true) y capturar id",
+			"url": "http://localhost:5173/api/portal/notificaciones?soloNoLeidas=true&take=10",
+			"time": 58,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Hay al menos una notificación no leída": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Hay al menos una notificación no leída": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				58
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Hay al menos una notificación no leída": true
+				}
+			]
+		},
+		{
+			"id": "04dfb4e1-df66-4139-9062-af9c660e8d73",
+			"name": "200 - Marcar notificación como leída",
+			"url": "http://localhost:5173/api/portal/notificaciones/99ae9cd1-c08f-4a0b-910d-95874701e0fa/leer",
+			"time": 38,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Body trae mensaje": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body trae mensaje": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				38
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Body trae mensaje": true
+				}
+			]
+		},
+		{
+			"id": "1f41b7e2-9c50-4529-b754-a873340433d9",
+			"name": "200 - Marcar como leída es idempotente (segundo POST)",
+			"url": "http://localhost:5173/api/portal/notificaciones/99ae9cd1-c08f-4a0b-910d-95874701e0fa/leer",
+			"time": 18,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200 (idempotente)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200 (idempotente)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				18
+			],
+			"allTests": [
+				{
+					"Status code is 200 (idempotente)": true
+				}
+			]
+		},
+		{
+			"id": "5ce7d0e0-6235-4252-9925-a101386101d2",
+			"name": "404 - Marcar notificación inexistente",
+			"url": "http://localhost:5173/api/portal/notificaciones/00000000-0000-0000-0000-000000000000/leer",
+			"time": 13,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "ecf91012-4ccb-438e-81e9-08906175fff6",
+			"name": "401 - Listar notificaciones sin token",
+			"url": "http://localhost:5173/api/portal/notificaciones",
+			"time": 9,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				9
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "c1630eaa-2ea1-4e1c-8da2-74d9050a672e",
+			"name": "200 - Portal eventos del socio",
+			"url": "http://localhost:5173/api/portal/eventos",
+			"time": 25,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Respuesta es array": true,
+				"Solo eventos futuros y activos": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Respuesta es array": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Solo eventos futuros y activos": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				25
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Respuesta es array": true,
+					"Solo eventos futuros y activos": true
+				}
+			]
+		},
+		{
+			"id": "31fab776-beb1-4703-a336-351e0067b58d",
+			"name": "Cleanup - Cancelar evento del trigger",
+			"url": "http://localhost:5173/api/eventos/25c4f429-fc43-4dda-8494-cd7f2f9f86bc",
+			"time": 35,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Cleanup OK (200 o 204)": true
+			},
+			"testPassFailCounts": {
+				"Cleanup OK (200 o 204)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				35
+			],
+			"allTests": [
+				{
+					"Cleanup OK (200 o 204)": true
+				}
+			]
+		}
+	],
+	"count": 1,
+	"totalTime": 6823,
+	"collection": {
+		"requests": [
+			{
+				"id": "49adb917-1a76-4773-b78c-104477fd7b24",
+				"method": "POST"
+			},
+			{
+				"id": "b62d9cc8-4ac3-4d7a-af0b-34544efa0772",
+				"method": "GET"
+			},
+			{
+				"id": "22954caf-0459-48ae-b2cf-e0226989e082",
+				"method": "POST"
+			},
+			{
+				"id": "94d67b7c-f03e-42c5-ba92-610fb1c3fe4a",
+				"method": "POST"
+			},
+			{
+				"id": "33fc3020-f6ea-4b25-9109-753199cbe75d",
+				"method": "GET"
+			},
+			{
+				"id": "77ddcbfb-61a5-4660-9353-a23d1cfac005",
+				"method": "GET"
+			},
+			{
+				"id": "7ad7602c-5f1d-4d66-a61e-ef145ba8d118",
+				"method": "GET"
+			},
+			{
+				"id": "558aa839-4917-4b45-9921-1c8a6a8be68d",
+				"method": "GET"
+			},
+			{
+				"id": "0f0f94db-e046-4d11-bce7-3d840a2f2924",
+				"method": "GET"
+			},
+			{
+				"id": "fc460e40-d1c8-4fe2-a733-db296a657112",
+				"method": "GET"
+			},
+			{
+				"id": "9735012e-9087-439d-9de3-fde28811a29f",
+				"method": "POST"
+			},
+			{
+				"id": "ceaff205-37b3-4425-b171-1da74b563a6e",
+				"method": "POST"
+			},
+			{
+				"id": "a04eb4b2-731a-4a8c-9a98-70583e1bac23",
+				"method": "POST"
+			},
+			{
+				"id": "2c3a9915-1c75-4bbf-a455-1cdbef49acb8",
+				"method": "PUT"
+			},
+			{
+				"id": "53808eb5-8467-49f8-a1b9-eb63e08560fa",
+				"method": "DELETE"
+			},
+			{
+				"id": "674bcf25-a94a-4432-b027-ee1707bd1fc3",
+				"method": "DELETE"
+			},
+			{
+				"id": "81c11e62-e4cc-4415-a839-66bc7029415e",
+				"method": "GET"
+			},
+			{
+				"id": "768b1f59-07ff-4ba3-b1de-ae0be8b904db",
+				"method": "POST"
+			},
+			{
+				"id": "ed004b30-faeb-4948-86ec-dd9641fb1039",
+				"method": "POST"
+			},
+			{
+				"id": "bcab700d-229e-46ce-984f-08aad55e5539",
+				"method": "POST"
+			},
+			{
+				"id": "c97a8b23-506c-49bf-92d2-415eaf01690a",
+				"method": "POST"
+			},
+			{
+				"id": "61b01198-b942-4eec-9e90-fa54fa083266",
+				"method": "GET"
+			},
+			{
+				"id": "9138f0d0-cc07-47ca-ac21-bb0d1b27c1c1",
+				"method": "GET"
+			},
+			{
+				"id": "5f2c3d33-9bdb-43fe-82b8-665fab0ce842",
+				"method": "PUT"
+			},
+			{
+				"id": "7def0d14-5c53-476e-abf4-d243b9aedb5d",
+				"method": "PUT"
+			},
+			{
+				"id": "c0ab9af8-d660-4bcb-bcf2-e67c82527779",
+				"method": "DELETE"
+			},
+			{
+				"id": "e01ca74f-e58b-48a9-8622-bb7b480380f7",
+				"method": "GET"
+			},
+			{
+				"id": "221bdf47-c30e-45e6-b7b2-aae09e7f5a7d",
+				"method": "PATCH"
+			},
+			{
+				"id": "bc9afdb3-607f-4e8d-94e5-e98d09075cd5",
+				"method": "PATCH"
+			},
+			{
+				"id": "f0061cb0-ff99-4de3-b4b9-f2c2b4722a5e",
+				"method": "GET"
+			},
+			{
+				"id": "75a7323c-d2b4-4d43-92d2-d062beaaa974",
+				"method": "GET"
+			},
+			{
+				"id": "12269b29-1d30-4043-89ec-21bad353d459",
+				"method": "GET"
+			},
+			{
+				"id": "eba0403e-618b-4813-9737-ed81282ed669",
+				"method": "POST"
+			},
+			{
+				"id": "bdaeb23f-4ba2-4a06-b222-710e6ab5338d",
+				"method": "GET"
+			},
+			{
+				"id": "670e94f5-e642-485a-acd0-f2f4c565670a",
+				"method": "GET"
+			},
+			{
+				"id": "03f6b5ef-6ba2-486a-bb62-16a08d91a27e",
+				"method": "POST"
+			},
+			{
+				"id": "acdf5723-40b7-46bf-8b8f-1abbf0bf6520",
+				"method": "POST"
+			},
+			{
+				"id": "6de0b4a0-6f73-4e92-88c2-7011437f0963",
+				"method": "PATCH"
+			},
+			{
+				"id": "4bca77b4-2f21-4982-a6fc-5e76d1533104",
+				"method": "POST"
+			},
+			{
+				"id": "6e427aa8-1f5b-4231-94e6-ffe4c67d86ba",
+				"method": "GET"
+			},
+			{
+				"id": "9b0bf49c-8615-4662-a89a-5246eb3af6bd",
+				"method": "GET"
+			},
+			{
+				"id": "38a40a7c-56fd-46e3-bf5c-e32c3ff1a996",
+				"method": "POST"
+			},
+			{
+				"id": "9dcdef4a-88f9-47df-8131-1e92fa823645",
+				"method": "POST"
+			},
+			{
+				"id": "d1876c93-2039-4bcc-ba91-c9f5c556dadb",
+				"method": "PUT"
+			},
+			{
+				"id": "ddb48df1-6c27-439a-aec3-f90ff018ef4b",
+				"method": "DELETE"
+			},
+			{
+				"id": "eb12c426-ccdd-4d5e-b8ac-46d44e35b21f",
+				"method": "PUT"
+			},
+			{
+				"id": "4a3a7f83-f89f-455d-9e3d-ff0a04ed1cbb",
+				"method": "DELETE"
+			},
+			{
+				"id": "158e1259-0e52-4e31-bb17-f6ab85e4a699",
+				"method": "GET"
+			},
+			{
+				"id": "4fd4a574-9b25-4837-b8fc-ecdb53a76852",
+				"method": "GET"
+			},
+			{
+				"id": "b7f9ce90-62ff-4dff-9c17-0060b8d60eb4",
+				"method": "GET"
+			},
+			{
+				"id": "4de60238-d2c2-48d1-ba97-f62fa1a72843",
+				"method": "POST"
+			},
+			{
+				"id": "75b1290b-1e43-4971-9352-2be980b5ee17",
+				"method": "POST"
+			},
+			{
+				"id": "1f5256f1-52f7-4b43-a5e5-b330a7ad86f7",
+				"method": "GET"
+			},
+			{
+				"id": "d21e6993-9255-4f8e-b15f-50c22ca397f6",
+				"method": "GET"
+			},
+			{
+				"id": "436c5f69-8113-43d7-81ff-fe6f0abad4bb",
+				"method": "POST"
+			},
+			{
+				"id": "095fe77e-9e64-4c23-9ee9-96d061423c2d",
+				"method": "POST"
+			},
+			{
+				"id": "91b0bc5b-8f7c-4083-bbc7-f42e2ff9e0b6",
+				"method": "DELETE"
+			},
+			{
+				"id": "54697a47-4e01-41c1-8701-4fb4551bb480",
+				"method": "PUT"
+			},
+			{
+				"id": "11d70fcd-b8ce-46e0-84ed-bbf6c07bd1a2",
+				"method": "DELETE"
+			},
+			{
+				"id": "88078cc6-ce4c-4f00-8032-aabe691b73aa",
+				"method": "DELETE"
+			},
+			{
+				"id": "fe78c13d-7e6e-4571-b757-10fb147404a2",
+				"method": "POST"
+			},
+			{
+				"id": "1914dcfa-16c5-4ea1-8d68-6af16db1d43a",
+				"method": "POST"
+			},
+			{
+				"id": "cc44a3a0-4440-4c14-97ab-fa88bae30c0b",
+				"method": "GET"
+			},
+			{
+				"id": "c827038a-e74e-4487-b83e-cfc12a69c304",
+				"method": "GET"
+			},
+			{
+				"id": "d5f90471-ff1d-4202-9716-b8391bb56476",
+				"method": "GET"
+			},
+			{
+				"id": "0c20ab22-c040-490d-a804-c297354371d6",
+				"method": "GET"
+			},
+			{
+				"id": "465ff609-e951-4064-ae28-cc376bca25dd",
+				"method": "GET"
+			},
+			{
+				"id": "388b3754-af91-476a-b45e-d336c9befb1e",
+				"method": "PUT"
+			},
+			{
+				"id": "23d9024a-f09d-410b-a995-82c306884efa",
+				"method": "PUT"
+			},
+			{
+				"id": "7ace3257-3ffa-4e8a-ab29-c2d9397f029f",
+				"method": "DELETE"
+			},
+			{
+				"id": "e2b0c7e4-a232-4803-af9b-d9d5999fb11e",
+				"method": "DELETE"
+			},
+			{
+				"id": "2c7cd86d-147e-4373-88d0-28fad71200dc",
+				"method": "PATCH"
+			},
+			{
+				"id": "478e25fe-d093-476b-ae7e-141c675caa9a",
+				"method": "PATCH"
+			},
+			{
+				"id": "d069e065-c2dd-4342-830b-1207c57d9199",
+				"method": "POST"
+			},
+			{
+				"id": "20a2b063-92c5-4eb2-b6f4-f21a4eba3ea2",
+				"method": "POST"
+			},
+			{
+				"id": "73ad1277-f10c-484b-a0b3-92d8b9072ca6",
+				"method": "POST"
+			},
+			{
+				"id": "6d6b2452-903e-44f3-8869-136ac98836b4",
+				"method": "POST"
+			},
+			{
+				"id": "eba5e61f-fe1e-4ae1-b9db-01b75cb17349",
+				"method": "GET"
+			},
+			{
+				"id": "f7297f96-6de7-4ca7-b4cc-7e32d8f5d658",
+				"method": "GET"
+			},
+			{
+				"id": "140770f9-3fa3-4859-80ef-13884bb46f49",
+				"method": "GET"
+			},
+			{
+				"id": "d4f8511e-1e66-4d0c-ac94-a3aed24d4663",
+				"method": "GET"
+			},
+			{
+				"id": "9838b23f-05c9-4cc8-9574-680539246f50",
+				"method": "PUT"
+			},
+			{
+				"id": "96fb7783-5db7-41b0-b6e6-bf651f3d8703",
+				"method": "PUT"
+			},
+			{
+				"id": "545e294a-ffa0-4fd4-99db-d87127ea9c27",
+				"method": "DELETE"
+			},
+			{
+				"id": "55956a6c-fa76-440d-8c13-6a71947a4e9d",
+				"method": "DELETE"
+			},
+			{
+				"id": "f1b71f30-3cee-4e1d-9da2-d2fa944486b2",
+				"method": "POST"
+			},
+			{
+				"id": "3cdaf02f-1a1f-4641-8289-03828cdc58c8",
+				"method": "POST"
+			},
+			{
+				"id": "c287acc4-e4df-4d3a-8698-db2b8d43f135",
+				"method": "POST"
+			},
+			{
+				"id": "13c1c3c9-1898-406f-9e37-976ee41a0fdb",
+				"method": "POST"
+			},
+			{
+				"id": "cb757ecd-7beb-476c-9240-6ebfb25f286c",
+				"method": "POST"
+			},
+			{
+				"id": "b8f44220-2496-4a17-8947-dd2ac3153937",
+				"method": "POST"
+			},
+			{
+				"id": "5bf3235c-7c54-49e3-ad8e-48934da37abc",
+				"method": "GET"
+			},
+			{
+				"id": "ae098f08-a34c-4369-93ae-0e215708b108",
+				"method": "DELETE"
+			},
+			{
+				"id": "40fc38c9-8c26-40c9-80ab-b06f400fa478",
+				"method": "DELETE"
+			},
+			{
+				"id": "10e7af40-9f63-4108-b085-a1f829d9e5c7",
+				"method": "POST"
+			},
+			{
+				"id": "cc3a5fb7-4495-45df-9857-c1c278290a48",
+				"method": "DELETE"
+			},
+			{
+				"id": "05765002-3bb2-40df-b35a-0bfbc5d0340c",
+				"method": "POST"
+			},
+			{
+				"id": "6e90d627-2216-4550-9ca3-497efde85b8a",
+				"method": "POST"
+			},
+			{
+				"id": "843fe9ec-e692-4205-8990-974788f8124d",
+				"method": "POST"
+			},
+			{
+				"id": "02a3397e-c1ff-4792-a00f-4bf891599940",
+				"method": "GET"
+			},
+			{
+				"id": "43a75b35-2e82-41b6-873a-38d6b55038e3",
+				"method": "POST"
+			},
+			{
+				"id": "0da6ce2b-d9bb-4f95-9868-7b20fec6fb74",
+				"method": "DELETE"
+			},
+			{
+				"id": "680465b3-b454-4494-90a9-330e736fafd7",
+				"method": "POST"
+			},
+			{
+				"id": "affc5f36-9b30-4835-924a-9a193f597bb8",
+				"method": "POST"
+			},
+			{
+				"id": "5ffa3e51-9f88-4178-9edd-3c70942d16e9",
+				"method": "POST"
+			},
+			{
+				"id": "459c2352-c5bd-4bb9-b5d1-59054336a0b0",
+				"method": "POST"
+			},
+			{
+				"id": "b0751c11-8fd8-4b18-9675-e2c22094959a",
+				"method": "POST"
+			},
+			{
+				"id": "5e17a693-3e53-481d-b76f-b962560a06c2",
+				"method": "GET"
+			},
+			{
+				"id": "30a12068-ec45-42d4-97d3-32362f57bc50",
+				"method": "POST"
+			},
+			{
+				"id": "11eef8fd-131a-4f24-9201-06a991fc4a1b",
+				"method": "POST"
+			},
+			{
+				"id": "e6295bf6-43db-4ee5-83d4-857fdafd9308",
+				"method": "GET"
+			},
+			{
+				"id": "4da9fdd5-cd59-451e-a723-80fccb91cbb5",
+				"method": "GET"
+			},
+			{
+				"id": "f0109feb-b142-4a4c-be6b-f823529d9b1e",
+				"method": "GET"
+			},
+			{
+				"id": "83255eab-eb62-4dde-a858-debc911e9035",
+				"method": "PUT"
+			},
+			{
+				"id": "95d3d999-c14b-42ae-8d8b-7f5b84699b31",
+				"method": "POST"
+			},
+			{
+				"id": "16db4386-6e02-4b9c-bc48-c6ae7d43e7be",
+				"method": "DELETE"
+			},
+			{
+				"id": "084c95c4-1679-4fea-9937-ec05f3d96bab",
+				"method": "GET"
+			},
+			{
+				"id": "0d8daaf1-854e-4e03-b976-a630c87fe1f5",
+				"method": "GET"
+			},
+			{
+				"id": "82047ce2-4bab-4615-beef-979e5a0ebe5f",
+				"method": "POST"
+			},
+			{
+				"id": "33989950-afb5-42dd-b305-88d31511f35d",
+				"method": "GET"
+			},
+			{
+				"id": "faa6f433-f254-4764-ad6f-4681a7badf08",
+				"method": "POST"
+			},
+			{
+				"id": "f0b2f91c-92f8-4357-bac7-eacd9c8b4c40",
+				"method": "GET"
+			},
+			{
+				"id": "557725f6-8631-45b0-bdc3-6ca52fa76b32",
+				"method": "GET"
+			},
+			{
+				"id": "04dfb4e1-df66-4139-9062-af9c660e8d73",
+				"method": "POST"
+			},
+			{
+				"id": "1f41b7e2-9c50-4529-b754-a873340433d9",
+				"method": "POST"
+			},
+			{
+				"id": "5ce7d0e0-6235-4252-9925-a101386101d2",
+				"method": "POST"
+			},
+			{
+				"id": "ecf91012-4ccb-438e-81e9-08906175fff6",
+				"method": "GET"
+			},
+			{
+				"id": "c1630eaa-2ea1-4e1c-8da2-74d9050a672e",
+				"method": "GET"
+			},
+			{
+				"id": "31fab776-beb1-4703-a336-351e0067b58d",
+				"method": "DELETE"
+			}
+		]
+	}
+}

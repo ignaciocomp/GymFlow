@@ -357,6 +357,84 @@ Suite backend en verde (0 fallos). Cobertura agregada en esta iteración:
 - *Application:* creación, consulta del inbox, validación de pertenencia al marcar como leída; el parámetro de cantidad del listado queda acotado a un rango razonable (1 a 100).
 - *Infrastructure:* el servicio interno de notificaciones, al usar una transacción propia, no rompe la operación de negocio cuando su guardado falla.
 
+## Pruebas de API realizadas con Postman
+
+Se ampliaron los tests automatizados de la colección Postman (`GymFlow API Tests.postman_collection.json`) para cubrir los endpoints nuevos de la iteración: login con Google, reset de MFA, eventos (RF-15) y notificaciones in-system del socio (RF-16). La suite completa quedó en **244 aserciones, 0 fallos**.
+
+### Tests agregados
+
+**Auth con Google (RNF-10) --- 2 tests**
+
+| **Test** | **Método** | **Endpoint** | **Validación** |
+|-|-|-|-|
+| 400 - Token de Google vacío | POST | `/api/auth/google` | Rechazo cuando falta el `idToken` |
+| 401 - Token de Google malformado/inválido | POST | `/api/auth/google` | Rechazo con mensaje genérico ante token no válido (sin revelar detalle) |
+
+> El flujo feliz del login con Google requiere un `id_token` real firmado por Google, por lo que se valida de forma manual (ver Prueba 5.1) y la colección cubre únicamente los caminos de error.
+
+**MFA --- Reset por admin (RNF-10) --- 3 tests**
+
+| **Test** | **Método** | **Endpoint** | **Validación** |
+|-|-|-|-|
+| 400 - Admin no puede resetear su propio MFA | POST | `/api/empleados/{id}/mfa/reset` | El admin no puede auto-resetearse el segundo factor |
+| 404 - Reset MFA empleado inexistente | POST | `/api/empleados/{id}/mfa/reset` | Error 404 con empleado inexistente |
+| 401 - Reset MFA sin token | POST | `/api/empleados/{id}/mfa/reset` | Rechazo sin autenticación |
+
+**Eventos (RF-15) --- 11 tests**
+
+| **Test** | **Método** | **Endpoint** | **Validación** |
+|-|-|-|-|
+| Setup - Capturar unidad para eventos | GET | `/api/unidades` | Toma la sede del socio seed para encadenar los tests |
+| 201 - Crear evento | POST | `/api/eventos` | Alta con estructura `EventoDto` y `estaActivo=true` |
+| 400 - Crear evento con fecha pasada | POST | `/api/eventos` | Rechazo por fecha no futura |
+| 200 - Listar eventos (por unidad) | GET | `/api/eventos?unidadId=` | Array que incluye el evento recién creado |
+| 200 - Detalle de evento | GET | `/api/eventos/{id}` | Devuelve el evento creado |
+| 404 - Detalle evento inexistente | GET | `/api/eventos/{id}` | Error 404 con ID inexistente |
+| 200 - Actualizar evento | PUT | `/api/eventos/{id}` | Edición de título reflejada en la respuesta |
+| 200 - Re-notificar evento | POST | `/api/eventos/{id}/notificar` | Reenvío con mensaje resumen de envío |
+| 204 - Cancelar evento (baja lógica) | DELETE | `/api/eventos/{id}` | Baja lógica del evento |
+| 200 - Listar incluyendo cancelados | GET | `/api/eventos?incluirInactivos=true` | El evento cancelado aparece con `estaActivo=false` |
+| 401 - Listar eventos sin token | GET | `/api/eventos` | Rechazo sin autenticación |
+
+**Notificaciones in-system del socio (RF-16) --- E2E --- 11 tests**
+
+| **Test** | **Método** | **Endpoint** | **Validación** |
+|-|-|-|-|
+| Setup - Login socio (sin MFA) | POST | `/api/auth/login` | El socio recibe sesión directa (sin segundo factor) |
+| Setup - Capturar count inicial de no-leídas | GET | `/api/portal/notificaciones/no-leidas/count` | Conteo inicial del badge |
+| Trigger - Admin crea evento en la sede del socio | POST | `/api/eventos` | Gatilla la notificación in-system |
+| 200 - Count de no-leídas incrementó tras el evento | GET | `/api/portal/notificaciones/no-leidas/count` | El conteo sube al menos 1 respecto al inicial |
+| 200 - Listar notificaciones (soloNoLeidas) y capturar id | GET | `/api/portal/notificaciones?soloNoLeidas=true` | Hay ≥1 no leída; se captura su `id` |
+| 200 - Marcar notificación como leída | POST | `/api/portal/notificaciones/{id}/leer` | Marca como leída con mensaje de confirmación |
+| 200 - Marcar como leída es idempotente | POST | `/api/portal/notificaciones/{id}/leer` | Segundo POST también responde 200 |
+| 404 - Marcar notificación inexistente | POST | `/api/portal/notificaciones/{id}/leer` | Error 404 con ID inexistente |
+| 401 - Listar notificaciones sin token | GET | `/api/portal/notificaciones` | Rechazo sin autenticación |
+| 200 - Portal eventos del socio | GET | `/api/portal/eventos` | Solo eventos futuros y activos de la sede del socio |
+| Cleanup - Cancelar evento del trigger | DELETE | `/api/eventos/{id}` | Limpieza del evento creado para el E2E |
+
+### Tests modificados
+
+La obligatoriedad del segundo factor (MFA) para empleados cambió el contrato del login: `/api/auth/login` ya no devuelve el token de sesión directamente para empleados, sino un **ticket temporal** que debe completar el segundo factor. Esto obligó a actualizar todos los logins de empleado de la colección.
+
+| **Test / área** | **Método** | **Endpoint** | **Cambio aplicado** |
+|-|-|-|-|
+| 200 - Login exitoso (Admin) - paso 1 credenciales | POST | `/api/auth/login` | Valida el nuevo contrato `LoginResultado` (`requiereMfa`, `mfaToken`, `sesion`) |
+| 200 - Login exitoso (Admin) - paso 2 MFA | POST | `/api/auth/mfa/*` | Completa el segundo factor por código TOTP (setup+activate la primera vez, verify después) |
+| 200 - Obtener perfil autenticado | GET | `/api/auth/me` | Sigue validando la presencia de `unidadIds` (no-null para rol Dueño) |
+| Logins de empleado en setup/cleanup (RNF-01, Inscripciones, Empleados) | POST | `/api/auth/login` | Migrados a un helper de login MFA-aware compartido |
+
+### Resumen de resultados
+
+| **Módulo** | **Tests** | **Resultado** |
+|-|-|-|
+| Auth Google (RNF-10) | 2 | Pasaron |
+| MFA - Reset por admin (RNF-10) | 3 | Pasaron |
+| Eventos (RF-15) | 11 | Pasaron |
+| Notificaciones Portal (RF-16) - E2E | 11 | Pasaron |
+| Login MFA + helper compartido (modificados) | resto de la colección | Pasaron |
+| **Total de la colección** | **244 aserciones** | **0 fallos** |
+
+
 ## Pruebas funcionales de frontend
 
 ### Prueba 5.1 --- Login de socio con Google (correo registrado)

@@ -89,101 +89,20 @@
               "name": "200 - Login exitoso (Admin) - paso 2 MFA",
               "event": [
                 {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      "// Genera el codigo TOTP a partir del secret guardado (si existe).",
-                      "// La 1ra corrida no tiene secret -> el flujo activa MFA via /mfa/setup + /mfa/activate.",
-                      "// Las corridas siguientes generan el codigo y van a /mfa/verify.",
-                      "const secret = pm.globals.get(\"adminMfaSecret\");",
-                      "if (secret) {",
-                      "    const code = globalThis.gymflowTotp(secret);",
-                      "    pm.globals.set(\"adminTotpCode\", code);",
-                      "} else {",
-                      "    pm.globals.set(\"adminTotpCode\", \"\");",
-                      "}"
-                    ],
-                    "type": "text/javascript"
-                  }
-                },
-                {
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "// Esta request es un placeholder: la logica real corre en el script y usa pm.sendRequest",
-                      "// para encadenar setup+activate (1ra vez) o verify (siguientes). Marca PASS al final.",
-                      "",
-                      "const ticket = pm.globals.get(\"adminMfaTicket\");",
-                      "const baseUrl = pm.collectionVariables.get(\"baseUrl\");",
-                      "const secretGuardado = pm.globals.get(\"adminMfaSecret\");",
-                      "",
-                      "function guardarSesion(sesion) {",
-                      "    pm.globals.set(\"token\", sesion.token);",
-                      "    pm.globals.set(\"adminMfaTicket\", \"\");",
-                      "    console.log(\"Token de sesion del admin guardado (post-MFA).\");",
-                      "}",
-                      "",
-                      "function activarMfa(done) {",
-                      "    // 1. /mfa/setup para obtener el secret",
-                      "    pm.sendRequest({",
-                      "        url: baseUrl + \"/auth/mfa/setup\",",
-                      "        method: \"POST\",",
-                      "        header: { \"Authorization\": \"Bearer \" + ticket }",
-                      "    }, function (err, setupRes) {",
-                      "        if (err || setupRes.code !== 200) {",
-                      "            pm.test(\"MFA setup OK\", function () { pm.expect.fail(\"Setup fallo: \" + (err || setupRes.code)); });",
-                      "            return done();",
-                      "        }",
-                      "        const secret = setupRes.json().claveManual;",
-                      "        pm.globals.set(\"adminMfaSecret\", secret);",
-                      "        // 2. generar TOTP y activar",
-                      "        const code = globalThis.gymflowTotp(secret);",
-                      "        pm.sendRequest({",
-                      "            url: baseUrl + \"/auth/mfa/activate\",",
-                      "            method: \"POST\",",
-                      "            header: { \"Authorization\": \"Bearer \" + ticket, \"Content-Type\": \"application/json\" },",
-                      "            body: { mode: \"raw\", raw: JSON.stringify({ codigo: code }) }",
-                      "        }, function (err2, actRes) {",
-                      "            pm.test(\"MFA activate OK (1ra vez)\", function () {",
-                      "                pm.expect(actRes.code).to.eql(200);",
-                      "            });",
-                      "            if (actRes.code === 200) {",
-                      "                const data = actRes.json();",
-                      "                guardarSesion(data.sesion);",
-                      "                if (data.codigosRecuperacion && data.codigosRecuperacion.length > 0) {",
-                      "                    pm.globals.set(\"adminRecoveryCode\", data.codigosRecuperacion[0]);",
-                      "                }",
-                      "            }",
-                      "            done();",
-                      "        });",
-                      "    });",
-                      "}",
-                      "",
-                      "function verificarMfa(done) {",
-                      "    const code = globalThis.gymflowTotp(secretGuardado);",
-                      "    pm.sendRequest({",
-                      "        url: baseUrl + \"/auth/mfa/verify\",",
-                      "        method: \"POST\",",
-                      "        header: { \"Authorization\": \"Bearer \" + ticket, \"Content-Type\": \"application/json\" },",
-                      "        body: { mode: \"raw\", raw: JSON.stringify({ codigo: code }) }",
-                      "    }, function (err, res) {",
-                      "        pm.test(\"MFA verify OK\", function () {",
-                      "            pm.expect(res.code).to.eql(200);",
-                      "        });",
-                      "        if (res.code === 200) {",
-                      "            guardarSesion(res.json());",
-                      "        }",
-                      "        done();",
-                      "    });",
-                      "}",
-                      "",
-                      "if (!ticket) {",
-                      "    pm.test(\"mfaTicket disponible\", function () { pm.expect.fail(\"Falta mfaTicket: corre primero el paso 1\"); });",
-                      "} else if (!secretGuardado) {",
-                      "    activarMfa(() => {});",
-                      "} else {",
-                      "    verificarMfa(() => {});",
-                      "}"
+                      "// Completa el login del admin pasando por el segundo factor (MFA).",
+                      "// Usa el helper compartido: 1ra corrida hace setup+activate (guarda adminMfaSecret),",
+                      "// las siguientes hacen verify. Deja el JWT de sesion en la global token.",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -1784,13 +1703,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login admin exitoso\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.globals.set(\"token\", data.token);",
-                      "console.log(\"Token admin guardado para setup RNF-01\");"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -2106,19 +2027,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login del empleado restringido exitoso (200)\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "pm.test(\"Se obtuvo token JWT válido\", function () {",
-                      "    const data = pm.response.json();",
-                      "    pm.expect(data).to.have.property(\"token\");",
-                      "    pm.expect(data.token.split(\".\").length).to.eql(3);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.globals.set(\"restrictedToken\", data.token);",
-                      "console.log(\"Token restringido guardado para tests RNF-01\");"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"rnfEmpleadoCorreo\"),",
+                      "    password: pm.collectionVariables.get(\"rnfEmpleadoPassword\"),",
+                      "    tokenKey: \"restrictedToken\",",
+                      "    secretKey: \"rnfEmpleadoMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -2962,12 +2879,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login admin para cleanup\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.globals.set(\"token\", data.token);"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -4251,12 +4171,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login admin exitoso\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.globals.set(\"token\", data.token);"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -4340,27 +4263,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Status code is 200\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "pm.test(\"Token JWT válido recibido\", function () {",
-                      "    const data = pm.response.json();",
-                      "    pm.expect(data).to.have.property(\"token\");",
-                      "    pm.expect(data.token.split(\".\").length).to.eql(3);",
-                      "});",
-                      "",
-                      "pm.test(\"La respuesta contiene unidadIds\", function () {",
-                      "    const data = pm.response.json();",
-                      "    pm.expect(data).to.have.property(\"unidadIds\");",
-                      "    if (data.unidadIds !== null) {",
-                      "        pm.expect(data.unidadIds).to.be.an(\"array\");",
-                      "    }",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.globals.set(\"socioToken\", data.token);",
-                      "console.log(\"Token de socio guardado para tests de inscripciones\");"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"socioEmail\"),",
+                      "    password: pm.collectionVariables.get(\"socioPassword\"),",
+                      "    tokenKey: \"socioToken\",",
+                      "    secretKey: \"socioMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -4758,12 +4669,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login admin para cleanup\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.globals.set(\"token\", data.token);"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -4842,12 +4756,15 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Login admin exitoso\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const data = pm.response.json();",
-                  "pm.globals.set(\"token\", data.token);"
+                  "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                  "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                  "loginConMfa({",
+                  "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                  "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                  "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                  "    tokenKey: \"token\",",
+                  "    secretKey: \"adminMfaSecret\"",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -5129,18 +5046,34 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"idToken\": \"\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/auth/google",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "google"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
             }
           },
           "response": []
@@ -5164,18 +5097,34 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"idToken\": \"esto-no-es-un-jwt-valido\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/auth/google",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "google"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
             }
           },
           "response": []
@@ -5224,8 +5173,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/empleados/{{adminId}}/mfa/reset",
-              "host": ["{{baseUrl}}"],
-              "path": ["empleados", "{{adminId}}", "mfa", "reset"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados",
+                "{{adminId}}",
+                "mfa",
+                "reset"
+              ]
             }
           },
           "response": []
@@ -5250,8 +5206,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/empleados/00000000-0000-0000-0000-000000000000/mfa/reset",
-              "host": ["{{baseUrl}}"],
-              "path": ["empleados", "00000000-0000-0000-0000-000000000000", "mfa", "reset"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados",
+                "00000000-0000-0000-0000-000000000000",
+                "mfa",
+                "reset"
+              ]
             }
           },
           "response": []
@@ -5272,13 +5235,22 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/empleados/00000000-0000-0000-0000-000000000001/mfa/reset",
-              "host": ["{{baseUrl}}"],
-              "path": ["empleados", "00000000-0000-0000-0000-000000000001", "mfa", "reset"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados",
+                "00000000-0000-0000-0000-000000000001",
+                "mfa",
+                "reset"
+              ]
             }
           },
           "response": []
@@ -5315,8 +5287,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/unidades",
-              "host": ["{{baseUrl}}"],
-              "path": ["unidades"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "unidades"
+              ]
             }
           },
           "response": []
@@ -5353,16 +5329,29 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"Evento Postman E2E\",\n  \"descripcion\": \"Evento creado por la suite de tests automatizados\",\n  \"fecha\": \"{{eventoFechaFutura}}\",\n  \"unidadId\": \"{{eventoUnidadId}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/eventos",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
             }
           },
           "response": []
@@ -5382,16 +5371,29 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"Evento con fecha pasada\",\n  \"descripcion\": \"No debería crearse\",\n  \"fecha\": \"2020-01-01T10:00:00Z\",\n  \"unidadId\": \"{{eventoUnidadId}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/eventos",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
             }
           },
           "response": []
@@ -5420,9 +5422,18 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/eventos?unidadId={{eventoUnidadId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos"],
-              "query": [{ "key": "unidadId", "value": "{{eventoUnidadId}}" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ],
+              "query": [
+                {
+                  "key": "unidadId",
+                  "value": "{{eventoUnidadId}}"
+                }
+              ]
             }
           },
           "response": []
@@ -5449,8 +5460,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/eventos/{{createdEventoId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos", "{{createdEventoId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{createdEventoId}}"
+              ]
             }
           },
           "response": []
@@ -5473,8 +5489,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/eventos/00000000-0000-0000-0000-000000000000",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos", "00000000-0000-0000-0000-000000000000"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "00000000-0000-0000-0000-000000000000"
+              ]
             }
           },
           "response": []
@@ -5498,16 +5519,30 @@
           ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"Evento Postman E2E (actualizado)\",\n  \"descripcion\": \"Descripción modificada por test PUT\",\n  \"fecha\": \"{{eventoFechaFutura}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/eventos/{{createdEventoId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos", "{{createdEventoId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{createdEventoId}}"
+              ]
             }
           },
           "response": []
@@ -5533,8 +5568,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/eventos/{{createdEventoId}}/notificar",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos", "{{createdEventoId}}", "notificar"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{createdEventoId}}",
+                "notificar"
+              ]
             }
           },
           "response": []
@@ -5559,8 +5600,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/eventos/{{createdEventoId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos", "{{createdEventoId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{createdEventoId}}"
+              ]
             }
           },
           "response": []
@@ -5590,11 +5636,21 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/eventos?unidadId={{eventoUnidadId}}&incluirInactivos=true",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ],
               "query": [
-                { "key": "unidadId", "value": "{{eventoUnidadId}}" },
-                { "key": "incluirInactivos", "value": "true" }
+                {
+                  "key": "unidadId",
+                  "value": "{{eventoUnidadId}}"
+                },
+                {
+                  "key": "incluirInactivos",
+                  "value": "true"
+                }
               ]
             }
           },
@@ -5614,13 +5670,19 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/eventos",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
             }
           },
           "response": []
@@ -5653,18 +5715,34 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"correo\": \"{{socioEmail}}\",\n  \"password\": \"{{socioPassword}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           },
           "response": []
@@ -5692,14 +5770,27 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/portal/notificaciones/no-leidas/count",
-              "host": ["{{baseUrl}}"],
-              "path": ["portal", "notificaciones", "no-leidas", "count"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "no-leidas",
+                "count"
+              ]
             }
           },
           "response": []
@@ -5732,16 +5823,29 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"Trigger notificación E2E\",\n  \"descripcion\": \"Evento creado para verificar que el socio recibe la notificación in-system\",\n  \"fecha\": \"{{notifEventoFecha}}\",\n  \"unidadId\": \"{{eventoUnidadId}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/eventos",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
             }
           },
           "response": []
@@ -5767,14 +5871,27 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/portal/notificaciones/no-leidas/count",
-              "host": ["{{baseUrl}}"],
-              "path": ["portal", "notificaciones", "no-leidas", "count"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "no-leidas",
+                "count"
+              ]
             }
           },
           "response": []
@@ -5803,17 +5920,34 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/portal/notificaciones?soloNoLeidas=true&take=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["portal", "notificaciones"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones"
+              ],
               "query": [
-                { "key": "soloNoLeidas", "value": "true" },
-                { "key": "take", "value": "10" }
+                {
+                  "key": "soloNoLeidas",
+                  "value": "true"
+                },
+                {
+                  "key": "take",
+                  "value": "10"
+                }
               ]
             }
           },
@@ -5838,14 +5972,27 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
             },
             "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/portal/notificaciones/{{notifId}}/leer",
-              "host": ["{{baseUrl}}"],
-              "path": ["portal", "notificaciones", "{{notifId}}", "leer"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "{{notifId}}",
+                "leer"
+              ]
             }
           },
           "response": []
@@ -5866,14 +6013,27 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
             },
             "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/portal/notificaciones/{{notifId}}/leer",
-              "host": ["{{baseUrl}}"],
-              "path": ["portal", "notificaciones", "{{notifId}}", "leer"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "{{notifId}}",
+                "leer"
+              ]
             }
           },
           "response": []
@@ -5894,14 +6054,27 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
             },
             "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/portal/notificaciones/00000000-0000-0000-0000-000000000000/leer",
-              "host": ["{{baseUrl}}"],
-              "path": ["portal", "notificaciones", "00000000-0000-0000-0000-000000000000", "leer"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "00000000-0000-0000-0000-000000000000",
+                "leer"
+              ]
             }
           },
           "response": []
@@ -5920,13 +6093,20 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/portal/notificaciones",
-              "host": ["{{baseUrl}}"],
-              "path": ["portal", "notificaciones"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones"
+              ]
             }
           },
           "response": []
@@ -5956,14 +6136,25 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{socioToken}}", "type": "string" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/portal/eventos",
-              "host": ["{{baseUrl}}"],
-              "path": ["portal", "eventos"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "eventos"
+              ]
             }
           },
           "response": []
@@ -5988,8 +6179,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/eventos/{{notifEventoId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["eventos", "{{notifEventoId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{notifEventoId}}"
+              ]
             }
           },
           "response": []
@@ -6014,44 +6210,9 @@
         "type": "text/javascript",
         "requests": {},
         "exec": [
-          "// Helpers TOTP (RFC 6238) accesibles desde cualquier request del collection.",
-          "// Se usan para generar el codigo de 6 digitos del segundo factor (MFA)",
-          "// a partir del secreto base32 que devuelve POST /auth/mfa/setup.",
-          "",
-          "function base32Decode(str) {",
-          "    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';",
-          "    const clean = str.replace(/=+$/, '').toUpperCase().replace(/\\s+/g, '');",
-          "    let bits = '';",
-          "    for (let i = 0; i < clean.length; i++) {",
-          "        const val = alphabet.indexOf(clean[i]);",
-          "        if (val < 0) throw new Error('Caracter base32 invalido: ' + clean[i]);",
-          "        bits += val.toString(2).padStart(5, '0');",
-          "    }",
-          "    const bytes = [];",
-          "    for (let i = 0; i + 8 <= bits.length; i += 8) {",
-          "        bytes.push(parseInt(bits.substring(i, i + 8), 2));",
-          "    }",
-          "    return CryptoJS.lib.WordArray.create(new Uint8Array(bytes));",
-          "}",
-          "",
-          "function totp(secretBase32, timeStep) {",
-          "    if (!secretBase32) return null;",
-          "    const t = Math.floor((timeStep || Date.now() / 1000) / 30);",
-          "    // Counter big-endian de 8 bytes",
-          "    const counterHex = t.toString(16).padStart(16, '0');",
-          "    const counter = CryptoJS.enc.Hex.parse(counterHex);",
-          "    const key = base32Decode(secretBase32);",
-          "    const hmac = CryptoJS.HmacSHA1(counter, key);",
-          "    const hex = hmac.toString(CryptoJS.enc.Hex);",
-          "    // Dynamic truncation (RFC 4226)",
-          "    const offset = parseInt(hex.substring(hex.length - 1), 16);",
-          "    const slice = hex.substring(offset * 2, offset * 2 + 8);",
-          "    const binary = parseInt(slice, 16) & 0x7fffffff;",
-          "    return (binary % 1000000).toString().padStart(6, '0');",
-          "}",
-          "",
-          "// Exponer globalmente para que los scripts de cada request lo puedan usar.",
-          "globalThis.gymflowTotp = totp;"
+          "// Pre-request a nivel collection: vacio.",
+          "// Las funciones TOTP estan inlined en cada request que las necesita",
+          "// (el sandbox de Postman aisla scripts entre si, no se pueden compartir funciones)."
         ]
       }
     },
@@ -6203,6 +6364,21 @@
     },
     {
       "key": "notifId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mfaHelperSrc",
+      "value": "function base32ToHex(s){var a=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567\";var c=s.replace(/=+$/,\"\").toUpperCase().replace(/s+/g,\"\");var b=\"\";for(var i=0;i<c.length;i++)b+=a.indexOf(c[i]).toString(2).padStart(5,\"0\");var h=\"\";for(var j=0;j+8<=b.length;j+=8)h+=parseInt(b.substring(j,j+8),2).toString(16).padStart(2,\"0\");return h;}\nfunction totpCode(secret){var t=Math.floor(Date.now()/1000/30);var ch=t.toString(16).padStart(16,\"0\");var key=CryptoJS.enc.Hex.parse(base32ToHex(secret));var hm=CryptoJS.HmacSHA1(CryptoJS.enc.Hex.parse(ch),key).toString(CryptoJS.enc.Hex);var off=parseInt(hm.substring(hm.length-1),16);var bin=parseInt(hm.substring(off*2,off*2+8),16)&0x7fffffff;return (bin%1000000).toString().padStart(6,\"0\");}\nfunction loginConMfa(o){pm.sendRequest({url:o.baseUrl+\"/auth/login\",method:\"POST\",header:{\"Content-Type\":\"application/json\"},body:{mode:\"raw\",raw:JSON.stringify({correo:o.correo,password:o.password})}},function(err,res){pm.test(\"Login \"+o.correo+\" (200)\",function(){pm.expect(res.code).to.eql(200);});if(res.code!==200)return;var d=res.json();if(!d.requiereMfa){var ses=d.sesion||d;pm.globals.set(o.tokenKey,ses.token);return;}var ticket=d.mfaToken;if(d.setupRequerido){pm.sendRequest({url:o.baseUrl+\"/auth/mfa/setup\",method:\"POST\",header:{\"Authorization\":\"Bearer \"+ticket}},function(e2,sres){pm.test(\"MFA setup \"+o.correo,function(){pm.expect(sres.code).to.eql(200);});if(sres.code!==200)return;var secret=sres.json().claveManual;pm.globals.set(o.secretKey,secret);pm.sendRequest({url:o.baseUrl+\"/auth/mfa/activate\",method:\"POST\",header:{\"Authorization\":\"Bearer \"+ticket,\"Content-Type\":\"application/json\"},body:{mode:\"raw\",raw:JSON.stringify({codigo:totpCode(secret)})}},function(e3,ares){pm.test(\"MFA activate \"+o.correo,function(){pm.expect(ares.code).to.eql(200);});if(ares.code===200)pm.globals.set(o.tokenKey,ares.json().sesion.token);});});}else{var secret=pm.globals.get(o.secretKey);if(!secret){pm.test(\"MFA verify \"+o.correo,function(){pm.expect.fail(\"No hay secret guardado para \"+o.correo+\". Corre el folder Auth primero o resetea MFA.\");});return;}pm.sendRequest({url:o.baseUrl+\"/auth/mfa/verify\",method:\"POST\",header:{\"Authorization\":\"Bearer \"+ticket,\"Content-Type\":\"application/json\"},body:{mode:\"raw\",raw:JSON.stringify({codigo:totpCode(secret)})}},function(e4,vres){pm.test(\"MFA verify \"+o.correo,function(){pm.expect(vres.code).to.eql(200);});if(vres.code===200)pm.globals.set(o.tokenKey,vres.json().token);});}});}",
+      "type": "string"
+    },
+    {
+      "key": "rnfEmpleadoMfaSecret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "socioMfaSecret",
       "value": "",
       "type": "string"
     }
