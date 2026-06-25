@@ -9,6 +9,8 @@
 | *RF cubiertos* | RF-08 (Clases), RF-09 (Horarios) |
 | *Iteración(es) de entrega* | IT-3 — CRUD completo de clases y horarios + validación de conflictos + notificaciones por email + auditoría. IT-4 — Mejora: filtro de sede obligatorio en calendario admin + split visual de clases solapadas. |
 | *Referencia original* | [GymFlow_Requerimientos_Completos.md § CU-06](../GymFlow_Requerimientos_Completos.md#cu-06--gestión-de-clases-y-horarios) |
+| *Referencia spec* | [spec-it4-inscripciones-empleados-horarios](../specs/spec-it4-inscripciones-empleados-horarios.md) |
+| *Referencia plan* | [plan-it4-inscripciones-empleados-horarios](../plans/plan-it4-inscripciones-empleados-horarios.md) |
 | *Documentos de iteración* | [iteracion-3.md](../seguimiento/iteracion-3.md), [iteracion-4.md](../seguimiento/iteracion-4.md) |
 
 **Flujo principal — Creación de Clase:**

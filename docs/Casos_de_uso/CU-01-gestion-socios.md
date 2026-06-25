@@ -9,6 +9,8 @@
 | *RF cubiertos* | RF-01, RF-02, RF-03, RF-04, RF-05, RF-20 (prerrequisito), RF-22, RNF-09 (Ley 18.331) |
 | *Iteración(es) de entrega* | IT-1 — ABM completo (RF-01/02/03/04/20/22) + consentimiento Ley 18.331. IT-2 — Perfil del socio (RF-05) + solicitudes ARCO de modificación/baja (RNF-09b). |
 | *Referencia original* | [GymFlow_Requerimientos_Completos.md § CU-01](../GymFlow_Requerimientos_Completos.md#cu-01--gestión-de-socios-alta-baja-modificación) |
+| *Referencia spec* | [spec-rf01-tipo-documento](../specs/spec-rf01-tipo-documento.md), [spec-rf01-frontend-tipo-documento](../specs/spec-rf01-frontend-tipo-documento.md), [spec-rf02-fecha-alta-seleccionable](../specs/spec-rf02-fecha-alta-seleccionable.md), [spec-rf22-planes-por-unidad](../specs/spec-rf22-planes-por-unidad.md) |
+| *Referencia plan* | [plan-rf01-tipo-documento](../plans/plan-rf01-tipo-documento.md), [plan-rf01-frontend-tipo-documento](../plans/plan-rf01-frontend-tipo-documento.md), [plan-rf02-fecha-alta-seleccionable](../plans/plan-rf02-fecha-alta-seleccionable.md), [plan-rf22-planes-por-unidad](../plans/plan-rf22-planes-por-unidad.md) |
 | *Documentos de iteración* | [Documentacion_It.1.docx](../seguimiento/Documentacion_It.1.docx), [Documentacion_It.2.docx](../seguimiento/Documentacion_It.2.docx) |
 
 **Flujo principal:**
@@ -36,7 +38,7 @@
 
 1. El administrador selecciona la opción de baja e ingresa un motivo opcional (`motivoBaja`).
 2. El sistema marca al socio como `Inactivo` (soft-delete) sin eliminar el registro.
-3. El registro puede ser reactivado posteriormente desde la tab de inactivos (`PATCH /api/socios/{id}/reactivar`).
+3. El registro puede ser reactivado posteriormente desde la tab de inactivos.
 
 **Subflujo D — Perfil del socio (RF-05, IT-2):**
 

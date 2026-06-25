@@ -9,6 +9,8 @@
 | *RF cubiertos* | RF-15 |
 | *Iteración(es) de entrega* | IT-5 — ABM de eventos por sede + baja lógica + notificación por email a socios al crear + acción manual de re-notificar + vista "Próximos eventos" en el portal. Se agrega el módulo "Eventos" al sistema de permisos. |
 | *Referencia original* | Funcionalidad documentada en [iteracion-5.md § CU-08](../seguimiento/iteracion-5.md). No figura como CU detallado en el documento original de requerimientos. |
+| *Referencia spec* | [spec-rf15-eventos](../specs/spec-rf15-eventos.md) |
+| *Referencia plan* | [plan-rf15-eventos](../plans/plan-rf15-eventos.md) |
 | *Documento de iteración* | [iteracion-5.md](../seguimiento/iteracion-5.md) |
 
 **Flujo principal — Crear evento:**

@@ -9,6 +9,8 @@
 | *RF cubiertos* | RF-10, RF-11 |
 | *Iteración(es) de entrega* | IT-3 (base: backend + frontend de inscripción y "Mis Clases") → IT-4 (completo: inscripción por `HorarioClaseId`, validación de cuota al día, email, auditoría, query optimizada batch). |
 | *Referencia original* | [GymFlow_Requerimientos_Completos.md § CU-02](../GymFlow_Requerimientos_Completos.md#cu-02--inscripción-a-clase) |
+| *Referencia spec* | [spec-inscripcion-por-horario](../specs/spec-inscripcion-por-horario.md), [spec-it4-inscripciones-empleados-horarios](../specs/spec-it4-inscripciones-empleados-horarios.md) |
+| *Referencia plan* | [plan-inscripcion-por-horario](../plans/plan-inscripcion-por-horario.md), [plan-it4-inscripciones-empleados-horarios](../plans/plan-it4-inscripciones-empleados-horarios.md) |
 | *Documentos de iteración* | [iteracion-3.md](../seguimiento/iteracion-3.md), [iteracion-4.md](../seguimiento/iteracion-4.md) |
 
 **Flujo principal:**

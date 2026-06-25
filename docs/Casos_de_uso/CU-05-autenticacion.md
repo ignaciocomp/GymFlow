@@ -9,6 +9,8 @@
 | *RF cubiertos* | RNF-01 (autenticación + autorización por roles y permisos), RNF-05 (seguridad de datos), RNF-10 (MFA + OAuth) |
 | *Iteración(es) de entrega* | IT-1 — JWT base con usuarios hardcodeados (parcial, sin guards). IT-2 — Sistema de roles dinámicos con permisos por módulo (CRUD), `Empleado` con BCrypt, middleware de autorización. IT-5 — Login con Google OAuth (socios) + MFA TOTP obligatorio (empleados). |
 | *Referencia original* | [GymFlow_Requerimientos_Completos.md § CU-05](../GymFlow_Requerimientos_Completos.md#cu-05--autenticación-y-control-de-acceso-login--mfa) |
+| *Referencia spec* | [spec-rnf01-roles-y-permisos](../specs/spec-rnf01-roles-y-permisos.md), [spec-rnf01-gestion-usuarios](../specs/spec-rnf01-gestion-usuarios.md), [spec-it5-login-google](../specs/spec-it5-login-google.md), [spec-it5-mfa-empleados](../specs/spec-it5-mfa-empleados.md) |
+| *Referencia plan* | [plan-rnf01-roles-y-permisos](../plans/plan-rnf01-roles-y-permisos.md), [plan-rnf01-gestion-usuarios](../plans/plan-rnf01-gestion-usuarios.md), [plan-it5-login-google](../plans/plan-it5-login-google.md), [plan-it5-mfa-empleados](../plans/plan-it5-mfa-empleados.md) |
 | *Documentos de iteración* | [Documentacion_It.1.docx](../seguimiento/Documentacion_It.1.docx), [Documentacion_It.2.docx](../seguimiento/Documentacion_It.2.docx), [iteracion-5.md](../seguimiento/iteracion-5.md) |
 
 **Flujo principal — Login de Socio con email + contraseña (IT-1 base):**
