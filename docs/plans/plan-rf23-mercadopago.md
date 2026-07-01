@@ -173,7 +173,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
     - `ValidarFirma`: parsear `xSignature` ("ts=...,v1=..."), armar manifest, HMAC-SHA256 con `MercadoPago:WebhookSecret`, comparar (case-insensitive, constante-time) con `v1`. Si falta secret o header → false.
     - `CrearPreferenciaAsync`: POST `https://api.mercadopago.com/checkout/preferences` con `Authorization: Bearer {MercadoPago:AccessToken}`, body `{ items:[{title:descripcion, quantity:1, unit_price:monto, currency_id:"UYU"}], external_reference:pagoId, back_urls:{...}, auto_return:"approved", notification_url }`. Devuelve `id` + `init_point`.
     - `ObtenerPagoAsync`: GET `https://api.mercadopago.com/v1/payments/{id}` con Bearer → mapear `status`, `payment_method_id`, `external_reference`.
-  - `appsettings.json`: sección `"MercadoPago": { "Habilitado": false, "AccessToken": "", "WebhookSecret": "", "BackUrlBase": "http://localhost:5173" }`. En `appsettings.Development.json` poner el AccessToken/WebhookSecret de **sandbox** (los de prueba) para dev.
+  - `appsettings.json`: sección `"MercadoPago": { "Habilitado": false, "AccessToken": "", "WebhookSecret": "", "BackUrlBase": "http://localhost:5173" }`. **Crear** `appsettings.Development.json` (NO existe aún) con el AccessToken/WebhookSecret de **sandbox** para dev — o dejar `Habilitado:false` para el flujo simulado.
   - DI (`Infrastructure/DependencyInjection.cs`): `services.AddHttpClient<IMercadoPagoService, MercadoPagoService>();`
 - [ ] **Step 4: Run → PASS**
 - [ ] **Step 5: Commit** — `feat(pagos): MercadoPagoService (preferencia, consulta, firma HMAC) (#RF-23)`
@@ -211,7 +211,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
   2. `var info = await _mp.ObtenerPagoAsync(dataId)`; if null → return.
   3. `var pago = await _pagoRepo.GetByExternalReferenceAsync(Guid.Parse(info.ExternalReference))`; if null → return.
   4. `var cuota = await _cuotaRepo.GetByIdAsync(pago.CuotaId)`.
-  5. `if (info.Estado == "approved")`: si `cuota.Estado == Pagada` → idempotente, return. Sino `cuota.MarcarComoPagada()`, `pago.MarcarAprobado(info.PaymentId, info.MedioPago)`, SaveChanges (ambos repos), audit, email (best-effort try-catch).
+  5. `if (info.Estado == "approved")`: si `cuota.Estado == Pagada` → idempotente, return. Sino `cuota.MarcarComoPagada()`, `pago.MarcarAprobado(info.PaymentId, info.MedioPago)`, **un solo `SaveChangesAsync`** (el DbContext es compartido → commitea Cuota + Pago atómicamente), audit, email (best-effort try-catch).
   6. `else if (info.Estado == "rejected")`: `pago.MarcarRechazado()`, SaveChanges.
   Registrar en DI.
 - [ ] **Step 4: Run → PASS**
@@ -234,12 +234,12 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 **Files:** Create `API/Controllers/PagosController.cs`. Test: `Application.Tests/Controllers/PagosControllerTests.cs` (mirror `CuotasControllerJobsTests`).
 
 - [ ] **Step 1: Tests** — 
-  - `POST /api/cuotas/{id}/pagar` (o `POST /api/pagos/iniciar`): `[Authorize]` (socio), extrae socioId de `ClaimTypes.NameIdentifier`, llama command, devuelve `{ initPoint }`.
-  - `POST /api/pagos/webhook`: `[AllowAnonymous]`, lee headers `x-signature`/`x-request-id` y el `data.id` del body/query, llama command; devuelve **200** si procesó, **401** si firma inválida.
+  - `POST /api/pagos/iniciar` (NO usar `/cuotas/{id}/pagar`: esa ruta **PUT** ya es la acción admin "marcar pagada"): `[Authorize]` (socio), extrae socioId de `ClaimTypes.NameIdentifier`, llama command, devuelve `{ initPoint }`.
+  - `POST /api/pagos/webhook`: `[AllowAnonymous]`, lee headers `x-signature`/`x-request-id` y el `data.id` del body/query, llama command; **devuelve 401 SOLO si la firma es inválida** (spoofing — no importa que MP reintente), y **200 en todos los demás casos** (procesado / pago no encontrado / pendiente) para que MP deje de reintentar. *(Esto refina el "200 siempre" del spec — decisión deliberada.)*
   - `GET /api/pagos/mis-pagos`: `[Authorize]`, socioId del claim → historial.
   - (Reflection) el webhook tiene `[AllowAnonymous]`; iniciar/mis-pagos tienen `[Authorize]`.
 - [ ] **Step 2: Run → FAIL**
-- [ ] **Step 3: Implementar** el controller (rutas arriba; el webhook parsea `data.id` — MP lo manda en query `?data.id=` o en el body `{data:{id}}`, contemplar ambos). Devolver 200/401 según resultado.
+- [ ] **Step 3: Implementar** el controller (rutas arriba; el webhook parsea `data.id` — MP lo manda en query `?data.id=` o en el body `{data:{id}}`, contemplar ambos). Devolver **401 si firma inválida, 200 en el resto**.
 - [ ] **Step 4: Run → PASS** + `dotnet test` (todo el backend) verde.
 - [ ] **Step 5: Commit** — `feat(pagos): endpoints iniciar/webhook/mis-pagos (#RF-23)`
 
@@ -251,7 +251,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 
 - [ ] **Step 1: Test** — en una cuota Pendiente, el botón "Pagar con Mercado Pago" llama `pagosApi.iniciar(cuotaId)` y redirige a `initPoint` (mockear `window.location` / el api). Cuota Pagada → sin botón.
 - [ ] **Step 2: Run → FAIL**
-- [ ] **Step 3: Implementar** en `api.ts`: `pagosApi = { iniciar: (cuotaId) => api.post('/pagos/iniciar', { cuotaId }).then(r => r.data), getMisPagos: () => api.get('/pagos/mis-pagos').then(r => r.data) }`. En `MisCuotasPage`: reemplazar el botón `disabled` por uno que en `onClick` llame `iniciar` y haga `window.location.href = initPoint` (con estado de loading + manejo de error → toast "No se pudo iniciar el pago").
+- [ ] **Step 3: Implementar** en `api.ts`: `pagosApi = { iniciar: (cuotaId) => api.post('/pagos/iniciar', { cuotaId }).then(r => r.data), getMisPagos: () => api.get('/pagos/mis-pagos').then(r => r.data) }`. En `MisCuotasPage`: reemplazar **los DOS** botones `disabled`/"Pagar (próximamente)" (el de la tabla desktop ~L90 y el de la card mobile ~L133) por uno que en `onClick` llame `iniciar` y haga `window.location.href = initPoint` (con estado de loading + manejo de error → toast "No se pudo iniciar el pago").
 - [ ] **Step 4: Run → PASS**
 - [ ] **Step 5: Commit** — `feat(portal): boton pagar cuota con Mercado Pago (#RF-23)`
 
