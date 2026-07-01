@@ -2,7 +2,7 @@ import { Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
 import { portalApi } from '@/services/api'
-import { Dumbbell, LogOut, User, CreditCard, CalendarDays, BookOpen, PartyPopper, Bell } from 'lucide-react'
+import { Dumbbell, LogOut, User, CreditCard, CalendarDays, BookOpen, PartyPopper, Bell, Receipt } from 'lucide-react'
 
 export default function SocioLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
@@ -111,6 +111,17 @@ export default function SocioLayout() {
           >
             <CreditCard className="h-4 w-4" />
             Mis Cuotas
+          </Link>
+          <Link
+            to="/portal/mis-pagos"
+            className={`flex items-center gap-1.5 border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+              location.pathname === '/portal/mis-pagos'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Receipt className="h-4 w-4" />
+            Mis Pagos
           </Link>
           <Link
             to="/portal/horarios"

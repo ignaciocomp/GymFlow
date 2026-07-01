@@ -117,6 +117,18 @@ export interface CuotaDto {
   fechaBaja: string | null
 }
 
+export type EstadoPago = 'Pendiente' | 'Aprobado' | 'Rechazado'
+
+export interface PagoDto {
+  id: string
+  fecha: string
+  monto: number
+  medioPago: string | null
+  mpPaymentId: string | null
+  estado: EstadoPago
+  nombrePlan: string
+}
+
 export interface Clase {
   id: string
   nombre: string
