@@ -95,6 +95,7 @@ public static class DependencyInjection
         services.AddScoped<ResetearMfaEmpleadoCommand>();
         services.AddScoped<IniciarPagoCuotaCommand>();
         services.AddScoped<ProcesarWebhookPagoCommand>();
+        services.AddScoped<GetMisPagosQuery>();
         return services;
     }
 }
