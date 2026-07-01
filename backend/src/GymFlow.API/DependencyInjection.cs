@@ -94,6 +94,7 @@ public static class DependencyInjection
         services.AddScoped<UsarCodigoRecuperacionCommand>();
         services.AddScoped<ResetearMfaEmpleadoCommand>();
         services.AddScoped<IniciarPagoCuotaCommand>();
+        services.AddScoped<ProcesarWebhookPagoCommand>();
         return services;
     }
 }
