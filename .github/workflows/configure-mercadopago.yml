@@ -1,0 +1,91 @@
+name: Configurar Mercado Pago
+
+# Workflow MANUAL (one-time): activa el pago online de cuotas con Mercado Pago
+# (Checkout Pro) en el Container App de produccion sin que ninguna credencial
+# toque el repo.
+# - MercadoPago:AccessToken   -> credencial para crear preferencias y consultar pagos.
+# - MercadoPago:WebhookSecret -> clave con la que se valida la firma HMAC (x-signature)
+#   de cada webhook entrante (RN-31): sin firma valida el webhook no toca datos.
+# Ambos se guardan como secrets del Container App y los env vars MercadoPago__*
+# los referencian via secretref. Los env vars PERSISTEN entre deploys de imagen,
+# asi que alcanza con correrlo una sola vez (o si rotan las credenciales, p.ej.
+# al regenerar el Webhook Secret en el panel de MP).
+#
+# Requiere los secrets de GitHub: AZURE_CREDENTIALS, MERCADOPAGO_ACCESS_TOKEN,
+# MERCADOPAGO_WEBHOOK_SECRET.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: configure-mercadopago-production
+  cancel-in-progress: false
+
+jobs:
+  configure:
+    name: Cargar credenciales de Mercado Pago en el Container App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar secrets requeridos
+        env:
+          MERCADOPAGO_ACCESS_TOKEN: ${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}
+          MERCADOPAGO_WEBHOOK_SECRET: ${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}
+        run: |
+          FALTAN=""
+          if [ -z "$MERCADOPAGO_ACCESS_TOKEN" ]; then FALTAN="$FALTAN MERCADOPAGO_ACCESS_TOKEN"; fi
+          if [ -z "$MERCADOPAGO_WEBHOOK_SECRET" ]; then FALTAN="$FALTAN MERCADOPAGO_WEBHOOK_SECRET"; fi
+          if [ -n "$FALTAN" ]; then
+            echo "::error::Faltan secrets de GitHub:$FALTAN"
+            echo "Cargalos en Settings -> Secrets and variables -> Actions -> New repository secret y volve a correr el workflow."
+            exit 1
+          fi
+          echo "Secrets de Mercado Pago presentes."
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Guardar las credenciales como secrets del Container App
+        env:
+          MERCADOPAGO_ACCESS_TOKEN: ${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}
+          MERCADOPAGO_WEBHOOK_SECRET: ${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}
+        run: |
+          # Las credenciales viajan solo como env vars hacia az; NUNCA se imprimen
+          # (--output none evita que az devuelva la lista de secrets).
+          az containerapp secret set \
+            --name ${{ vars.AZURE_ACA_APP }} \
+            --resource-group ${{ vars.AZURE_RG }} \
+            --secrets mercadopago-access-token="$MERCADOPAGO_ACCESS_TOKEN" mercadopago-webhook-secret="$MERCADOPAGO_WEBHOOK_SECRET" \
+            --output none
+          echo "Secrets mercadopago-access-token y mercadopago-webhook-secret guardados en el Container App."
+
+      - name: Activar Mercado Pago (env vars del Container App)
+        run: |
+          # Los env vars MercadoPago__* referencian los secrets del Container App
+          # (secretref), nunca el valor en texto plano. BackUrlBase/ApiBaseUrl son
+          # la URL publica de la app (el mismo container sirve frontend + API):
+          # MP redirige al socio a las paginas de retorno del portal y manda el
+          # webhook a /api/pagos/webhook sobre esa misma base.
+          az containerapp update \
+            --name ${{ vars.AZURE_ACA_APP }} \
+            --resource-group ${{ vars.AZURE_RG }} \
+            --set-env-vars \
+              "MercadoPago__Habilitado=true" \
+              "MercadoPago__AccessToken=secretref:mercadopago-access-token" \
+              "MercadoPago__WebhookSecret=secretref:mercadopago-webhook-secret" \
+              "MercadoPago__BackUrlBase=https://ca-gymflow.gentlemeadow-5931333d.eastus2.azurecontainerapps.io" \
+              "MercadoPago__ApiBaseUrl=https://ca-gymflow.gentlemeadow-5931333d.eastus2.azurecontainerapps.io" \
+            --output none
+          echo "Env vars de Mercado Pago aplicados. Nueva revision en camino."
+
+      - name: Resumen
+        if: success()
+        run: |
+          echo "## Mercado Pago configurado" >> $GITHUB_STEP_SUMMARY
+          echo "- App: \`${{ vars.AZURE_ACA_APP }}\` (RG \`${{ vars.AZURE_RG }}\`)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`MercadoPago__Habilitado=true\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`MercadoPago__AccessToken\` -> secret del Container App \`mercadopago-access-token\` (secretref)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`MercadoPago__WebhookSecret\` -> secret del Container App \`mercadopago-webhook-secret\` (secretref)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`MercadoPago__BackUrlBase\` y \`MercadoPago__ApiBaseUrl\` apuntan a la URL publica de la app" >> $GITHUB_STEP_SUMMARY
+          echo "- Sin valores en logs. Persiste entre deploys: solo hace falta volver a correrlo si rotan las credenciales." >> $GITHUB_STEP_SUMMARY

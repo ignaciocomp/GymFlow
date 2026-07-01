@@ -212,3 +212,84 @@ El MFA vive en la tabla TPH **`Usuarios`** (columnas `MfaHabilitado`, `MfaSecret
 Tras esto, el empleado entra solo con usuario y password, y el proximo login le va a pedir
 **volver a enrolarse** (`SetupRequerido=true`), generando un secreto nuevo. Equivale exactamente al
 reset por API; cambiarlo a mano en la DB es solo el plan B cuando no hay otra cuenta que lo haga.
+
+## Activar Mercado Pago (pago de cuotas online)
+
+> One-time: como con SMTP y MFA, los env vars del Container App persisten entre deploys de imagen.
+> Ninguna credencial toca el repo: el Access Token y el Webhook Secret viven como secrets del
+> Container App y los env vars `MercadoPago__AccessToken` / `MercadoPago__WebhookSecret` los
+> referencian via `secretref`.
+> En dev local `MercadoPago:Habilitado=false` (en `appsettings.json`) y eso es **intencional**:
+> MP necesita una URL publica para el webhook, asi que la prueba real se hace contra produccion
+> con credenciales de **prueba** (sandbox).
+
+### 1. Crear la aplicacion en Mercado Pago y sacar las credenciales de prueba
+
+- Entrar a https://www.mercadopago.com.uy/developers con una cuenta de Mercado Pago e ir a
+  **Tus integraciones -> Crear aplicacion** (tipo: pagos online, plataforma: web, integracion: Checkout Pro).
+- En la aplicacion, ir a **Cuentas de prueba** y crear **dos usuarios de prueba** (pais Uruguay):
+  - **Vendedor** (test seller): es la cuenta que cobra. Anotar usuario y password.
+  - **Comprador** (test buyer): es la cuenta con la que se paga en el E2E. Anotar usuario y password.
+- **Importante:** las credenciales que usa la app tienen que ser las de la cuenta **vendedor** de
+  prueba. Loguearse en https://www.mercadopago.com.uy/developers con el usuario vendedor de prueba,
+  crear una aplicacion ahi y copiar de **Credenciales de produccion** (de esa cuenta de prueba):
+  - **Access Token** (empieza con `APP_USR-...`).
+  - El **Webhook Secret** se obtiene en el paso 2 al configurar el webhook.
+- Tarjetas de prueba (seccion **Tarjetas de prueba** del panel): cualquier tarjeta de test sirve;
+  el resultado lo decide el **nombre del titular**:
+  - `APRO` -> pago **aprobado**.
+  - `OTHE` -> pago **rechazado** (error general).
+
+### 2. Configurar el webhook en el panel de MP
+
+En la aplicacion (la de la cuenta vendedor de prueba): **Webhooks -> Configurar notificaciones**:
+
+| Campo | Valor |
+|-------|-------|
+| URL (modo prueba) | `https://ca-gymflow.gentlemeadow-5931333d.eastus2.azurecontainerapps.io/api/pagos/webhook` |
+| Eventos | **Pagos** (payment) |
+
+Al guardar, MP muestra la **clave secreta** (Webhook Secret) con la que firma cada notificacion
+(`x-signature`): copiarla, es el valor de `MERCADOPAGO_WEBHOOK_SECRET`. El backend valida esa firma
+HMAC en cada webhook (RN-31) y rechaza con 401 cualquier notificacion con firma invalida.
+
+### 3. Cargar secrets en GitHub
+
+En **Settings -> Secrets and variables -> Actions -> New repository secret**:
+
+| Nombre | Valor |
+|--------|-------|
+| `MERCADOPAGO_ACCESS_TOKEN` | El Access Token de la cuenta vendedor de prueba (`APP_USR-...`) |
+| `MERCADOPAGO_WEBHOOK_SECRET` | La clave secreta del webhook (paso 2) |
+
+### 4. Correr el workflow
+
+**Actions -> Configurar Mercado Pago -> Run workflow** (solo se dispara manual).
+
+El workflow valida que los secrets existan, los guarda como secrets del Container App
+(`mercadopago-access-token`, `mercadopago-webhook-secret`) y setea `MercadoPago__Habilitado=true`,
+`MercadoPago__AccessToken` / `MercadoPago__WebhookSecret` (via `secretref`) y
+`MercadoPago__BackUrlBase` / `MercadoPago__ApiBaseUrl` con la URL publica de la app (el mismo
+container sirve frontend y API). Esto dispara una nueva revision.
+
+### 5. Prueba E2E (contra produccion, con credenciales de prueba)
+
+1. Loguearse en GymFlow como un **socio** que tenga una cuota **pendiente** (o generarle una desde el admin).
+2. En el portal, **Mis cuotas -> Pagar con Mercado Pago** -> redirige a Checkout Pro.
+3. En Checkout Pro, iniciar sesion con el usuario **comprador de prueba** (paso 1) y pagar con una
+   tarjeta de prueba usando el titular `APRO`.
+4. MP redirige de vuelta a la pagina de resultado del portal y manda el webhook: la cuota queda
+   **Pagada**, el pago aparece en **Mis pagos** (con numero de transaccion y medio de pago), se
+   registra la auditoria y al socio le llega el email de confirmacion.
+5. (Opcional) Repetir con titular `OTHE` para ver el flujo de pago **rechazado** (la cuota queda Pendiente).
+
+### Notas
+
+- Para pasar a cobros reales: repetir los pasos con las credenciales **productivas** de la cuenta
+  vendedor real (Access Token + webhook en modo productivo) y actualizar los 2 secrets de GitHub +
+  volver a correr el workflow.
+- Si se **rota** el Webhook Secret en el panel de MP (boton "restablecer"), las firmas dejan de
+  validar: actualizar `MERCADOPAGO_WEBHOOK_SECRET` en GitHub y **volver a correr el workflow**.
+- El webhook es el unico endpoint anonimo de pagos y **nunca** modifica datos sin firma valida +
+  confirmacion del estado real del pago contra la API de MP. Es idempotente: reintentos de MP sobre
+  una cuota ya pagada no duplican nada ni re-mandan el email.
