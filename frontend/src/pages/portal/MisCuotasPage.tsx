@@ -1,7 +1,7 @@
 // frontend/src/pages/portal/MisCuotasPage.tsx
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { cuotasApi } from '@/services/api'
+import { cuotasApi, pagosApi } from '@/services/api'
 import { formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { CreditCard, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CreditCard, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 
 const PAGE_SIZE = 12
 
@@ -26,6 +26,9 @@ function getBadgeVariant(cuota: { estado: string; fechaVencimiento: string }) {
 
 export default function MisCuotasPage() {
   const [page, setPage] = useState(0)
+  // Cuota que está iniciando el pago (para el spinner por fila) y mensaje de error global.
+  const [pagandoId, setPagandoId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const { data: cuotas, isLoading } = useQuery({
     queryKey: ['mis-cuotas'],
     queryFn: cuotasApi.getMisCuotas,
@@ -33,6 +36,20 @@ export default function MisCuotasPage() {
 
   const totalPages = cuotas ? Math.ceil(cuotas.length / PAGE_SIZE) : 0
   const paginatedCuotas = cuotas?.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
+  const iniciarPago = async (cuotaId: string) => {
+    setError(null)
+    setPagandoId(cuotaId)
+    try {
+      const { initPoint } = await pagosApi.iniciar(cuotaId)
+      // Redirige a Checkout Pro de Mercado Pago.
+      window.location.href = initPoint
+    } catch {
+      // Un 409 significa que la cuota ya no es pagable; cualquier error lo resolvemos igual.
+      setError('No se pudo iniciar el pago. Intentá de nuevo en unos minutos.')
+      setPagandoId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -45,6 +62,12 @@ export default function MisCuotasPage() {
           <p className="text-sm text-muted-foreground">Historial de cuotas y estado de pagos</p>
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
 
       {/* Vista tabla (sm+) */}
       <div className="hidden sm:block rounded-xl border bg-card overflow-hidden">
@@ -86,10 +109,16 @@ export default function MisCuotasPage() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  {/* Pago online no implementado aún (futuro RF). Botón disabled como placeholder. */}
                   {cuota.estado === 'Pendiente' && (
-                    <Button size="sm" variant="outline" disabled>
-                      Pagar
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="cursor-pointer"
+                      disabled={pagandoId === cuota.id}
+                      onClick={() => iniciarPago(cuota.id)}
+                    >
+                      {pagandoId === cuota.id && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                      Pagar con Mercado Pago
                     </Button>
                   )}
                 </TableCell>
@@ -131,8 +160,15 @@ export default function MisCuotasPage() {
               </div>
             </div>
             {cuota.estado === 'Pendiente' && (
-              <Button size="sm" variant="outline" disabled className="w-full">
-                Pagar (próximamente)
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full cursor-pointer"
+                disabled={pagandoId === cuota.id}
+                onClick={() => iniciarPago(cuota.id)}
+              >
+                {pagandoId === cuota.id && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                Pagar con Mercado Pago
               </Button>
             )}
           </div>
