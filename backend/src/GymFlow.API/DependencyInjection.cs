@@ -13,6 +13,7 @@ using GymFlow.Application.UseCases.Eventos;
 using GymFlow.Application.UseCases.Horarios;
 using GymFlow.Application.UseCases.Inscripciones;
 using GymFlow.Application.UseCases.Notificaciones;
+using GymFlow.Application.UseCases.Pagos;
 using GymFlow.Application.UseCases.Unidades;
 
 namespace GymFlow.API;
@@ -92,6 +93,7 @@ public static class DependencyInjection
         services.AddScoped<VerificarMfaCommand>();
         services.AddScoped<UsarCodigoRecuperacionCommand>();
         services.AddScoped<ResetearMfaEmpleadoCommand>();
+        services.AddScoped<IniciarPagoCuotaCommand>();
         return services;
     }
 }
