@@ -56,7 +56,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  // @ts-expect-error - restaurar la location real.
+  // Restaurar la location real.
   window.location = originalLocation
 })
 
