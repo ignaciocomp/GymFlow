@@ -128,17 +128,66 @@ public class MercadoPagoServiceFirmaTests
     }
 
     [Fact]
-    public void ValidarFirma_SinRequestId_DevuelveFalse()
+    public void ValidarFirma_SinRequestId_ConManifestQueIncluyeParVacio_DevuelveFalse()
     {
         var secret = "clave-de-prueba";
         var svc = CrearServicio(secret);
         var dataId = "12345";
         var ts = "1700000000";
-        // Un manifest sin request-id no coincide con el patrón esperado.
+        // MP dice que los pares ausentes se OMITEN del manifest; un manifest firmado
+        // con "request-id:;" (par vacío) no es el que nosotros calculamos → false.
         var manifest = $"id:{dataId};request-id:;ts:{ts};";
         var v1 = HmacHex(secret, manifest);
         var xSignature = $"ts={ts},v1={v1}";
 
         Assert.False(svc.ValidarFirma(xSignature, null, dataId));
+    }
+
+    // --- Doc-compliance MP: data.id en minúsculas y request-id ausente se omite ---
+
+    [Fact]
+    public void ValidarFirma_DataIdEnMayusculas_SeFirmaEnMinusculas_DevuelveTrue()
+    {
+        var secret = "clave-de-prueba";
+        var svc = CrearServicio(secret);
+        var requestId = "req-abc";
+        var ts = "1700000000";
+        // MP: "If data.id is returned with uppercase alphanumeric characters,
+        // convert it to lowercase" → MP firma el manifest con el id en minúsculas.
+        var manifest = $"id:abc123def;request-id:{requestId};ts:{ts};";
+        var v1 = HmacHex(secret, manifest);
+        var xSignature = $"ts={ts},v1={v1}";
+
+        Assert.True(svc.ValidarFirma(xSignature, requestId, "ABC123DEF"));
+    }
+
+    [Fact]
+    public void ValidarFirma_SinRequestId_ManifestSinEsePar_DevuelveTrue()
+    {
+        var secret = "clave-de-prueba";
+        var svc = CrearServicio(secret);
+        var dataId = "12345";
+        var ts = "1700000000";
+        // MP: "If any of the values are not present, remove them from the manifest"
+        // → sin x-request-id el manifest es "id:{dataId};ts:{ts};".
+        var manifest = $"id:{dataId};ts:{ts};";
+        var v1 = HmacHex(secret, manifest);
+        var xSignature = $"ts={ts},v1={v1}";
+
+        Assert.True(svc.ValidarFirma(xSignature, null, dataId));
+    }
+
+    [Fact]
+    public void ValidarFirma_RequestIdVacio_ManifestSinEsePar_DevuelveTrue()
+    {
+        var secret = "clave-de-prueba";
+        var svc = CrearServicio(secret);
+        var dataId = "12345";
+        var ts = "1700000000";
+        var manifest = $"id:{dataId};ts:{ts};";
+        var v1 = HmacHex(secret, manifest);
+        var xSignature = $"ts={ts},v1={v1}";
+
+        Assert.True(svc.ValidarFirma(xSignature, "", dataId));
     }
 }
