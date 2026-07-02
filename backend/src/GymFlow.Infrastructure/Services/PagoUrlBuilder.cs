@@ -30,6 +30,8 @@ public class PagoUrlBuilder : IPagoUrlBuilder
         var apiBase = _configuration["MercadoPago:ApiBaseUrl"];
         if (string.IsNullOrWhiteSpace(apiBase))
             apiBase = _configuration["MercadoPago:BackUrlBase"] ?? "http://localhost:5173";
-        return $"{apiBase.TrimEnd('/')}/api/pagos/webhook";
+        // source_news=webhooks: le pide a MP que notifique a esta URL en formato webhook
+        // moderno (type/data.id firmado) en lugar de IPN legacy (topic/id).
+        return $"{apiBase.TrimEnd('/')}/api/pagos/webhook?source_news=webhooks";
     }
 }
