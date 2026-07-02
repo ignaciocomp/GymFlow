@@ -208,6 +208,63 @@ public class ProcesarWebhookPagoCommandTests
         _pagoRepo.Verify(r => r.SaveChangesAsync(), Times.Never);
     }
 
+    // --- IPN legacy (topic/id, sin firma validable) ---
+
+    [Fact]
+    public async Task ExecuteAsync_Ipn_NoValidaFirma_YProcesaApprovedEndToEnd()
+    {
+        // La firma de IPN no es validable (docs MP); la seguridad la da consultar
+        // el estado real en la API de MP con nuestro token. NO se debe llamar a ValidarFirma.
+        var socio = CrearSocio();
+        var cuota = CrearCuota(socio.Id);
+        var pago = new Pago(cuota.Id, socio.Id, cuota.Monto, "pref-1");
+        _mp.Setup(m => m.ObtenerPagoAsync("123456"))
+            .ReturnsAsync(new PagoMpInfo("approved", "credit_card", pago.Id.ToString(), "123456"));
+        _pagoRepo.Setup(r => r.GetByExternalReferenceAsync(pago.Id)).ReturnsAsync(pago);
+        _cuotaRepo.Setup(r => r.GetByIdAsync(cuota.Id)).ReturnsAsync(cuota);
+        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        _emailService.Setup(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(true));
+
+        var resultado = await CrearCommand().ExecuteAsync("123456", null, null, esIpn: true);
+
+        Assert.Equal(WebhookResultado.Procesado, resultado);
+        Assert.Equal(EstadoCuota.Pagada, cuota.Estado);
+        Assert.Equal(EstadoPago.Aprobado, pago.Estado);
+        _mp.Verify(m => m.ValidarFirma(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string>()), Times.Never);
+        _emailService.Verify(s => s.EnviarAsync(
+            socio.Correo, It.Is<string>(a => a.Contains("Pago confirmado")), It.IsAny<string>()), Times.Once);
+        _auditLogger.Verify(a => a.LogAsync(
+            It.IsAny<Guid>(), It.IsAny<string>(), TipoAccionAuditoria.Modificacion,
+            "Cuota", cuota.Id, It.Is<string>(d => d.Contains("Mercado Pago")), It.IsAny<string?>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_Ipn_IdForjadoQueNoExisteEnMp_RetornaIgnoradoSinTocarDatos()
+    {
+        // Un id forjado no existe en MP (o no mapea a un Pago nuestro) → Ignorado, sin cambios.
+        _mp.Setup(m => m.ObtenerPagoAsync(It.IsAny<string>())).ReturnsAsync((PagoMpInfo?)null);
+
+        var resultado = await CrearCommand().ExecuteAsync("id-forjado", null, null, esIpn: true);
+
+        Assert.Equal(WebhookResultado.Ignorado, resultado);
+        _mp.Verify(m => m.ValidarFirma(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string>()), Times.Never);
+        _pagoRepo.Verify(r => r.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoIpn_SigueValidandoFirma_FirmaInvalidaDescarta()
+    {
+        // esIpn=false explícito: comportamiento firmado sin cambios.
+        SetupFirmaValida(false);
+
+        var resultado = await CrearCommand().ExecuteAsync("123", "sig", "req", esIpn: false);
+
+        Assert.Equal(WebhookResultado.FirmaInvalida, resultado);
+        _mp.Verify(m => m.ValidarFirma("sig", "req", "123"), Times.Once);
+        _mp.Verify(m => m.ObtenerPagoAsync(It.IsAny<string>()), Times.Never);
+    }
+
     [Fact]
     public async Task ExecuteAsync_Approved_SiEmailFalla_ElPagoIgualSeProcesa()
     {

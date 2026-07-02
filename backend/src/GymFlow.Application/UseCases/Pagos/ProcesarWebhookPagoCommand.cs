@@ -51,10 +51,19 @@ public class ProcesarWebhookPagoCommand
         _auditLogger = auditLogger;
     }
 
-    public async Task<WebhookResultado> ExecuteAsync(string dataId, string? xSignature, string? xRequestId)
+    /// <param name="esIpn">
+    /// <c>true</c> cuando la notificación llegó en formato IPN legacy (<c>topic/id</c>).
+    /// Las firmas de IPN no son validables con el secret (docs MP), así que se OMITE
+    /// <see cref="IMercadoPagoService.ValidarFirma"/>. La seguridad se preserva igual:
+    /// nunca se confía en el contenido de la notificación — el estado SIEMPRE se consulta
+    /// a la API de MP con nuestro access token, y solo se actúa sobre un <see cref="Pago"/>
+    /// cuyo external_reference (nuestro GUID) coincida. Un id forjado no existe en MP
+    /// o no mapea a ningún Pago nuestro → Ignorado.
+    /// </param>
+    public async Task<WebhookResultado> ExecuteAsync(string dataId, string? xSignature, string? xRequestId, bool esIpn = false)
     {
-        // 1) Seguridad: sin firma válida NUNCA se modifica nada (RN-31, CA-36).
-        if (!_mercadoPagoService.ValidarFirma(xSignature, xRequestId, dataId))
+        // 1) Seguridad: en el formato moderno, sin firma válida NUNCA se modifica nada (RN-31, CA-36).
+        if (!esIpn && !_mercadoPagoService.ValidarFirma(xSignature, xRequestId, dataId))
         {
             await _auditLogger.LogAsync(
                 Guid.Empty, "Sistema",
