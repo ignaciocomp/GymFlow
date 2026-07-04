@@ -39,7 +39,7 @@ public class MercadoPagoService : IMercadoPagoService
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(xSignature) || string.IsNullOrWhiteSpace(xRequestId) || string.IsNullOrWhiteSpace(dataId))
+        if (string.IsNullOrWhiteSpace(xSignature) || string.IsNullOrWhiteSpace(dataId))
             return false;
 
         // El header x-signature tiene el formato "ts=<timestamp>,v1=<hex>".
@@ -59,7 +59,12 @@ public class MercadoPagoService : IMercadoPagoService
             return false;
 
         // Manifest exacto que MP firma: "id:{dataId};request-id:{xRequestId};ts:{ts};".
-        var manifest = $"id:{dataId};request-id:{xRequestId};ts:{ts};";
+        // Docs MP: el data.id se firma en minúsculas ("If data.id is returned with uppercase
+        // alphanumeric characters, convert it to lowercase") y los valores ausentes se OMITEN
+        // del manifest ("If any of the values are not present, remove them from the manifest").
+        var idNormalizado = dataId.ToLowerInvariant();
+        var requestIdPar = string.IsNullOrWhiteSpace(xRequestId) ? string.Empty : $"request-id:{xRequestId};";
+        var manifest = $"id:{idNormalizado};{requestIdPar}ts:{ts};";
 
         string calculado;
         using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret)))

@@ -109,31 +109,31 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 ## 5. Requerimientos Funcionales
 
-| Código | Descripción | Necesidades | Módulo |
-|--------|-------------|-------------|--------|
-| **RF-01** | Registrar socio: alta con nombre, contacto, plan, fecha de alta y espacio (gimnasio, actividades o ambos). | N-01, N-02 | Gestión de Socios |
-| **RF-02** | Listar socios: vista de todos los socios con búsqueda por nombre y filtros por estado de cuota, espacio y plan. Fecha de alta seleccionable ([[spec-rf02-fecha-alta-seleccionable]]). | N-02 | Gestión de Socios |
-| **RF-03** | Editar socio: modificar datos manteniendo historial de cambios. | N-02 | Gestión de Socios |
-| **RF-04** | Baja lógica de socio: marcar como inactivo sin eliminar el registro. | N-02 | Gestión de Socios |
-| **RF-05** | Ver perfil del socio: el socio consulta sus datos, estado de cuota y plan activo. | N-02, N-05 | Gestión de Socios |
-| **RF-06** | Recordatorio de cuota: envío automático a socios con cuota próxima a vencer o vencida. | N-03 | Cuotas y Pagos |
-| **RF-07** | Control de estado de cuota: visualización de socios al día, próximos a vencer o vencidos ([[spec-rf07-gestion-cuotas]]). | N-02, N-03, N-04 | Cuotas y Pagos |
-| **RF-08** | Gestionar clases: crear, editar y eliminar clases/actividades con nombre, horario y cupo máximo. | N-01, N-06 | Clases y Horarios |
-| **RF-09** | Gestionar horarios: definir horarios semanales de clases contemplando ambos espacios. | N-05, N-06 | Clases y Horarios |
-| **RF-10** | Inscribirse a clase: socio se inscribe si hay cupo disponible y cuota al día. | N-05, N-06 | Clases y Horarios |
-| **RF-11** | Ver mis clases: socio visualiza clases a las que está inscripto. | N-05, N-06 | Clases y Horarios |
-| **RF-12** | Gestionar empleados/profesores: fichas con roles y permisos diferenciados. | N-08 | Empleados y Profesores |
-| **RF-13** | Profesor registra socios: alta de socios con permisos limitados y mismas validaciones que admin. | N-02, N-08 | Empleados y Profesores |
-| **RF-14** | Profesor gestiona sus clases: contemplado por roles y permisos configurables desde interfaz. El administrador puede crear un rol Profesor y asignarle permisos por modulo. | N-06, N-08 | Empleados y Profesores |
-| **RF-15** | Gestionar eventos: crear eventos especiales (torneos, charlas, promociones) y notificar socios. | N-11 | Eventos y Notificaciones |
-| **RF-16** | Notificaciones: socio recibe avisos de eventos, recordatorios de cuota y cambios de horario por email y dentro del sistema. | N-03, N-05, N-11 | Eventos y Notificaciones |
-| **RF-17** | Crear rutinas: socio crea/guarda rutinas de entrenamiento con ejercicios, series, repeticiones y peso. | N-09 | Rutinas |
-| **RF-18** | Dashboard en tiempo real: panel con socios activos, cuotas pendientes, clases del día, inscripciones recientes, filtros por unidad. | N-01, N-04 | Dashboard |
-| **RF-19** | Sitio web público: página con info de Espacio Mora, fotos, horarios, planes, ubicación y formulario de contacto. | N-07 | Página Web Pública |
-| **RF-20** | Gestión unificada multi-espacio: administrar ambas unidades desde una plataforma con separación y filtrado por unidad. | N-01 | Multi-Espacio |
-| **RF-21** | Gestionar planes: CRUD de planes de membresía desde el panel de administración. Baja lógica bloqueada si el plan tiene socios asignados. | N-01, N-02 | Gestión de Planes |
-| **RF-22** | Plan por unidad de negocio: al registrar o modificar un socio, asignar un plan independiente por cada unidad seleccionada. Un socio con dos unidades puede tener planes distintos en cada una. | N-01, N-02 | Gestión de Socios |
-| **RF-23** | Pago de cuotas online: el socio puede abonar su cuota a través del portal web utilizando Mercado Pago como pasarela de pago (Checkout Pro). El sistema registra el pago vía webhook, actualiza el estado de la cuota automáticamente y emite confirmación por correo electrónico. | N-02, N-03, N-05 | Cuotas y Pagos |
+| Código    | Descripción                                                                                                                                                                                                                                                                       | Necesidades      | Módulo                   |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------ |
+| **RF-01** | Registrar socio: alta con nombre, contacto, plan, fecha de alta y espacio (gimnasio, actividades o ambos).                                                                                                                                                                        | N-01, N-02       | Gestión de Socios        |
+| **RF-02** | Listar socios: vista de todos los socios con búsqueda por nombre y filtros por estado de cuota, espacio y plan. Fecha de alta seleccionable ([[spec-rf02-fecha-alta-seleccionable]]).                                                                                             | N-02             | Gestión de Socios        |
+| **RF-03** | Editar socio: modificar datos manteniendo historial de cambios.                                                                                                                                                                                                                   | N-02             | Gestión de Socios        |
+| **RF-04** | Baja lógica de socio: marcar como inactivo sin eliminar el registro.                                                                                                                                                                                                              | N-02             | Gestión de Socios        |
+| **RF-05** | Ver perfil del socio: el socio consulta sus datos, estado de cuota y plan activo.                                                                                                                                                                                                 | N-02, N-05       | Gestión de Socios        |
+| **RF-06** | Recordatorio de cuota: envío automático a socios con cuota próxima a vencer o vencida.                                                                                                                                                                                            | N-03             | Cuotas y Pagos           |
+| **RF-07** | Control de estado de cuota: visualización de socios al día, próximos a vencer o vencidos ([[spec-rf07-gestion-cuotas]]).                                                                                                                                                          | N-02, N-03, N-04 | Cuotas y Pagos           |
+| **RF-08** | Gestionar clases: crear, editar y eliminar clases/actividades con nombre, horario y cupo máximo.                                                                                                                                                                                  | N-01, N-06       | Clases y Horarios        |
+| **RF-09** | Gestionar horarios: definir horarios semanales de clases contemplando ambos espacios.                                                                                                                                                                                             | N-05, N-06       | Clases y Horarios        |
+| **RF-10** | Inscribirse a clase: socio se inscribe si hay cupo disponible y cuota al día.                                                                                                                                                                                                     | N-05, N-06       | Clases y Horarios        |
+| **RF-11** | Ver mis clases: socio visualiza clases a las que está inscripto.                                                                                                                                                                                                                  | N-05, N-06       | Clases y Horarios        |
+| **RF-12** | Gestionar empleados/profesores: fichas con roles y permisos diferenciados.                                                                                                                                                                                                        | N-08             | Empleados y Profesores   |
+| **RF-13** | Profesor registra socios: alta de socios con permisos limitados y mismas validaciones que admin.                                                                                                                                                                                  | N-02, N-08       | Empleados y Profesores   |
+| **RF-14** | Profesor gestiona sus clases: contemplado por roles y permisos configurables desde interfaz. El administrador puede crear un rol Profesor y asignarle permisos por modulo.                                                                                                        | N-06, N-08       | Empleados y Profesores   |
+| **RF-15** | Gestionar eventos: crear eventos especiales (torneos, charlas, promociones) y notificar socios.                                                                                                                                                                                   | N-11             | Eventos y Notificaciones |
+| **RF-16** | Notificaciones: socio recibe avisos de eventos, recordatorios de cuota y cambios de horario por email y dentro del sistema.                                                                                                                                                       | N-03, N-05, N-11 | Eventos y Notificaciones |
+| **RF-17** | Crear rutinas: socio crea/guarda rutinas de entrenamiento con ejercicios, series, repeticiones y peso.                                                                                                                                                                            | N-09             | Rutinas                  |
+| **RF-18** | Dashboard en tiempo real: panel con socios activos, cuotas pendientes, clases del día, inscripciones recientes, filtros por unidad.                                                                                                                                               | N-01, N-04       | Dashboard                |
+| **RF-19** | Sitio web público: página con info de Espacio Mora, fotos, horarios, planes, ubicación y formulario de contacto.                                                                                                                                                                  | N-07             | Página Web Pública       |
+| **RF-20** | Gestión unificada multi-espacio: administrar ambas unidades desde una plataforma con separación y filtrado por unidad.                                                                                                                                                            | N-01             | Multi-Espacio            |
+| **RF-21** | Pago de cuotas online: el socio puede abonar su cuota a través del portal web utilizando Mercado Pago como pasarela de pago (Checkout Pro). El sistema registra el pago vía webhook, actualiza el estado de la cuota automáticamente y emite confirmación por correo electrónico. | N-02, N-03, N-05 | Cuotas y Pagos           |
+| **RF-22** | Plan por unidad de negocio: al registrar o modificar un socio, asignar un plan independiente por cada unidad seleccionada. Un socio con dos unidades puede tener planes distintos en cada una.                                                                                    | N-01, N-02       | Gestión de Socios        |
+
 
 ---
 
@@ -173,7 +173,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 | RN-13 | Solo el admin puede registrar un pago y actualizar fecha de vencimiento de cuota. |
 | RN-14 | El dashboard muestra vista consolidada de ambos espacios por defecto al cargar. |
 | RN-15 | Datos del dashboard: antigüedad máxima de 30 segundos respecto al estado real de la BD. |
-| RN-16 | Dashboard: acceso restringido a Admin y Profesor (vista limitada para profesor). |
+| RN-16 | Dashboard: acceso restringido por permisos. Es un módulo del sistema de permisos configurable; solo acceden los roles a los que el Dueño/Admin haya otorgado permiso de lectura sobre el módulo Dashboard (no hay vista reducida por rol). El Dueño ve solo sus unidades asignadas. |
 | RN-17 | Métricas de cuotas se calculan dinámicamente en base al estado actual. |
 | RN-18 | Roles Admin y Profesor requieren MFA obligatorio (TOTP). |
 | RN-19 | Rol Socio usa OAuth 2.0 con Google; no gestiona contraseña propia. |
@@ -194,368 +194,10 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 
 ---
 
-## 8. Casos de Uso Detallados
-
-### CU-01 — Gestión de Socios (Alta, Baja, Modificación)
-
-**Actores:** Administrador
-**RF:** RF-01, RF-02, RF-03, RF-04, RF-05
-**Necesidades:** N-01, N-02
-
-**Precondiciones:**
-1. Admin autenticado con MFA aprobado.
-2. Admin tiene rol 'Administrador'.
-3. Para modificación/baja: el socio existe en el sistema.
-
-**Postcondiciones:**
-- Alta: socio con estado 'Activo', asociado a espacio, con fecha de alta y plan.
-- Modificación: datos actualizados + registro de auditoría (usuario, timestamp, campos modificados).
-- Baja lógica: socio marcado como 'Inactivo'. Registro permanece en BD.
-
-#### Flujo Principal — Alta de Socio
-1. Admin accede a módulo 'Socios' → 'Nuevo Socio'.
-2. Sistema presenta formulario de registro.
-3. Admin completa: nombre completo, documento de identidad, teléfono, correo electrónico, fecha de nacimiento, espacio (Gimnasio / Espacio Mora / Ambos), plan activo, fecha de alta.
-4. Sistema muestra cláusula de consentimiento informado (Ley 18.331). Admin confirma consentimiento del socio.
-5. Sistema valida que correo no esté registrado y campos obligatorios completos.
-6. Sistema registra socio con estado 'Activo', genera log de auditoría, muestra confirmación.
-7. Sistema envía correo de bienvenida al socio (si tiene correo).
-
-#### Flujo Alternativo — Modificación de Socio
-1. Admin localiza socio por búsqueda (nombre o documento).
-2. Selecciona 'Editar'.
-3. Sistema carga formulario con datos actuales.
-4. Admin modifica campos deseados.
-5. Sistema valida datos.
-6. Sistema guarda cambios + registro de auditoría (campos modificados, usuario, timestamp).
-
-#### Flujo Alternativo — Baja Lógica
-1. Admin localiza socio → 'Dar de baja'.
-2. Sistema solicita confirmación y motivo de baja.
-3. Admin confirma.
-4. Sistema marca socio como 'Inactivo', registra motivo/fecha/usuario en log de auditoría.
-5. Socio no aparece en listados activos pero permanece en historial.
-
-#### Flujos de Excepción
-- **E1 — Correo duplicado:** Error "El correo ingresado ya está registrado". Formulario permanece abierto.
-- **E2 — Campos obligatorios incompletos:** Resalta en rojo los campos faltantes, bloquea guardado.
-- **E3 — Formato inválido:** Valida formato correo y teléfono. Mensaje específico por campo.
-- **E4 — Error de conexión:** "No se pudo completar la operación. Intente nuevamente." Datos no se pierden.
-
-#### Criterios de Aceptación
-- CA-01: Rechaza altas con correo duplicado o campos obligatorios incompletos.
-- CA-02: Toda modificación queda en log de auditoría con usuario, timestamp y detalle.
-- CA-03: Socios dados de baja no aparecen en listado activo pero sí en vista de inactivos.
-- CA-04: Consentimiento informado es visible y obligatorio durante el alta.
-
-**Mejoras implementadas (iteración 1):**
-- `TipoDocumento` (enum requerido): CI | Pasaporte | Otro
-  - Si `TipoDocumento == CI`: `DocumentoIdentidad` es obligatorio y debe ser una cédula uruguaya válida (algoritmo de dígito verificador).
-  - Si `TipoDocumento == Pasaporte` u `Otro`: `DocumentoIdentidad` es opcional, sin validación de formato.
-- Specs y planes: [[spec-rf01-tipo-documento]] | [[spec-rf01-frontend-tipo-documento]]
-
-**Mejoras implementadas (RF-22 — iteración 1):**
-- El formulario de alta y modificación de socio permite seleccionar un Plan por cada Unidad asignada.
-- Los planes disponibles en cada dropdown se filtran a los planes activos de esa Unidad.
-- El Plan ya no es un campo global del Socio; se almacena en `UsuarioUnidad.PlanId`.
-- Specs y planes: [[spec-rf22-planes-por-unidad]]
 
 ---
 
-### CU-02 — Inscripción a Clase
-
-> **Actualizacion 2026-06-05:** este caso de uso se implementa por horario individual. El socio se inscribe desde `Horarios` a un `HorarioClaseId`; RN-09 impide duplicar la inscripcion al mismo horario, pero permite inscribirse a la misma clase en otros horarios. La vista `portal/clases` fue reemplazada por `portal/horarios`. La lista de espera fue desestimada: si no hay cupo, se bloquea la inscripcion.
-
-**Actores:** Socio
-**RF:** RF-10, RF-11, RF-09
-**Necesidades:** N-05, N-06
-
-**Precondiciones:**
-1. Socio autenticado en el portal.
-2. Socio con estado 'Activo' (cuota al día).
-3. Existen clases cargadas con horario y cupo.
-
-**Postcondiciones:**
-- Socio inscripto en la clase. Cupo disponible se reduce en 1.
-- Clase aparece en 'Mis clases'.
-- Socio recibe notificación de confirmación por email.
-
-#### Flujo Principal
-1. Socio accede a 'Clases y Horarios'.
-2. Sistema muestra listado con nombre, horario, espacio y cupos disponibles.
-3. Socio puede filtrar por espacio (Gimnasio / Espacio Mora), día de la semana o tipo de actividad.
-4. Socio selecciona clase → 'Inscribirme'.
-5. Sistema verifica: (a) no inscripto previamente, (b) cupo disponible, (c) cuota al día.
-6. Sistema registra inscripción, actualiza cupo, confirma con mensaje de éxito.
-7. Socio recibe notificación de confirmación por email.
-
-#### Flujo Alternativo — Desinscripción
-1. Socio accede a 'Mis clases'.
-2. Selecciona 'Cancelar inscripción'.
-3. Sistema solicita confirmación.
-4. Sistema elimina inscripción y libera cupo.
-#### Flujos de Excepción
-- **E1 — Sin cupo:** "Esta clase no tiene cupos disponibles." Bloquea la inscripcion.
-- **E2 — Inscripción duplicada:** "Ya estás inscripto en esta clase."
-- **E3 — Clase cancelada:** Notifica al socio y elimina inscripción automáticamente.
-
-#### Criterios de Aceptación
-- CA-05: Bloquea inscripción si sin cupo.
-- CA-07: Cupo se decrementa correctamente al inscribirse.
-- CA-08: Clase inscripta aparece en 'Mis clases' inmediatamente.
-- CA-09: Socio recibe notificación tras inscripción exitosa.
-
----
-
-### CU-03 — Gestión de Cuotas y Recordatorios Automáticos
-
-**Actores:** Sistema (proceso automático), Administrador
-**RF:** RF-06, RF-07
-**Necesidades:** N-02, N-03, N-04
-
-**Precondiciones:**
-1. Socio tiene cuota registrada con fecha de vencimiento.
-2. Socio tiene correo registrado.
-3. Job de recordatorios automáticos está activo (proceso background).
-
-#### Flujo Principal — Recordatorio Automático
-1. Sistema ejecuta diariamente un job programado.
-2. Evalúa todos los socios activos y sus fechas de vencimiento.
-3. **Cuota vence en 5 días:** envía correo de recordatorio preventivo.
-4. **Cuota vence en 1 día:** envía recordatorio urgente.
-5. **Cuota vencida:** cambia estado a 'Cuota vencida' y envía notificación.
-6. Registra cada notificación con timestamp y tipo de recordatorio.
-
-#### Flujo Alternativo — Gestión Manual por Admin
-1. Admin accede a módulo Cuotas o Dashboard.
-2. Sistema muestra métricas: socios al día, próximos a vencer (7 días) y vencidos.
-3. Admin filtra socios por estado de cuota.
-4. Admin selecciona socio → registra pago manualmente → actualiza fecha de vencimiento.
-5. Sistema actualiza estado a 'Al día' + registro de auditoría.
-
-#### Flujos de Excepción
-- **E1 — Correo no entregado:** Registra fallo en log. Admin ve error en panel.
-- **E2 — Socio sin correo:** Omite envío, genera alerta visible en panel del admin.
-- **E3 — Error en job automático:** Registra error, notifica admin en dashboard.
-
-#### Criterios de Aceptación
-- CA-10: Recordatorio automático a 5 días y 1 día antes del vencimiento.
-- CA-11: Estado cambia a 'Cuota vencida' automáticamente en la fecha de vencimiento sin pago.
-- CA-13: Dashboard refleja en tiempo real socios por estado de cuota.
-- CA-14: No envía recordatorios duplicados del mismo tipo en el mismo día.
-
----
-
-### CU-04 — Dashboard Consolidado Multi-Espacio
-
-**Actores:** Administrador
-**RF:** RF-18, RF-20
-**RNF:** RNF-02, RNF-08
-**Necesidades:** N-01, N-04
-
-**Precondiciones:**
-1. Admin autenticado con MFA.
-2. Existen socios, clases y cuotas cargadas.
-
-#### Flujo Principal
-1. Admin accede al sistema → redirigido automáticamente al Dashboard como pantalla de inicio.
-2. Sistema presenta indicadores consolidados (ambos espacios):
-   - a. Total de socios activos.
-   - b. Socios con cuota al día / próxima a vencer / vencida.
-   - c. Clases programadas para hoy con cupos disponibles.
-   - d. Inscripciones en últimas 24 horas.
-   - e. Alertas activas (cuota vencida).
-3. Admin puede filtrar por espacio (Gimnasio Nuevo Malvín, Espacio Mora, ambos).
-4. Métricas se actualizan en tiempo real mediante Server-Sent Events (SSE) sin recarga.
-5. Clic en cualquier métrica navega al módulo correspondiente con filtro aplicado.
-
-#### Criterios de Aceptación
-- CA-15: Dashboard carga en menos de 3 segundos desde login.
-- CA-16: Cambios en socio o pago reflejados en máximo 30 segundos sin recarga.
-- CA-17: Filtro por espacio muestra solo métricas del seleccionado.
-- CA-18: Clic en métrica navega al módulo con filtro apropiado.
-- CA-19: Dashboard no incluye socios inactivos en contadores principales.
-
----
-
-### CU-05 — Autenticación y Control de Acceso (Login + MFA)
-
-**Actores:** Administrador, Profesor, Socio
-**RF:** RNF-01, RNF-10
-
-#### Flujo Principal — Login con MFA (Admin / Profesor)
-1. Usuario ingresa correo y contraseña.
-2. Sistema valida credenciales (contraseña hasheada).
-3. Detecta que el rol requiere MFA.
-4. Solicita código TOTP de 6 dígitos de app autenticadora.
-5. Usuario ingresa código.
-6. Sistema valida código TOTP (ventana de 30 segundos).
-7. Emite JWT firmado con rol y espacio, con tiempo de expiración.
-8. Redirige según rol (Dashboard para Admin, vista clases para Profesor).
-
-#### Flujo Alternativo — Login con OAuth 2.0 (Socio)
-1. Socio hace clic en 'Iniciar sesión con Google'.
-2. Redirige al flujo de autenticación Google OAuth 2.0.
-3. Google autentica y retorna token.
-4. Sistema verifica que el correo de Google está registrado como socio activo.
-5. Emite JWT con rol Socio → redirige al portal de socios.
-
-#### Flujos de Excepción
-- **E1 — Credenciales incorrectas:** "Correo o contraseña incorrectos" (no especifica cuál). Tras 5 intentos fallidos → bloqueo 15 minutos.
-- **E2 — TOTP inválido/expirado:** "Código incorrecto o expirado." Login no se completa.
-- **E3 — Correo Google no registrado:** "No encontramos una cuenta asociada a este correo."
-- **E4 — JWT expirado:** Redirige a login: "Tu sesión expiró."
-
-#### Criterios de Aceptación
-- CA-20: Admin no completa login sin MFA aprobado.
-- CA-21: Socio puede autenticarse con Google si correo registrado.
-- CA-22: Profesor no accede a vistas de administración.
-- CA-23: Bloqueo tras 5 intentos fallidos.
-- CA-24: JWT expirado rechazado, fuerza re-autenticación.
-
----
-
-### CU-06 — Gestión de Clases y Horarios
-
-**Actores:** Administrador
-**RF:** RF-08, RF-09
-**Necesidades:** N-01, N-06
-
-**Precondiciones:**
-1. Existe al menos un espacio registrado.
-
-#### Flujo Principal — Creación de Clase
-1. Admin → módulo 'Clases' → 'Nueva Clase'.
-2. Formulario: nombre, descripción, espacio (Gimnasio / Espacio Mora), cupo máximo, duración en minutos.
-3. Admin completa y confirma.
-4. Registra la clase → visible en calendario y portal de socios.
-
-#### Flujo Alternativo — Asignación de Horarios Semanales
-1. Admin accede al calendario semanal de la clase.
-2. Define días y horarios (ej: lunes y miércoles 18:00–19:00).
-3. Sistema verifica que no haya conflicto de sala.
-4. Guarda horarios → muestra en calendario consolidado.
-
-#### Flujo Alternativo — Edición de Clase
-1. Admin selecciona clase → 'Editar'.
-2. Sistema carga datos actuales.
-3. Admin modifica campos.
-4. Si se modifica horario → re-valida conflictos de sala.
-5. Si hay socios inscriptos y cambia horario → notifica automáticamente a afectados.
-6. Guarda cambios y actualiza calendario.
-
-#### Flujo Alternativo — Cancelación de Clase
-1. Admin → 'Cancelar clase' en instancia del calendario.
-2. Sistema solicita confirmación y motivo.
-3. Cancela instancia, libera cupos, notifica socios inscriptos.
-
-#### Flujos de Excepción
-- **E1 — Conflicto de sala:** "La sala ya está ocupada en ese horario." Bloquea guardado.
-- **E3 — Cupo máximo inválido:** Rechaza valores < 1 o no numéricos.
-
-#### Criterios de Aceptación
-- CA-25: Clase aparece en portal de socios inmediatamente tras ser creada.
-- CA-27: Al cancelar clase, todos los inscriptos reciben notificación.
-- CA-28: Cupo no puede quedar por debajo de inscripciones activas al editar.
-
----
-
-### CU-07 — Gestión de Empleados y Profesores
-
-**Actores:** Administrador
-**RF:** RF-12, RF-13, RF-14
-**Necesidades:** N-08
-
-#### Flujo Principal — Alta de Empleado/Profesor
-1. Admin → módulo 'Empleados y Profesores' → 'Nuevo'.
-2. Formulario: nombre, correo, teléfono, rol (Empleado / Profesor), espacio asignado (Gimnasio / Espacio Mora / Ambos).
-3. Admin completa y confirma.
-4. Sistema crea cuenta con credenciales temporales → envía al correo instrucciones para contraseña y activar MFA.
-5. Registra con estado 'Activo' + log de auditoría.
-
-#### Flujo Alternativo — Asignación de Clases a Profesor
-1. Admin accede al perfil del profesor → 'Gestionar clases asignadas'.
-2. Sistema muestra clases disponibles en el espacio del profesor.
-3. Admin asigna o desasigna clases.
-4. Profesor solo verá y gestionará clases asignadas.
-
-#### Flujo Alternativo — Baja Lógica de Empleado
-1. Admin → 'Dar de baja'.
-2. Sistema solicita confirmación.
-3. Desactiva cuenta (estado 'Inactivo'), revoca acceso, registra en log.
-4. Si tenía clases asignadas → alerta al admin para reasignar.
-
-#### Flujos de Excepción
-- **E1 — Correo duplicado:** "Ya existe un usuario registrado con ese correo." Bloquea alta.
-- **E2 — Baja con clases activas:** "Este profesor tiene X clases activas. Reasigná antes o confirmá la baja."
-- **E3 — Error envío credenciales:** Registra error; admin puede reenviar manualmente.
-
-#### Criterios de Aceptación
-- CA-29: Sistema envía credenciales temporales al correo al dar de alta.
-- CA-30: Profesor dado de baja no puede autenticarse.
-- CA-31: Profesor solo visualiza y gestiona clases asignadas.
-- CA-32: Alerta al admin si da de baja profesor con clases activas.
-
----
-
-### CU-08 — Pago de Cuota Online mediante Mercado Pago
-
-**Actores:** Socio, Sistema (Mercado Pago — actor externo)
-**RF:** RF-23, RF-05, RF-06, RF-07
-**Necesidades:** N-02, N-03, N-05
-
-**Precondiciones:**
-1. Socio autenticado en el portal.
-2. Socio tiene al menos una cuota con estado "Próxima a vencer" o "Vencida".
-3. Integración con API de Mercado Pago activa y configurada con credenciales válidas.
-4. Ambiente de testing en nube operativo para recibir webhooks.
-
-**Postcondiciones:**
-- Pago registrado con número de transacción MP.
-- Estado de cuota actualizado a "Al día".
-- Socio recibe confirmación por correo electrónico.
-- Admin visualiza el cambio en el dashboard en tiempo real.
-- Operación registrada en log de auditoría.
-
-#### Flujo Principal — Pago Exitoso
-1. Socio accede a su perfil → visualiza estado de cuota ("Próxima a vencer" o "Vencida").
-2. Socio selecciona "Pagar cuota" → sistema muestra monto según plan activo.
-3. Socio confirma → sistema genera preferencia de pago vía API de Mercado Pago (Checkout Pro).
-4. Sistema redirige al Checkout Pro de Mercado Pago.
-5. Socio completa el pago en la plataforma de Mercado Pago (tarjeta, transferencia u otro medio).
-6. Mercado Pago notifica al sistema el resultado de la transacción vía webhook.
-7. Sistema valida autenticidad del webhook (firma HMAC) y procesa la notificación.
-8. Sistema actualiza estado de cuota a "Al día", registra número de transacción MP, genera log de auditoría y envía confirmación por correo.
-9. Socio es redirigido al portal con mensaje de pago confirmado y cuota actualizada.
-
-#### Flujo Alternativo — Pago Pendiente (transferencia bancaria)
-1. Socio selecciona medio de pago que queda en estado pendiente (ej. transferencia bancaria).
-2. Mercado Pago notifica al sistema con estado "pending".
-3. Sistema mantiene cuota en estado actual → muestra "Tu pago está siendo procesado. Te notificaremos cuando se confirme."
-4. Cuando MP confirma el pago, el sistema recibe webhook de confirmación → ejecuta flujo principal desde paso 7.
-
-#### Flujo Alternativo — Consulta de Historial de Pagos
-1. Socio accede a su perfil → "Historial de pagos".
-2. Sistema muestra pagos realizados con fecha, monto, medio de pago y número de transacción MP.
-
-#### Flujos de Excepción
-- **E1 — Pago rechazado:** MP notifica rechazo. Sistema mantiene estado de cuota sin cambios. "Tu pago fue rechazado. Intentá con otro medio de pago o contactá al gimnasio."
-- **E2 — Webhook no recibido / timeout:** Sistema implementa reconciliación consultando estado de transacción en API de MP a los 5 y 30 minutos. Si confirma → actualiza. Si no → alerta al admin en dashboard.
-- **E3 — Firma de webhook inválida:** Sistema descarta notificación y registra intento en log de auditoría como evento sospechoso.
-- **E4 — Cuota ya pagada:** Sistema detecta cuota "Al día" → "Tu cuota ya se encuentra al día." Sin procesar nuevo pago.
-- **E5 — Error de conexión con MP:** "No es posible procesar el pago en este momento. Intentá más tarde." Sin generar preferencia de pago.
-
-#### Criterios de Aceptación
-- CA-33: Socio puede iniciar flujo de pago desde su perfil si cuota próxima a vencer o vencida.
-- CA-34: Tras pago exitoso confirmado por webhook, estado de cuota se actualiza a "Al día" sin intervención manual del admin.
-- CA-35: Socio recibe correo de confirmación dentro de los 2 minutos posteriores al pago exitoso.
-- CA-36: Webhook con firma inválida es descartado y no modifica datos del sistema.
-- CA-37: Pago rechazado no modifica estado de cuota; socio ve mensaje de error claro.
-- CA-38: Admin visualiza cambio de estado de cuota en dashboard en máximo 30 segundos tras confirmación del pago.
-
----
-
-## 9. Plan de Iteraciones (Fase de Construcción)
+## 8. Plan de Iteraciones (Fase de Construcción)
 
 ### Iteración 1 — Base del Sistema, Seguridad, Multi-Espacio y Gestión Inicial de Socios
 **Fechas:** 15/04/2026 → 29/04/2026 (~60 horas)
@@ -622,6 +264,7 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - RF-13 (Profesor registra socios)
 - RF-14 (Profesor gestiona sus clases)
 - RNF-03 (Responsive)
+- RF-19 (Sitio web público)
 
 **Nota:** La funcionalidad base de RF-10, RF-11, RF-12 y RF-13 fue implementada en iteraciones anteriores. RF-14 queda contemplado por roles y permisos configurables desde interfaz, permitiendo crear un rol Profesor con permisos especificos por modulo. Esta iteracion se enfoca en mejoras, pulido de UX y testing.
 
@@ -638,46 +281,30 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 **Requerimientos:**
 - RNF-10 (MFA TOTP para admin/profesor, OAuth 2.0 Google para socios)
 - RNF-01 (Autenticación y autorización por roles — parte socios: Google OAuth + rol Dueño)
+- RF-15 (Gestionar eventos)
+- RF-16 (Notificaciones al socio — adelantado desde Iteración 6)
 
-**Resultado esperado:** Admin y profesor requieren MFA (TOTP) para iniciar sesión. Socios se autentican con Google OAuth 2.0 sin gestionar contraseña propia. Rol "Dueño" hardcoded con filtro por unidades asignadas.
+**Resultado esperado:** Admin y profesor requieren MFA (TOTP) para iniciar sesión. Socios se autentican con Google OAuth 2.0 sin gestionar contraseña propia. Rol "Dueño" hardcoded con filtro por unidades asignadas. Centro de notificaciones in-system para socios (eventos, cambios de horario y recordatorios de cuota).
 
 **Dependencias:** Iteraciones 1 y 4.
 
 ---
 
-### Iteración 6 — Eventos, Notificaciones, Rutinas y Sitio Web Público
+### Iteración 6 — Notificaciones por Email, Rutinas y Sitio Web Público
 **Fechas:** 29/06/2026 → 13/07/2026 (~60 horas)
 **Prioridad:** DESEABLE
 
 **Requerimientos:**
-- RF-15 (Gestionar eventos)
-- RF-16 (Notificaciones al socio por email)
-- RF-17 (Crear rutinas de entrenamiento)
-- RF-19 (Sitio web público)
 - RNF-03 (Responsive)
 - RNF-04 (SEO: semántica, metaetiquetas, URLs amigables, carga rápida)
 - RNF-06 (Disponibilidad ≥ 95%)
-- RNF-07 (Compatibilidad navegadores)
+- RF-18 (Dashboard en tiempo real multi-espacio)
+- RF-21 (Pago de cuotas online con Mercado Pago)
+- RNF-02 (Actualización sin recarga vía SSE)
 
 **Resultado esperado:** Admin crea eventos; sistema notifica socios por eventos, cambios de horario y recordatorios de cuota. Socio puede crear rutinas. Sitio web público con info institucional, responsive y SEO.
 
 **Dependencias:** Iteraciones 2 y 3.
-
----
-
-### Iteración 7 — Dashboard Gerencial, Métricas en Tiempo Real y Mercado Pago
-**Fechas:** 14/07/2026 → 28/07/2026 (~60 horas)
-**Prioridad:** OBLIGATORIO
-
-**Requerimientos:**
-- RF-18 (Dashboard en tiempo real multi-espacio)
-- RF-21 (Gestionar planes)
-- RF-23 (Pago de cuotas online con Mercado Pago)
-- RNF-02 (Actualización sin recarga vía SSE)
-
-**Resultado esperado:** Admin visualiza métricas clave con filtros por unidad y actualización automática mediante SSE. Integración con Mercado Pago (Checkout Pro + webhooks) para pago de cuotas online.
-
-**Dependencias:** Iteraciones 2, 3 y 4.
 
 ---
 
@@ -686,7 +313,6 @@ La estrategia de herencia (TPH, TPT o TPC) desde Usuario hacia Administrador/Pro
 - **NO** acceso automatizado (QR/molinete).
 - **NO** tienda de productos.
 - **NO** programa de fidelización (puntos/premios).
-- ~~**NO** procesamiento/cobro de pagos online~~ → **Incluido como RF-23** (Mercado Pago, Checkout Pro).
 - **NO** migración de datos desde SmartGym.
 - **NO** mantenimiento/hosting posterior a la entrega.
 - **NO** aplicación móvil nativa (es web responsive).

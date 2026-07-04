@@ -15,12 +15,16 @@
           "name": "Login",
           "item": [
             {
-              "name": "200 - Login exitoso (Admin)",
+              "name": "200 - Login exitoso (Admin) - paso 1 credenciales",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
+                      "// IT5: el admin es Empleado, asi que /auth/login devuelve un mfaToken intermedio",
+                      "// (no la sesion directa). Esta request guarda el mfaToken y el flag setupRequerido;",
+                      "// el segundo paso (MFA Setup+Activate o MFA Verify) emite el token de sesion real.",
+                      "",
                       "pm.test(\"Status code is 200\", function () {",
                       "    pm.response.to.have.status(200);",
                       "});",
@@ -29,28 +33,23 @@
                       "    pm.expect(pm.response.responseTime).to.be.below(500);",
                       "});",
                       "",
-                      "pm.test(\"La respuesta contiene un token JWT válido\", function () {",
-                      "    const jsonData = pm.response.json();",
-                      "    pm.expect(jsonData).to.have.property(\"token\");",
-                      "    pm.expect(jsonData.token).to.be.a(\"string\");",
-                      "    pm.expect(jsonData.token.length).to.be.greaterThan(0);",
-                      "",
-                      "    const parts = jsonData.token.split(\".\");",
-                      "    pm.expect(parts.length).to.eql(3);",
-                      "});",
-                      "",
                       "const data = pm.response.json();",
                       "",
-                      "pm.test(\"La respuesta contiene unidadIds (null para admin, array para socio)\", function () {",
-                      "    const jsonData = pm.response.json();",
-                      "    pm.expect(jsonData).to.have.property(\"unidadIds\");",
-                      "    if (jsonData.unidadIds !== null) {",
-                      "        pm.expect(jsonData.unidadIds).to.be.an(\"array\");",
-                      "    }",
+                      "pm.test(\"Respuesta tiene forma LoginResultado (requiereMfa, mfaToken, sesion)\", function () {",
+                      "    pm.expect(data).to.have.property(\"requiereMfa\");",
+                      "    pm.expect(data).to.have.property(\"mfaToken\");",
+                      "    pm.expect(data).to.have.property(\"sesion\");",
                       "});",
                       "",
-                      "pm.collectionVariables.set(\"token\", data.token);",
-                      "console.log(\"Token guardado exitosamente\");"
+                      "pm.test(\"Admin requiere MFA (es Empleado)\", function () {",
+                      "    pm.expect(data.requiereMfa).to.eql(true);",
+                      "    pm.expect(data.mfaToken).to.be.a(\"string\");",
+                      "    pm.expect(data.mfaToken.length).to.be.greaterThan(0);",
+                      "});",
+                      "",
+                      "pm.globals.set(\"adminMfaTicket\", data.mfaToken);",
+                      "pm.globals.set(\"adminMfaSetupRequerido\", String(data.setupRequerido === true));",
+                      "console.log(\"mfaTicket guardado. setupRequerido=\" + data.setupRequerido);"
                     ],
                     "type": "text/javascript",
                     "packages": {},
@@ -83,6 +82,49 @@
                     "login"
                   ]
                 }
+              },
+              "response": []
+            },
+            {
+              "name": "200 - Login exitoso (Admin) - paso 2 MFA",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Completa el login del admin pasando por el segundo factor (MFA).",
+                      "// Usa el helper compartido: 1ra corrida hace setup+activate (guarda adminMfaSecret),",
+                      "// las siguientes hacen verify. Deja el JWT de sesion en la global token.",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "El request HTTP real es un no-op (GET /me sin token autenticado, ignorado). La logica MFA corre en el test script via pm.sendRequest. Postman exige un request HTTP por item."
               },
               "response": []
             },
@@ -1661,13 +1703,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login admin exitoso\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.collectionVariables.set(\"token\", data.token);",
-                      "console.log(\"Token admin guardado para setup RNF-01\");"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -1983,19 +2027,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login del empleado restringido exitoso (200)\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "pm.test(\"Se obtuvo token JWT válido\", function () {",
-                      "    const data = pm.response.json();",
-                      "    pm.expect(data).to.have.property(\"token\");",
-                      "    pm.expect(data.token.split(\".\").length).to.eql(3);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.collectionVariables.set(\"restrictedToken\", data.token);",
-                      "console.log(\"Token restringido guardado para tests RNF-01\");"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"rnfEmpleadoCorreo\"),",
+                      "    password: pm.collectionVariables.get(\"rnfEmpleadoPassword\"),",
+                      "    tokenKey: \"restrictedToken\",",
+                      "    secretKey: \"rnfEmpleadoMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -2839,12 +2879,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login admin para cleanup\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.collectionVariables.set(\"token\", data.token);"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -4128,12 +4171,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login admin exitoso\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.collectionVariables.set(\"token\", data.token);"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -4217,27 +4263,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Status code is 200\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "pm.test(\"Token JWT válido recibido\", function () {",
-                      "    const data = pm.response.json();",
-                      "    pm.expect(data).to.have.property(\"token\");",
-                      "    pm.expect(data.token.split(\".\").length).to.eql(3);",
-                      "});",
-                      "",
-                      "pm.test(\"La respuesta contiene unidadIds\", function () {",
-                      "    const data = pm.response.json();",
-                      "    pm.expect(data).to.have.property(\"unidadIds\");",
-                      "    if (data.unidadIds !== null) {",
-                      "        pm.expect(data.unidadIds).to.be.an(\"array\");",
-                      "    }",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.collectionVariables.set(\"socioToken\", data.token);",
-                      "console.log(\"Token de socio guardado para tests de inscripciones\");"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"socioEmail\"),",
+                      "    password: pm.collectionVariables.get(\"socioPassword\"),",
+                      "    tokenKey: \"socioToken\",",
+                      "    secretKey: \"socioMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -4635,12 +4669,15 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "pm.test(\"Login admin para cleanup\", function () {",
-                      "    pm.response.to.have.status(200);",
-                      "});",
-                      "",
-                      "const data = pm.response.json();",
-                      "pm.collectionVariables.set(\"token\", data.token);"
+                      "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                      "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                      "loginConMfa({",
+                      "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                      "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                      "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                      "    tokenKey: \"token\",",
+                      "    secretKey: \"adminMfaSecret\"",
+                      "});"
                     ],
                     "type": "text/javascript"
                   }
@@ -4719,12 +4756,15 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Login admin exitoso\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const data = pm.response.json();",
-                  "pm.collectionVariables.set(\"token\", data.token);"
+                  "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                  "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                  "loginConMfa({",
+                  "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                  "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                  "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                  "    tokenKey: \"token\",",
+                  "    secretKey: \"adminMfaSecret\"",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -4982,6 +5022,1175 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Auth Google (RNF-10)",
+      "description": "POST /api/auth/google: solo casos de error (el happy path requiere un id_token real firmado por Google, se valida manualmente con un usuario de prueba).",
+      "item": [
+        {
+          "name": "400 - Token de Google vacío",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Mensaje de error\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"error\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Token de Google malformado/inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Mensaje genérico (no revela detalle)\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"error\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"esto-no-es-un-jwt-valido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "MFA Reset (RNF-10)",
+      "description": "POST /api/empleados/{id}/mfa/reset: el admin resetea el segundo factor de un empleado. Reusa el empleadoTestId creado en el folder Empleados (RF-12), por eso debe ejecutarse después.",
+      "item": [
+        {
+          "name": "400 - Admin no puede resetear su propio MFA",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Necesitamos el id del admin. Lo obtenemos del JWT (claim sub/nameid).",
+                  "const token = pm.globals.get(\"token\");",
+                  "if (token) {",
+                  "    const payload = JSON.parse(atob(token.split(\".\")[1]));",
+                  "    pm.globals.set(\"adminId\", payload.sub || payload.nameid || payload[\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier\"]);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Mensaje indica que no puede resetear su propio MFA\", function () {",
+                  "    const data = pm.response.json();",
+                  "    pm.expect(data.error).to.match(/propio/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/empleados/{{adminId}}/mfa/reset",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados",
+                "{{adminId}}",
+                "mfa",
+                "reset"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "404 - Reset MFA empleado inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/empleados/00000000-0000-0000-0000-000000000000/mfa/reset",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados",
+                "00000000-0000-0000-0000-000000000000",
+                "mfa",
+                "reset"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Reset MFA sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/empleados/00000000-0000-0000-0000-000000000001/mfa/reset",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "empleados",
+                "00000000-0000-0000-0000-000000000001",
+                "mfa",
+                "reset"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Eventos (RF-15)",
+      "description": "ABM de eventos por sede + notificación a socios. Requiere admin logueado (token).",
+      "item": [
+        {
+          "name": "Setup - Capturar unidad para eventos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const unidades = pm.response.json();",
+                  "pm.test(\"Existe al menos una unidad\", function () {",
+                  "    pm.expect(unidades).to.be.an(\"array\").and.to.have.lengthOf.at.least(1);",
+                  "});",
+                  "// Preferimos 'Espacio Mora' (la sede del socio del seed) para que el E2E de notificaciones funcione.",
+                  "const mora = unidades.find(u => u.nombre === \"Espacio Mora\") || unidades[0];",
+                  "pm.collectionVariables.set(\"eventoUnidadId\", mora.id);",
+                  "console.log(\"Unidad de eventos: \" + mora.nombre + \" (\" + mora.id + \")\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/unidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "unidades"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "201 - Crear evento",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Fecha futura: hoy + 30 días en ISO 8601.",
+                  "const fecha = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString();",
+                  "pm.collectionVariables.set(\"eventoFechaFutura\", fecha);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const evento = pm.response.json();",
+                  "pm.test(\"Body tiene shape EventoDto\", function () {",
+                  "    pm.expect(evento).to.have.all.keys(\"id\", \"titulo\", \"descripcion\", \"fecha\", \"unidadId\", \"unidadNombre\", \"estaActivo\");",
+                  "    pm.expect(evento.estaActivo).to.eql(true);",
+                  "});",
+                  "pm.collectionVariables.set(\"createdEventoId\", evento.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Evento Postman E2E\",\n  \"descripcion\": \"Evento creado por la suite de tests automatizados\",\n  \"fecha\": \"{{eventoFechaFutura}}\",\n  \"unidadId\": \"{{eventoUnidadId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Crear evento con fecha pasada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Evento con fecha pasada\",\n  \"descripcion\": \"No debería crearse\",\n  \"fecha\": \"2020-01-01T10:00:00Z\",\n  \"unidadId\": \"{{eventoUnidadId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Listar eventos (por unidad)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const eventos = pm.response.json();",
+                  "pm.test(\"Respuesta es array\", function () { pm.expect(eventos).to.be.an(\"array\"); });",
+                  "pm.test(\"Incluye el evento recién creado\", function () {",
+                  "    const id = pm.collectionVariables.get(\"createdEventoId\");",
+                  "    pm.expect(eventos.find(e => e.id === id), \"evento creado\").to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eventos?unidadId={{eventoUnidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ],
+              "query": [
+                {
+                  "key": "unidadId",
+                  "value": "{{eventoUnidadId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Detalle de evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const evento = pm.response.json();",
+                  "pm.test(\"Es el evento creado\", function () {",
+                  "    pm.expect(evento.id).to.eql(pm.collectionVariables.get(\"createdEventoId\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eventos/{{createdEventoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{createdEventoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "404 - Detalle evento inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eventos/00000000-0000-0000-0000-000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "00000000-0000-0000-0000-000000000000"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Actualizar evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const evento = pm.response.json();",
+                  "pm.test(\"Título actualizado\", function () {",
+                  "    pm.expect(evento.titulo).to.eql(\"Evento Postman E2E (actualizado)\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Evento Postman E2E (actualizado)\",\n  \"descripcion\": \"Descripción modificada por test PUT\",\n  \"fecha\": \"{{eventoFechaFutura}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/eventos/{{createdEventoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{createdEventoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Re-notificar evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Body trae mensaje resumen\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"mensaje\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eventos/{{createdEventoId}}/notificar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{createdEventoId}}",
+                "notificar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "204 - Cancelar evento (baja lógica)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204 o 200\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eventos/{{createdEventoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{createdEventoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Listar incluyendo cancelados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const eventos = pm.response.json();",
+                  "pm.test(\"Incluye el evento cancelado\", function () {",
+                  "    const id = pm.collectionVariables.get(\"createdEventoId\");",
+                  "    const ev = eventos.find(e => e.id === id);",
+                  "    pm.expect(ev, \"evento cancelado\").to.exist;",
+                  "    pm.expect(ev.estaActivo).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eventos?unidadId={{eventoUnidadId}}&incluirInactivos=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ],
+              "query": [
+                {
+                  "key": "unidadId",
+                  "value": "{{eventoUnidadId}}"
+                },
+                {
+                  "key": "incluirInactivos",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Listar eventos sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notificaciones Portal (RF-16) - E2E",
+      "description": "Flujo encadenado: el admin crea un evento en la sede del socio, el socio ve la notificación in-system, la marca como leída y verifica el badge. Requiere que el folder Eventos (RF-15) haya corrido antes para tener eventoUnidadId.",
+      "item": [
+        {
+          "name": "Setup - Login socio (sin MFA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Socio NO requiere MFA y trae sesion directa\", function () {",
+                  "    pm.expect(data.requiereMfa).to.eql(false);",
+                  "    pm.expect(data.sesion).to.be.an(\"object\");",
+                  "    pm.expect(data.sesion.token).to.be.a(\"string\");",
+                  "});",
+                  "pm.globals.set(\"socioToken\", data.sesion.token);",
+                  "console.log(\"socioToken guardado\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{socioEmail}}\",\n  \"password\": \"{{socioPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Capturar count inicial de no-leídas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Body trae { count }\", function () {",
+                  "    pm.expect(data).to.have.property(\"count\");",
+                  "    pm.expect(data.count).to.be.a(\"number\");",
+                  "});",
+                  "pm.collectionVariables.set(\"notifCountInicial\", data.count);",
+                  "console.log(\"Count inicial de no-leídas: \" + data.count);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portal/notificaciones/no-leidas/count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "no-leidas",
+                "count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Trigger - Admin crea evento en la sede del socio",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const fecha = new Date(Date.now() + 45 * 24 * 3600 * 1000).toISOString();",
+                  "pm.collectionVariables.set(\"notifEventoFecha\", fecha);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const evento = pm.response.json();",
+                  "pm.collectionVariables.set(\"notifEventoId\", evento.id);",
+                  "console.log(\"Evento creado para gatillar notificación: \" + evento.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Trigger notificación E2E\",\n  \"descripcion\": \"Evento creado para verificar que el socio recibe la notificación in-system\",\n  \"fecha\": \"{{notifEventoFecha}}\",\n  \"unidadId\": \"{{eventoUnidadId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Count de no-leídas incrementó tras el evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const inicial = parseInt(pm.collectionVariables.get(\"notifCountInicial\"), 10);",
+                  "const actual = pm.response.json().count;",
+                  "pm.test(\"Count incrementó al menos 1 vs inicial (\" + inicial + \")\", function () {",
+                  "    pm.expect(actual).to.be.at.least(inicial + 1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portal/notificaciones/no-leidas/count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "no-leidas",
+                "count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Listar notificaciones (soloNoLeidas=true) y capturar id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const notifs = pm.response.json();",
+                  "pm.test(\"Hay al menos una notificación no leída\", function () {",
+                  "    pm.expect(notifs).to.be.an(\"array\").and.to.have.lengthOf.at.least(1);",
+                  "});",
+                  "// Tomamos la primera (la más reciente: ordenadas desc por FechaCreacion).",
+                  "const primera = notifs[0];",
+                  "pm.collectionVariables.set(\"notifId\", primera.id);",
+                  "console.log(\"Notificación a marcar como leída: \" + primera.id + \" (\" + (primera.tipo || \"?\") + \")\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portal/notificaciones?soloNoLeidas=true&take=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones"
+              ],
+              "query": [
+                {
+                  "key": "soloNoLeidas",
+                  "value": "true"
+                },
+                {
+                  "key": "take",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Marcar notificación como leída",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Body trae mensaje\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"mensaje\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portal/notificaciones/{{notifId}}/leer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "{{notifId}}",
+                "leer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Marcar como leída es idempotente (segundo POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 (idempotente)\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portal/notificaciones/{{notifId}}/leer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "{{notifId}}",
+                "leer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "404 - Marcar notificación inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portal/notificaciones/00000000-0000-0000-0000-000000000000/leer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones",
+                "00000000-0000-0000-0000-000000000000",
+                "leer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Listar notificaciones sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portal/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "notificaciones"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Portal eventos del socio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const eventos = pm.response.json();",
+                  "pm.test(\"Respuesta es array\", function () { pm.expect(eventos).to.be.an(\"array\"); });",
+                  "pm.test(\"Solo eventos futuros y activos\", function () {",
+                  "    const ahora = new Date();",
+                  "    eventos.forEach(e => {",
+                  "        pm.expect(e.estaActivo, \"evento \" + e.id + \" activo\").to.eql(true);",
+                  "        pm.expect(new Date(e.fecha) > ahora, \"evento \" + e.id + \" futuro\").to.eql(true);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portal/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "portal",
+                "eventos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup - Cancelar evento del trigger",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Cleanup OK (200 o 204)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eventos/{{notifEventoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos",
+                "{{notifEventoId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "auth": {
@@ -5001,7 +6210,9 @@
         "type": "text/javascript",
         "requests": {},
         "exec": [
-          ""
+          "// Pre-request a nivel collection: vacio.",
+          "// Las funciones TOTP estan inlined en cada request que las necesita",
+          "// (el sandbox de Postman aisla scripts entre si, no se pueden compartir funciones)."
         ]
       }
     },
@@ -5028,10 +6239,6 @@
     {
       "key": "adminPassword",
       "value": "admin123"
-    },
-    {
-      "key": "token",
-      "value": ""
     },
     {
       "key": "unidadId1",
@@ -5063,10 +6270,6 @@
     },
     {
       "key": "cedulaDinamica",
-      "value": ""
-    },
-    {
-      "key": "restrictedToken",
       "value": ""
     },
     {
@@ -5110,10 +6313,6 @@
       "value": ""
     },
     {
-      "key": "socioToken",
-      "value": ""
-    },
-    {
       "key": "socioEmail",
       "value": "socio@gymflow.com"
     },
@@ -5132,6 +6331,56 @@
     {
       "key": "empleadoTestCorreo",
       "value": ""
+    },
+    {
+      "key": "eventoUnidadId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventoFechaFutura",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "createdEventoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notifCountInicial",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notifEventoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notifEventoFecha",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notifId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mfaHelperSrc",
+      "value": "function base32ToHex(s){var a=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567\";var c=s.replace(/=+$/,\"\").toUpperCase().replace(/s+/g,\"\");var b=\"\";for(var i=0;i<c.length;i++)b+=a.indexOf(c[i]).toString(2).padStart(5,\"0\");var h=\"\";for(var j=0;j+8<=b.length;j+=8)h+=parseInt(b.substring(j,j+8),2).toString(16).padStart(2,\"0\");return h;}\nfunction totpCode(secret){var t=Math.floor(Date.now()/1000/30);var ch=t.toString(16).padStart(16,\"0\");var key=CryptoJS.enc.Hex.parse(base32ToHex(secret));var hm=CryptoJS.HmacSHA1(CryptoJS.enc.Hex.parse(ch),key).toString(CryptoJS.enc.Hex);var off=parseInt(hm.substring(hm.length-1),16);var bin=parseInt(hm.substring(off*2,off*2+8),16)&0x7fffffff;return (bin%1000000).toString().padStart(6,\"0\");}\nfunction loginConMfa(o){pm.sendRequest({url:o.baseUrl+\"/auth/login\",method:\"POST\",header:{\"Content-Type\":\"application/json\"},body:{mode:\"raw\",raw:JSON.stringify({correo:o.correo,password:o.password})}},function(err,res){pm.test(\"Login \"+o.correo+\" (200)\",function(){pm.expect(res.code).to.eql(200);});if(res.code!==200)return;var d=res.json();if(!d.requiereMfa){var ses=d.sesion||d;pm.globals.set(o.tokenKey,ses.token);return;}var ticket=d.mfaToken;if(d.setupRequerido){pm.sendRequest({url:o.baseUrl+\"/auth/mfa/setup\",method:\"POST\",header:{\"Authorization\":\"Bearer \"+ticket}},function(e2,sres){pm.test(\"MFA setup \"+o.correo,function(){pm.expect(sres.code).to.eql(200);});if(sres.code!==200)return;var secret=sres.json().claveManual;pm.globals.set(o.secretKey,secret);pm.sendRequest({url:o.baseUrl+\"/auth/mfa/activate\",method:\"POST\",header:{\"Authorization\":\"Bearer \"+ticket,\"Content-Type\":\"application/json\"},body:{mode:\"raw\",raw:JSON.stringify({codigo:totpCode(secret)})}},function(e3,ares){pm.test(\"MFA activate \"+o.correo,function(){pm.expect(ares.code).to.eql(200);});if(ares.code===200)pm.globals.set(o.tokenKey,ares.json().sesion.token);});});}else{var secret=pm.globals.get(o.secretKey);if(!secret){pm.test(\"MFA verify \"+o.correo,function(){pm.expect.fail(\"No hay secret guardado para \"+o.correo+\". Corre el folder Auth primero o resetea MFA.\");});return;}pm.sendRequest({url:o.baseUrl+\"/auth/mfa/verify\",method:\"POST\",header:{\"Authorization\":\"Bearer \"+ticket,\"Content-Type\":\"application/json\"},body:{mode:\"raw\",raw:JSON.stringify({codigo:totpCode(secret)})}},function(e4,vres){pm.test(\"MFA verify \"+o.correo,function(){pm.expect(vres.code).to.eql(200);});if(vres.code===200)pm.globals.set(o.tokenKey,vres.json().token);});}});}",
+      "type": "string"
+    },
+    {
+      "key": "rnfEmpleadoMfaSecret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "socioMfaSecret",
+      "value": "",
+      "type": "string"
     }
   ]
 }

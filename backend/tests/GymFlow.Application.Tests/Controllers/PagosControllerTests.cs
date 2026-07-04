@@ -8,6 +8,7 @@ using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace GymFlow.Application.Tests.Controllers;
@@ -26,6 +27,7 @@ public class PagosControllerTests
     private readonly Mock<ISocioRepository> _socioRepo = new();
     private readonly Mock<IEmailService> _emailService = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
+    private readonly Mock<ILogger<PagosController>> _logger = new();
 
     private readonly Guid _socioId = Guid.NewGuid();
 
@@ -45,7 +47,7 @@ public class PagosControllerTests
             _emailService.Object, _auditLogger.Object);
         var misPagos = new GetMisPagosQuery(_pagoRepo.Object);
 
-        var controller = new PagosController(iniciar, webhook, misPagos);
+        var controller = new PagosController(iniciar, webhook, misPagos, _logger.Object);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
@@ -172,6 +174,95 @@ public class PagosControllerTests
 
         Assert.Equal("ts=1,v1=abc", sig);
         Assert.Equal("req-42", reqId);
+    }
+
+    // --- POST /api/pagos/webhook — IPN legacy (?topic=payment&id=...) ---
+
+    [Fact]
+    public async Task Webhook_IpnTopicPayment_ProcesaSinValidarFirma_Retorna200()
+    {
+        _mpService.Setup(m => m.ObtenerPagoAsync(It.IsAny<string>())).ReturnsAsync((PagoMpInfo?)null);
+
+        var controller = CrearController();
+        controller.HttpContext.Request.QueryString = new QueryString("?topic=payment&id=123456");
+
+        var result = await controller.Webhook(body: null);
+
+        var ok = Assert.IsType<StatusCodeResult>(result);
+        Assert.Equal(StatusCodes.Status200OK, ok.StatusCode);
+        // IPN no tiene firma validable: NUNCA se llama a ValidarFirma…
+        _mpService.Verify(m => m.ValidarFirma(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string>()), Times.Never);
+        // …pero SÍ se consulta el estado real del pago en MP con el id del query.
+        _mpService.Verify(m => m.ObtenerPagoAsync("123456"), Times.Once);
+    }
+
+    [Fact]
+    public async Task Webhook_IpnTopicMerchantOrder_NoProcesa_Retorna200()
+    {
+        var controller = CrearController();
+        controller.HttpContext.Request.QueryString = new QueryString("?topic=merchant_order&id=555");
+
+        var result = await controller.Webhook(body: null);
+
+        var ok = Assert.IsType<StatusCodeResult>(result);
+        Assert.Equal(StatusCodes.Status200OK, ok.StatusCode);
+        _mpService.Verify(m => m.ValidarFirma(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string>()), Times.Never);
+        _mpService.Verify(m => m.ObtenerPagoAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    // --- POST /api/pagos/webhook — formato moderno ---
+
+    [Fact]
+    public async Task Webhook_ModernoConDataIdEnQueryYBody_FirmaConElValorDelQuery()
+    {
+        // MP firma el data.id del QUERY: si viene en query y body, para la firma manda el query.
+        string? dataIdUsado = null;
+        _mpService.Setup(m => m.ValidarFirma(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string>()))
+            .Callback<string?, string?, string>((_, _, id) => dataIdUsado = id)
+            .Returns(false);
+
+        var controller = CrearController();
+        controller.HttpContext.Request.QueryString = new QueryString("?data.id=from-query&type=payment");
+
+        await controller.Webhook(new WebhookRequest { Data = new WebhookData { Id = "from-body" } });
+
+        Assert.Equal("from-query", dataIdUsado);
+    }
+
+    [Fact]
+    public async Task Webhook_ModernoConTypeDistintoDePayment_NoProcesa_Retorna200()
+    {
+        var controller = CrearController();
+
+        var result = await controller.Webhook(
+            new WebhookRequest { Type = "subscription", Data = new WebhookData { Id = "999" } });
+
+        var ok = Assert.IsType<StatusCodeResult>(result);
+        Assert.Equal(StatusCodes.Status200OK, ok.StatusCode);
+        _mpService.Verify(m => m.ValidarFirma(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string>()), Times.Never);
+        _mpService.Verify(m => m.ObtenerPagoAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    // --- POST /api/pagos/webhook — sin formato reconocible ---
+
+    [Fact]
+    public async Task Webhook_SinNingunFormato_Retorna200SinProcesarYLogueaWarning()
+    {
+        var controller = CrearController();
+
+        var result = await controller.Webhook(body: null);
+
+        var ok = Assert.IsType<StatusCodeResult>(result);
+        Assert.Equal(StatusCodes.Status200OK, ok.StatusCode);
+        _mpService.Verify(m => m.ValidarFirma(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string>()), Times.Never);
+        _mpService.Verify(m => m.ObtenerPagoAsync(It.IsAny<string>()), Times.Never);
+        // Antes esto era un 200 silencioso; ahora tiene que quedar rastro (Warning).
+        _logger.Verify(l => l.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((_, _) => true),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
     }
 
     // --- GET /api/pagos/mis-pagos ---
