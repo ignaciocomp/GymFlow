@@ -11,8 +11,8 @@ namespace GymFlow.Infrastructure.Tests.Persistence;
 /// <summary>
 /// Verifica que el seed del rol Dueno (HasData en OnModelCreating) produzca exactamente
 /// los permisos esperados: todas las operaciones de Socios, Planes, Clases, Cuotas y
-/// Empleados, mas Unidades Lectura, y NUNCA Auditoria. No abre conexion: solo construye
-/// el modelo para leer la seed data.
+/// Empleados, mas Unidades Lectura y Dashboard Lectura, y NUNCA Auditoria. No abre
+/// conexion: solo construye el modelo para leer la seed data.
 /// </summary>
 public class SeedRolDuenoTests
 {
@@ -88,6 +88,17 @@ public class SeedRolDuenoTests
     }
 
     [Fact]
+    public void Seed_Dueno_TieneDashboardSoloLectura()
+    {
+        // RF-18 (CU-10, RN-16): el Dueño ve el dashboard de sus unidades — solo Lectura.
+        var dashboard = PermisosDelRol(RolesSeed.DuenoRolId)
+            .Where(p => p.Modulo == Modulo.Dashboard)
+            .ToList();
+
+        Assert.Equal(new[] { (Modulo.Dashboard, Operacion.Lectura) }, dashboard);
+    }
+
+    [Fact]
     public void Seed_Dueno_NoTieneAuditoria()
     {
         var permisos = PermisosDelRol(RolesSeed.DuenoRolId);
@@ -95,10 +106,10 @@ public class SeedRolDuenoTests
     }
 
     [Fact]
-    public void Seed_Dueno_TieneExactamente25Permisos()
+    public void Seed_Dueno_TieneExactamente26Permisos()
     {
         // 6 modulos completos (Socios, Planes, Clases, Cuotas, Empleados, Eventos) x 4 operaciones = 24,
-        // mas Unidades Lectura = 25.
-        Assert.Equal(25, PermisosDelRol(RolesSeed.DuenoRolId).Count);
+        // mas Unidades Lectura y Dashboard Lectura = 26.
+        Assert.Equal(26, PermisosDelRol(RolesSeed.DuenoRolId).Count);
     }
 }
