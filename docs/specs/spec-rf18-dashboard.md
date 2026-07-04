@@ -10,7 +10,7 @@
 |---|---|
 | Tiempo real | **SSE con snapshot periódico (~10s)**: el backend recalcula y empuja solo si cambió (+ heartbeat). Cumple RNF-02 y el ≤30s (RN-15). **Fallback a polling** con indicador "actualización en pausa" (E2). |
 | Auth del stream | `EventSource` no permite header Authorization y poner el JWT en la URL está prohibido → **lector SSE por `fetch`** con header. |
-| Acceso | Nuevo **`Modulo.Dashboard`** en el sistema de permisos (solo **Lectura**; seed para Admin y Dueño + migración). Sin vistas por rol (CA-04). |
+| Acceso | Nuevo **`Modulo.Dashboard`** en el sistema de permisos: seed de **Lectura para Dueño**; Admin recibe las 4 operaciones automáticamente (seed cartesiano existente — solo Lectura tiene efecto). Otorgable a roles custom desde la UI (RolForm). Sin vistas por rol (CA-04). |
 | Landing | **El dashboard pasa a ser el inicio de `/admin`** si el rol tiene el permiso; si no, Socios como hoy. |
 | Visual | 4 cards de métricas + clases del día + inscripciones recientes (lo del CU) **+ una gráfica con selector de vista** (elegible por el usuario, persistida en localStorage): *Socios por sede* · *Cuotas por estado* · *Inscripciones últimos 7 días*. Librería `recharts`. |
 | Filtro | "Todas" (consolidado, RN-14) por defecto + por unidad. Server-side con `IUnidadesVisiblesResolver` (Dueño solo sus sedes). |
