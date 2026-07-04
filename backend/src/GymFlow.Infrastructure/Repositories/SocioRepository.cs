@@ -121,6 +121,16 @@ public class SocioRepository : ISocioRepository
             .CountAsync(s => s.EstaActivo && s.UnidadesAsignadas.Any(uu => uu.UnidadId == unidadId));
     }
 
+    public async Task<int> CountActivosAsync(IReadOnlyCollection<Guid>? unidadIds = null)
+    {
+        var query = _context.Socios.Where(s => s.EstaActivo);
+
+        if (unidadIds is not null)
+            query = query.Where(s => s.UnidadesAsignadas.Any(uu => unidadIds.Contains(uu.UnidadId)));
+
+        return await query.CountAsync();
+    }
+
     public async Task AddAsync(Socio socio)
     {
         await _context.Socios.AddAsync(socio);
