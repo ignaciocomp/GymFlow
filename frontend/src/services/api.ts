@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase, Evento, CreateEventoRequest, UpdateEventoRequest, Notificacion } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase, Evento, CreateEventoRequest, UpdateEventoRequest, Notificacion, PagoDto } from '@/types'
 import type { Permiso } from '@/types/permisos'
 
 const api = axios.create({
@@ -270,6 +270,20 @@ export const cuotasApi = {
     incluirAnuladas?: boolean
   }): Promise<CuotaDto[]> => {
     const { data } = await api.get<CuotaDto[]>(`/cuotas/admin/socio/${socioId}`, { params })
+    return data
+  },
+}
+
+export const pagosApi = {
+  // RF-23: inicia el pago online de una cuota pendiente y devuelve el init_point de Checkout Pro.
+  iniciar: async (cuotaId: string): Promise<{ initPoint: string }> => {
+    const { data } = await api.post<{ initPoint: string }>('/pagos/iniciar', { cuotaId })
+    return data
+  },
+
+  // RF-23 / CU-08: historial de pagos del socio autenticado.
+  getMisPagos: async (): Promise<PagoDto[]> => {
+    const { data } = await api.get<PagoDto[]>('/pagos/mis-pagos')
     return data
   },
 }

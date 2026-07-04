@@ -32,6 +32,9 @@ public static class DependencyInjection
         services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
         services.AddScoped<IUnidadesVisiblesResolver, UnidadesVisiblesResolver>();
         services.AddScoped<ICuotaRepository, CuotaRepository>();
+        services.AddScoped<IPagoRepository, PagoRepository>();
+        services.AddHttpClient<IMercadoPagoService, MercadoPagoService>();
+        services.AddScoped<IPagoUrlBuilder, PagoUrlBuilder>();
         services.AddScoped<ICuotaGeneradorService, CuotaGeneradorService>();
         services.AddScoped<IRecordatorioCuotaRepository, RecordatorioCuotaRepository>();
         services.AddScoped<IClaseRepository, ClaseRepository>();

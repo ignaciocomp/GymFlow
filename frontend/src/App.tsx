@@ -29,6 +29,8 @@ import HorariosPortalPage from '@/pages/portal/HorariosPortalPage'
 import EventosPortalPage from '@/pages/portal/EventosPortalPage'
 import MisInscripcionesPage from '@/pages/portal/MisInscripcionesPage'
 import NotificacionesPortalPage from '@/pages/portal/NotificacionesPortalPage'
+import MisPagosPage from '@/pages/portal/MisPagosPage'
+import PagoResultadoPage from '@/pages/portal/PagoResultadoPage'
 import PublicLayout from '@/components/public/PublicLayout'
 import HomePage from '@/pages/public/HomePage'
 import SedesPage from '@/pages/public/SedesPage'
@@ -79,6 +81,8 @@ export default function App() {
         <Route index element={<PerfilSocioPage />} />
         <Route path="perfil" element={<PerfilSocioPage />} />
         <Route path="mis-cuotas" element={<MisCuotasPage />} />
+        <Route path="mis-pagos" element={<MisPagosPage />} />
+        <Route path="pago/resultado" element={<PagoResultadoPage />} />
         <Route path="horarios" element={<HorariosPortalPage />} />
         <Route path="eventos" element={<EventosPortalPage />} />
         <Route path="mis-inscripciones" element={<MisInscripcionesPage />} />
