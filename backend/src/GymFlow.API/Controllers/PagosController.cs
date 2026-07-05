@@ -29,7 +29,7 @@ public class PagosController : ControllerBase
     }
 
     /// <summary>
-    /// RF-23 / CA-33: el socio inicia el pago online de una de sus cuotas pendientes.
+    /// RF-21 / CA-33: el socio inicia el pago online de una de sus cuotas pendientes.
     /// Devuelve el init_point de Checkout Pro al que el frontend debe redirigir.
     /// </summary>
     [HttpPost("iniciar")]
@@ -47,7 +47,7 @@ public class PagosController : ControllerBase
     }
 
     /// <summary>
-    /// RF-23 — webhook de Mercado Pago (`[AllowAnonymous]`, RN-31). Acepta los DOS formatos
+    /// RF-21 — webhook de Mercado Pago (`[AllowAnonymous]`, RN-31). Acepta los DOS formatos
     /// en que MP notifica pagos:
     /// <list type="bullet">
     /// <item><b>Webhook moderno</b>: <c>?data.id=...&amp;type=payment</c> y/o body
@@ -123,7 +123,7 @@ public class PagosController : ControllerBase
     }
 
     /// <summary>
-    /// RF-23 / CU-08 — historial de pagos del socio autenticado.
+    /// RF-21 / CU-08 — historial de pagos del socio autenticado.
     /// </summary>
     [HttpGet("mis-pagos")]
     public async Task<ActionResult<IEnumerable<PagoDto>>> MisPagos()

@@ -275,13 +275,13 @@ export const cuotasApi = {
 }
 
 export const pagosApi = {
-  // RF-23: inicia el pago online de una cuota pendiente y devuelve el init_point de Checkout Pro.
+  // RF-21: inicia el pago online de una cuota pendiente y devuelve el init_point de Checkout Pro.
   iniciar: async (cuotaId: string): Promise<{ initPoint: string }> => {
     const { data } = await api.post<{ initPoint: string }>('/pagos/iniciar', { cuotaId })
     return data
   },
 
-  // RF-23 / CU-08: historial de pagos del socio autenticado.
+  // RF-21 / CU-08: historial de pagos del socio autenticado.
   getMisPagos: async (): Promise<PagoDto[]> => {
     const { data } = await api.get<PagoDto[]>('/pagos/mis-pagos')
     return data

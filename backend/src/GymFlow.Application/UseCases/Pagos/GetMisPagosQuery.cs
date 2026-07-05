@@ -4,7 +4,7 @@ using GymFlow.Domain.Entities;
 namespace GymFlow.Application.UseCases.Pagos;
 
 /// <summary>
-/// RF-23 / CU-08: historial de pagos del socio (fecha, monto, medio, N° de transacción MP,
+/// RF-21 / CU-08: historial de pagos del socio (fecha, monto, medio, N° de transacción MP,
 /// estado y plan). El repositorio ya devuelve los pagos ordenados por fecha descendente
 /// e incluye la Cuota (para el nombre del plan).
 /// </summary>

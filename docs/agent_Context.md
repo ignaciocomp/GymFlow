@@ -305,7 +305,7 @@ Cuando se crea un módulo nuevo en el backend (ej. `Cuotas`, `Eventos`), **es ob
 4. Aplicar `[RequierePermiso(Modulo.NuevoModulo, Operacion.X)]` a los endpoints del controller.
 5. En el frontend, actualizar el tipo `Modulo` en `frontend/src/types/permisos.ts` y agregar el grupo correspondiente en `Sidebar.tsx` con la propiedad `modulo` para que se filtre por permiso.
 
-El sistema de permisos es de catálogo cerrado en código: no se inventan módulos en runtime. Ver spec: `docs/superpowers/specs/2026-04-26-rf-23-roles-y-permisos.md`.
+
 
 **Para crear empleados que puedan loguearse, ver:** `docs/superpowers/specs/2026-04-28-rnf-01-gestion-usuarios.md`. La gestión de usuarios usa la entidad `Empleado` (subclase de `Usuario`) y se administra desde `/admin/usuarios` en el frontend.
 
