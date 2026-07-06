@@ -286,31 +286,23 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 
 ## Pruebas automatizadas (xUnit)
 
-Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`. Se ejecutan con `dotnet test` desde `backend/`. El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4 está en [[pruebas-automatizadas-it1-4]].
+Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`, ejecutadas con `dotnet test` desde `backend/`. Suite en verde (0 fallos). Cobertura agregada en esta iteración:
 
-**Pruebas de dominio (`GymFlow.Domain.Tests`):**
+**Gestión de clases (RF-08):**
 
-| Clase de test | Entidad / área | Casos (aprox.) |
-|-|-|-|
-| `Entities/ClaseTests.cs` | `Clase`: validaciones, capacidad, baja lógica, reactivación | ~13 |
-| `Entities/HorarioClaseTests.cs` | `HorarioClase`: día/hora, rango válido, conflicto de sala | ~14 |
-| `Entities/InscripcionClaseTests.cs` | `InscripcionClase`: estado activa/cancelada (base) | ~3 |
+- *Dominio:* el constructor valida nombre, capacidad (con mínimo y máximo), duración e instructor; la actualización rechaza reducir la capacidad por debajo de las inscripciones activas y acepta el caso límite de capacidad igual a inscripciones; la cancelación es una baja lógica que no puede repetirse; la reactivación solo aplica a clases canceladas.
+- *Application:* el alta y la edición validan los datos, rechazan unidades o clases inexistentes y registran auditoría; la cancelación cancela las inscripciones activas y notifica a los socios por email — si el envío falla, la cancelación no se rompe y la auditoría registra los envíos fallidos; una clase sin inscriptos se cancela sin enviar correos; el listado aplica los filtros por unidad.
 
-**Pruebas de aplicación (`GymFlow.Application.Tests`):**
+**Gestión de horarios (RF-09):**
 
-| Clase de test | Caso de uso / área | Casos (aprox.) |
-|-|-|-|
-| `UseCases/Clases/CreateClaseCommandTests.cs` | Crear clase (RF-08) | ~2 |
-| `UseCases/Clases/UpdateClaseCommandTests.cs` | Editar clase, validación capacidad vs inscripciones | ~3 |
-| `UseCases/Clases/CancelClaseCommandTests.cs` | Cancelar clase, cancelar inscripciones, notificar | ~8 |
-| `UseCases/Clases/ReactivarClaseCommandTests.cs` | Reactivar clase cancelada | ~3 |
-| `UseCases/Clases/GetClasesQueryTests.cs` | Listado de clases con filtros | ~3 |
-| `UseCases/Horarios/CreateHorarioCommandTests.cs` | Crear horario con validación de conflicto de sala (RF-09) | ~5 |
-| `UseCases/Horarios/UpdateHorarioCommandTests.cs` | Editar horario, revalidar conflicto, notificar inscriptos | ~7 |
-| `UseCases/Horarios/DeleteHorarioCommandTests.cs` | Eliminar horario | ~2 |
-| `UseCases/Horarios/GetHorariosQueryTests.cs` | Listado de horarios con filtros | ~2 |
+- *Dominio:* el rango horario debe ser válido (hora de fin posterior a la de inicio); la sala se normaliza (se recortan espacios y en blanco queda sin sala); la detección de conflicto de sala cubre mismo día y misma sala con solape parcial o contenido, distinta sala, distinto día, sala nula y comparación de sala sin distinguir mayúsculas.
+- *Application:* crear y editar validan que la clase exista y esté activa, revalidan el rango horario y el conflicto de sala, y registran auditoría; al editar un horario con socios inscriptos se les notifica el cambio; la eliminación valida existencia y audita; el listado aplica filtros.
 
-**Total aproximado de la iteración:** ~57 casos `[Fact]`/`[Theory]` (dominio ~30 + application ~27).
+**Inscripciones (base para RF-10/RF-11):**
+
+- *Dominio:* la inscripción nace activa y asociada a su horario; cancelarla la marca como inactiva.
+
+El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4, clase por clase, está en [[pruebas-automatizadas-it1-4]].
 
 ## Pruebas funcionales de frontend
 

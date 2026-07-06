@@ -19,12 +19,12 @@ Una prueba end-to-end verifica un **flujo completo de usuario contra el sistema 
 
 GymFlow ya cuenta con tres niveles de pruebas documentados. Este plan agrega el cuarto:
 
-| Nivel | Herramienta | Qué verifica | Dónde está documentado |
-|-|-|-|-|
-| Unitarias / integración | xUnit + Moq (~353 casos) | Reglas de negocio, casos de uso y servicios en aislamiento | [[pruebas-automatizadas-it1-4]] |
-| API | Postman | Contrato HTTP de los endpoints contra el backend levantado | Colección `GymFlow API Tests` + docs de iteración |
-| Funcionales de frontend | Manuales, por iteración | Pantallas y comportamientos de la funcionalidad nueva de cada iteración | Docs de iteración (`docs/seguimiento/`) |
-| **End-to-end (este plan)** | **Manual, contra el despliegue** | **Flujos completos de usuario atravesando frontend + API + BD + integraciones, incluyendo efectos colaterales (emails, notificaciones, auditoría)** | **Este documento** |
+| Nivel                      | Herramienta                      | Qué verifica                                                                                                                                        | Dónde está documentado                            |
+| -------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Unitarias / integración    | xUnit + Moq (~353 casos)         | Reglas de negocio, casos de uso y servicios en aislamiento                                                                                          | [[pruebas-automatizadas-it1-4]]                   |
+| API                        | Postman                          | Contrato HTTP de los endpoints contra el backend levantado                                                                                          | Colección `GymFlow API Tests` + docs de iteración |
+| Funcionales de frontend    | Manuales, por iteración          | Pantallas y comportamientos de la funcionalidad nueva de cada iteración                                                                             | Docs de iteración (`docs/seguimiento/`)           |
+| **End-to-end (este plan)** | **Manual, contra el despliegue** | **Flujos completos de usuario atravesando frontend + API + BD + integraciones, incluyendo efectos colaterales (emails, notificaciones, auditoría)** | **Este documento**                                |
 
 El diferencial del nivel E2E respecto de las pruebas funcionales por iteración es doble: (a) se ejecuta contra el **sistema desplegado con integraciones reales**, no contra el entorno local, y (b) cada caso verifica también los **efectos del otro lado del sistema** — por ejemplo: el socio se inscribe y el admin ve el cupo descontado; el pago se aprueba y llega el email y la auditoría lo registra.
 
