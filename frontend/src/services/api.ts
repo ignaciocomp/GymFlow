@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase, Evento, CreateEventoRequest, UpdateEventoRequest, Notificacion, PagoDto } from '@/types'
+import type { Unidad, Socio, CreateSocioRequest, UpdateSocioRequest, DeleteSocioRequest, Plan, AuditoriaEntry, CreatePlanRequest, UpdatePlanRequest, SolicitarModificacionRequest, SolicitarBajaRequest, CuotaDto, SocioConEstadoCuotaDto, Clase, CreateClaseRequest, UpdateClaseRequest, HorarioClase, CreateHorarioClaseRequest, UpdateHorarioClaseRequest, InscripcionClase, Evento, CreateEventoRequest, UpdateEventoRequest, Notificacion, PagoDto, DashboardDto } from '@/types'
 import type { Permiso } from '@/types/permisos'
 
 const api = axios.create({
@@ -386,6 +386,16 @@ export const horariosApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/horarios/${id}`)
+  },
+}
+
+export const dashboardApi = {
+  // RF-18: snapshot del dashboard (carga inicial y polling de fallback).
+  get: async (unidadId?: string): Promise<DashboardDto> => {
+    const params: Record<string, string> = {}
+    if (unidadId) params.unidadId = unidadId
+    const { data } = await api.get<DashboardDto>('/dashboard', { params })
+    return data
   },
 }
 

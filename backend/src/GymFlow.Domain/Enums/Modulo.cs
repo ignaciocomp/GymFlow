@@ -9,5 +9,6 @@ public enum Modulo
     Empleados,
     Cuotas,
     Clases,
-    Eventos
+    Eventos,
+    Dashboard
 }

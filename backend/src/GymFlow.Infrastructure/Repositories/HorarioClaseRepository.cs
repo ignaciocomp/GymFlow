@@ -58,6 +58,21 @@ public class HorarioClaseRepository : IHorarioClaseRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<HorarioClase>> GetByDiaAsync(DiaSemana dia, IReadOnlyCollection<Guid>? unidadIds = null)
+    {
+        var query = _context.HorariosClase
+            .Include(h => h.Clase)
+                .ThenInclude(c => c.Unidad)
+            .Where(h => h.DiaSemana == dia && h.Clase.EstaActivo);
+
+        if (unidadIds is not null)
+            query = query.Where(h => unidadIds.Contains(h.Clase.UnidadId));
+
+        return await query
+            .OrderBy(h => h.HoraInicio)
+            .ToListAsync();
+    }
+
     public async Task AddAsync(HorarioClase horario) => await _context.HorariosClase.AddAsync(horario);
 
     public void Remove(HorarioClase horario) => _context.HorariosClase.Remove(horario);

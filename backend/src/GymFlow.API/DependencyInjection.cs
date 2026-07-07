@@ -9,6 +9,7 @@ using GymFlow.Application.UseCases.Roles;
 using GymFlow.Application.UseCases.Socios;
 using GymFlow.Application.UseCases.Cuotas;
 using GymFlow.Application.UseCases.Clases;
+using GymFlow.Application.UseCases.Dashboard;
 using GymFlow.Application.UseCases.Eventos;
 using GymFlow.Application.UseCases.Horarios;
 using GymFlow.Application.UseCases.Inscripciones;
@@ -96,6 +97,7 @@ public static class DependencyInjection
         services.AddScoped<IniciarPagoCuotaCommand>();
         services.AddScoped<ProcesarWebhookPagoCommand>();
         services.AddScoped<GetMisPagosQuery>();
+        services.AddScoped<GetDashboardQuery>();
         return services;
     }
 }

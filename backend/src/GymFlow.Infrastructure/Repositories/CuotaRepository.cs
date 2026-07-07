@@ -77,6 +77,49 @@ public class CuotaRepository : ICuotaRepository
         return await query.ToListAsync();
     }
 
+    public async Task<int> CountPendientesPorVencerAsync(DateTime desde, DateTime hasta, IReadOnlyCollection<Guid>? unidadIds = null)
+    {
+        var desdeDate = desde.Date;
+        var hastaDate = hasta.Date;
+
+        var query = _context.Cuotas
+            .Where(c => c.Estado == EstadoCuota.Pendiente
+                && c.FechaVencimiento.Date >= desdeDate
+                && c.FechaVencimiento.Date <= hastaDate);
+
+        if (unidadIds is not null)
+            query = query.Where(c => unidadIds.Contains(c.UnidadId));
+
+        return await query.CountAsync();
+    }
+
+    public async Task<int> CountPendientesVencidasAsync(DateTime hoy, IReadOnlyCollection<Guid>? unidadIds = null)
+    {
+        var hoyDate = hoy.Date;
+
+        var query = _context.Cuotas
+            .Where(c => c.Estado == EstadoCuota.Pendiente && c.FechaVencimiento.Date < hoyDate);
+
+        if (unidadIds is not null)
+            query = query.Where(c => unidadIds.Contains(c.UnidadId));
+
+        return await query.CountAsync();
+    }
+
+    public async Task<int> CountPagadasDelMesAsync(int anio, int mes, IReadOnlyCollection<Guid>? unidadIds = null)
+    {
+        var query = _context.Cuotas
+            .Where(c => c.Estado == EstadoCuota.Pagada
+                && c.FechaPago != null
+                && c.FechaPago.Value.Year == anio
+                && c.FechaPago.Value.Month == mes);
+
+        if (unidadIds is not null)
+            query = query.Where(c => unidadIds.Contains(c.UnidadId));
+
+        return await query.CountAsync();
+    }
+
     public async Task<IEnumerable<Cuota>> GetCuotasParaRecordatorioAsync(DateTime hoy)
     {
         var hoyDate = hoy.Date;
