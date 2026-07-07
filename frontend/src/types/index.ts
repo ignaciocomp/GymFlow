@@ -259,3 +259,79 @@ export interface SocioConEstadoCuotaDto {
   cuotasPendientes: number
   cuotasVencidas: number
 }
+
+// ── RF-18: Dashboard en tiempo real ──────────────────────────────────────────
+
+/** Unidad visible para el filtro del dashboard. */
+export interface DashboardUnidad {
+  id: string
+  nombre: string
+}
+
+export interface DashboardSociosPorUnidad {
+  unidadId: string
+  unidadNombre: string
+  cantidad: number
+}
+
+export interface DashboardSociosActivos {
+  total: number
+  porUnidad: DashboardSociosPorUnidad[]
+}
+
+/** Counts de cuotas calculados en vivo (RN-17). */
+export interface DashboardCuotas {
+  proximasAVencer: number
+  vencidas: number
+  pagadasMes: number
+}
+
+/** Horario de clase del día actual; horas en formato HH:mm. */
+export interface DashboardClaseDelDia {
+  clase: string
+  unidad: string
+  horaInicio: string
+  horaFin: string
+  cupo: number
+  inscriptos: number
+}
+
+export interface DashboardInscripcionReciente {
+  socio: string
+  clase: string
+  unidad: string
+  fecha: string
+}
+
+export interface DashboardSedeCantidad {
+  sede: string
+  cantidad: number
+}
+
+export interface DashboardEstadoCantidad {
+  estado: string
+  cantidad: number
+}
+
+/** Punto de la serie diaria; fecha en formato yyyy-MM-dd (UTC). */
+export interface DashboardFechaCantidad {
+  fecha: string
+  cantidad: number
+}
+
+export interface DashboardGrafica {
+  sociosPorSede: DashboardSedeCantidad[]
+  cuotasPorEstado: DashboardEstadoCantidad[]
+  inscripcionesUltimos7Dias: DashboardFechaCantidad[]
+}
+
+/** Snapshot del dashboard operativo (RF-18 / CU-10), servido por snapshot y stream SSE. */
+export interface DashboardDto {
+  generadoEn: string
+  unidades: DashboardUnidad[]
+  sociosActivos: DashboardSociosActivos
+  cuotas: DashboardCuotas
+  clasesDelDia: DashboardClaseDelDia[]
+  inscripcionesRecientes: DashboardInscripcionReciente[]
+  grafica: DashboardGrafica
+}

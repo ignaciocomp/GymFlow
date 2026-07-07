@@ -65,6 +65,43 @@ public class InscripcionClaseRepository : IInscripcionClaseRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<InscripcionClase>> GetRecientesAsync(int cantidad, IReadOnlyCollection<Guid>? unidadIds = null)
+    {
+        var query = _context.InscripcionesClase
+            .Include(i => i.Socio)
+            .Include(i => i.HorarioClase)
+                .ThenInclude(h => h.Clase)
+                    .ThenInclude(c => c.Unidad)
+            .Where(i => i.EstaActiva);
+
+        if (unidadIds is not null)
+            query = query.Where(i => unidadIds.Contains(i.HorarioClase.Clase.UnidadId));
+
+        return await query
+            .OrderByDescending(i => i.FechaInscripcion)
+            .Take(cantidad)
+            .ToListAsync();
+    }
+
+    public async Task<Dictionary<DateTime, int>> GetConteoActivasPorDiaAsync(DateTime desde, DateTime hasta, IReadOnlyCollection<Guid>? unidadIds = null)
+    {
+        var desdeDate = desde.Date;
+        var hastaDate = hasta.Date;
+
+        var query = _context.InscripcionesClase
+            .Where(i => i.EstaActiva
+                && i.FechaInscripcion.Date >= desdeDate
+                && i.FechaInscripcion.Date <= hastaDate);
+
+        if (unidadIds is not null)
+            query = query.Where(i => unidadIds.Contains(i.HorarioClase.Clase.UnidadId));
+
+        return await query
+            .GroupBy(i => i.FechaInscripcion.Date)
+            .Select(g => new { g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Key, x => x.Count);
+    }
+
     public async Task AddAsync(InscripcionClase inscripcion) => await _context.InscripcionesClase.AddAsync(inscripcion);
 
     public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
