@@ -1,6 +1,6 @@
 # CU-10: Dashboard en Tiempo Real Multi-Espacio
 
-> **Estado:** Diseño previo a la construcción (Iteración 6). Este CU es el insumo para redactar el spec y el plan de RF-18; los flujos y reglas pueden ajustarse durante la implementación.
+> **Estado:** Implementado en la Iteración 6. Este CU fue el insumo del spec y el plan de RF-18; el caso de uso extendido as-built está en [iteracion-6.md](../seguimiento/iteracion-6.md) y las desviaciones respecto de este diseño se listan al final de este documento.
 
 | *Campo* | |
 |-|-|
@@ -11,7 +11,7 @@
 | *RF cubiertos* | RF-18 (Dashboard en tiempo real) · RNF-02 (actualización sin recarga vía SSE) |
 | *Iteración de entrega* | IT-6 (planificada) — [GymFlow_Requerimientos_Completos.md § Iteración 6](../GymFlow_Requerimientos_Completos.md) |
 | *Referencia original* | [GymFlow_Requerimientos_Completos.md — RF-18](../GymFlow_Requerimientos_Completos.md) |
-| *Specs / planes* | *(a generar a partir de este CU)* [[spec-rf18-dashboard]] · [[plan-rf18-dashboard]] |
+| *Specs / planes* | [[spec-rf18-dashboard]] · [[plan-rf18-dashboard]] |
 
 **Flujo principal — Cargar y observar el dashboard:**
 
@@ -57,4 +57,8 @@
 **Desviaciones respecto del diseño original:**
 
 - **Acceso por permisos en lugar de roles fijos:** RN-16 y RF-18 fueron escritos cuando "Profesor" era un rol hardcoded con vista limitada. A partir de iteraciones anteriores los roles se crean desde la interfaz con permisos por módulo (igual que el módulo Eventos en [CU-08](CU-08-gestion-eventos.md)). Por eso el dashboard **no** define métricas ni vista específicas para Profesor: el acceso lo determina el permiso de lectura sobre el módulo Dashboard que el Dueño/Admin haya asignado a cada rol.
-- *(A completar durante la implementación si la solución técnica diverge — p. ej. mecanismo de actualización elegido frente a SSE puro.)*
+- **Mecanismo de tiempo real:** se mantuvo SSE, concretado como snapshot periódico con detección de cambios (el backend recalcula cada ~10 segundos y emite solo si difiere del último enviado; si no, un latido), en lugar de push por eventos de dominio. Cumple el ≤30 s de RN-15 con una solución más simple.
+- **Stream por `fetch` en lugar de `EventSource`:** `EventSource` no permite enviar el token de autenticación por header y ponerlo en la URL está prohibido, así que el frontend consume el stream con `fetch` leyendo la respuesta como flujo. Ante un corte, reintenta con espera creciente y degrada a polling cada 15 segundos con el indicador "Actualización en pausa" (E2).
+- **Métricas de cuotas desglosadas:** la métrica "cuotas pendientes" se separó en próximas a vencer (pendientes con vencimiento dentro de los próximos 5 días) y vencidas, y se agregó pagadas del mes como dato complementario.
+- **Gráfica de actividad (agregado):** una gráfica con selector de vista —socios por sede, cuotas por estado o inscripciones de los últimos 7 días— no prevista en el diseño; la vista elegida se persiste en el navegador.
+- **Dashboard como inicio del panel:** para los roles con el permiso, `/admin` aterriza en el dashboard (los demás siguen entrando a Socios y no ven el ítem del menú).
