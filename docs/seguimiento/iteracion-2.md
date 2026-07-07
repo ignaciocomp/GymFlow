@@ -1,12 +1,12 @@
 ---
-title: DOCUMENTACION ITERACIÓN 2 FASE DE CONSTRUCCIÓN
+title: DOCUMENTACIÓN ITERACIÓN 2
 tags:
   - seguimiento
 related:
   - "[[seguimiento_index]]"
 ---
 
-# DOCUMENTACION ITERACIÓN 2 FASE DE CONSTRUCCIÓN
+# DOCUMENTACIÓN ITERACIÓN 2
 
 **Iteración 2 --- Fase de Construcción (30/04/2026 -- 14/05/2026)**
 
@@ -199,7 +199,7 @@ El sistema debe generar cuotas automáticamente para cada socio activo y permiti
 - Cuota combinada para socios en 2 unidades: por ahora son 2 cuotas separadas.
 - Recordatorios post-vencimiento (ej. a 7 días de mora): se puede agregar después.
 
-**Generación automática de cuotas**
+**3. Generación automática de cuotas**
 
 - Cuando un socio se registra (o se le asigna un plan a una unidad), el sistema genera su primera cuota con estado pendiente.
 - La fecha de vencimiento de la primera cuota es 30 días después de la FechaAlta del socio.
@@ -216,7 +216,7 @@ Las cuotas se generan con los siguientes datos:
 - Fecha de vencimiento (fecha de emisión + 30 días)
 - Estado: pendiente
 
-**Vista del socio — "Mis cuotas"**
+**4. Vista del socio — "Mis cuotas"**
 
 El socio accede desde su portal y ve una lista de sus cuotas con los siguientes datos por cada una:
 
@@ -228,11 +228,11 @@ El socio accede desde su portal y ve una lista de sus cuotas con los siguientes 
 | Estado | Pagada o Pendiente (badge con color: verde/rojo) |
 | Botón "Pagar" | Visible solo si la cuota está pendiente. Por ahora no hace nada — se muestra un mensaje "Próximamente" o se deja deshabilitado. |
 
-**Vista del admin — "Gestión de cuotas"**
+**5. Vista del admin — "Gestión de cuotas"**
 
 El admin (o cualquier usuario con permisos sobre el módulo Cuotas) accede desde el panel de administración.
 
-Filtros disponibles:
+**5.1. Filtros disponibles**
 
 | **Filtro** | **Opciones** |
 |------------|-------------------------------------------------------------|
@@ -240,7 +240,7 @@ Filtros disponibles:
 | Mes / Año | Selector de mes y año para filtrar por fecha de vencimiento |
 | Unidad | Gimnasio Nuevo Malvín / Espacio Mora / Todas |
 
-Datos visibles por cuota:
+**5.2. Datos visibles por cuota**
 
 | **Dato** | **Descripción** |
 |----|----|
@@ -252,28 +252,30 @@ Datos visibles por cuota:
 | Estado | Pagada o Pendiente (badge con color) |
 | Acciones | Botón "Marcar como pagada" (si pendiente) + Botón "Anular" (si pendiente) |
 
-Ordenamiento: por defecto, fecha de vencimiento descendente (los más próximos a vencer arriba).
+**5.3. Ordenamiento**
 
-Botón "Marcar como pagada":
+Por defecto: fecha de vencimiento descendente (los más próximos a vencer arriba).
+
+**5.4. Botón "Marcar como pagada"**
 
 - Visible solo si la cuota está pendiente.
 - Al hacer clic, el admin confirma y el sistema cambia el estado a pagada y registra la fecha de pago.
 - Se genera log de auditoría (quién marcó el pago, cuándo).
 
-Botón "Anular cuota":
+**5.5. Botón "Anular cuota"**
 
 - Visible solo si la cuota está pendiente.
 - Al hacer clic, el admin confirma y el sistema realiza un soft delete (establece FechaBaja).
 - Se genera log de auditoría.
 
-Estados de la cuota:
+**6. Estados de la cuota**
 
 | **Estado** | **Significado** |
 |----|----|
 | Pendiente | La cuota fue generada pero no se registró el pago. Badge rojo. |
 | Pagada | El pago fue registrado (manual por admin o futuro pago online). Badge verde. |
 
-**Entidad de dominio**
+**7. Entidad de dominio**
 
 Entidad Cuota:
 
@@ -288,7 +290,7 @@ Entidad Cuota:
 - FechaPago (nullable, se llena cuando se marca como pagada)
 - FechaBaja (nullable, soft delete si se anula por error)
 
-**BackgroundService para generación automática**
+**8. BackgroundService para generación automática**
 
 Se implementa un BackgroundService dentro de la aplicación ASP.NET que se ejecuta una vez al día para generar cuotas pendientes a socios activos con plan asignado.
 
@@ -297,7 +299,7 @@ Se implementa un BackgroundService dentro de la aplicación ASP.NET que se ejecu
 - Por cada socio activo con plan asignado, verifica si la última cuota generada ya venció (o no tiene cuotas) y genera una nueva.
 - Al crear un socio con plan asignado, también se genera la primera cuota automáticamente (FechaVencimiento = FechaAlta + 30 días).
 
-**Cambio necesario en el alta de socio**
+**9. Cambio necesario en el alta de socio**
 
 El socio ya tiene FechaAlta. Este campo se usa como referencia para generar la primera cuota (fecha de vencimiento = FechaAlta + 30 días). Al crear un socio con plan asignado, se genera automáticamente su primera cuota pendiente.
 
@@ -305,7 +307,9 @@ El socio ya tiene FechaAlta. Este campo se usa como referencia para generar la p
 
 Implementar un sistema de notificaciones por email que permita al admin enviar recordatorios manuales individuales por cuota pendiente, y que el sistema envíe recordatorios automáticos antes del vencimiento de cada cuota.
 
-**Alcance — Incluido**
+**2. Alcance**
+
+**Incluido**
 
 - Infraestructura de email (servicio abstracto, configuración SMTP en appsettings.json, implementación con MailKit o similar).
 - Servicio de email deshabilitable en configuración para desarrollo/testing.
@@ -319,7 +323,7 @@ Implementar un sistema de notificaciones por email que permita al admin enviar r
 - Notificación masiva ("notificar a todos").
 - Recordatorios post-vencimiento.
 
-**Botón "Notificar" (manual del admin)**
+**3. Botón "Notificar" (manual del admin)**
 
 - Es por cuota individual, se agrega a la vista admin de Gestión de cuotas.
 - Al hacer clic, el sistema envía un email al socio recordándole que tiene una cuota pendiente.
@@ -327,7 +331,7 @@ Implementar un sistema de notificaciones por email que permita al admin enviar r
 - Si el socio no tiene correo registrado, se muestra un mensaje de error al admin.
 - No se puede reenviar la misma notificación más de una vez por día al mismo socio por la misma cuota.
 
-**Recordatorios automáticos**
+**4. Recordatorios automáticos**
 
 Además del botón manual del admin, el sistema envía recordatorios automáticos por email:
 
@@ -335,14 +339,14 @@ Además del botón manual del admin, el sistema envía recordatorios automático
 - 1 día antes del vencimiento: email urgente ("Tu cuota vence mañana").
 - El día del vencimiento: email de aviso ("Tu cuota venció hoy").
 
-Reglas:
+**Reglas**
 
 - No se envía más de un recordatorio del mismo tipo por socio por día.
 - Si el socio no tiene correo, se omite y queda registrado en el sistema.
 - Los recordatorios solo se envían para cuotas en estado pendiente.
 - El servicio de email se puede deshabilitar en configuración para desarrollo/testing.
 
-**Entidad RecordatorioCuota**
+**5. Entidad RecordatorioCuota**
 
 Tabla auxiliar para registro de notificaciones enviadas (evitar duplicados):
 
@@ -357,6 +361,45 @@ Tabla auxiliar para registro de notificaciones enviadas (evitar duplicados):
 ## Diagrama de actividades Recordatorios Automáticos de Cuota
 
 *(diagrama en el .docx)*
+
+## Reuniones con el cliente
+
+No se realizaron reuniones formales con el cliente durante esta iteración. Se trabajó sobre los ajustes y sugerencias recopilados en la reunión de la iteración 3.
+
+Funcionalidades presentadas:
+
+- Pendiente de presentación en próxima reunión.
+
+Sugerencias y ajustes solicitados:
+
+- Los ajustes de la reunión anterior (inscripción desde cronograma, notificaciones de bienvenida) fueron incorporados en esta iteración.
+
+## Pruebas automatizadas (xUnit)
+
+Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`, ejecutadas con `dotnet test` desde `backend/`. Cobertura correspondiente a esta iteración:
+
+**Cuotas (RF-07):**
+
+- *Dominio:* la cuota valida que el monto no sea negativo; marcar como pagada solo aplica desde estado pendiente y registra la fecha de pago; la anulación es una baja lógica que no aplica a cuotas ya pagadas; revertir el pago y revertir la anulación validan el estado previo; un vencimiento con día 31 se ajusta al último día del mes.
+- *Application:* marcar la cuota como pagada registra auditoría y envía el email de confirmación — si el email falla o lanza excepción, el pago igual se confirma; revertir pago, anular y revertir anulación validan existencia y estado, y auditan; la generación de cuotas crea cuota al socio sin cuota previa o con la última vencida, no duplica si la última sigue vigente y no genera si la unidad no tiene plan; el listado admin busca las cuotas por socio con sus filtros; la vista de estado de cuota clasifica a cada socio como al día, pendiente o vencido, ordena los vencidos primero y obtiene los datos sin consultas N+1.
+
+**Roles y permisos (RNF-01):**
+
+- *Dominio:* la creación del rol valida el nombre; los roles de sistema no pueden renombrarse ni cambiar sus permisos; reemplazar permisos quita los anteriores, agrega los nuevos y deduplica silenciosamente.
+- *Application:* el filtro `[RequierePermiso]` devuelve 401 sin autenticación, 403 sin claim de rol o sin el permiso requerido, y deja pasar cuando el permiso existe; crear, actualizar y eliminar roles validan nombre vacío o duplicado y protegen los roles de sistema; un rol con usuarios activos no puede eliminarse; las operaciones invalidan la cache de permisos y registran auditoría.
+
+**Portal del socio (RF-05 / RNF-09b):**
+
+- *Application:* el perfil devuelve los datos del socio autenticado y falla de forma controlada si no existe; las solicitudes de modificación y de baja registran auditoría (con o sin motivo) y validan el detalle vacío y el socio inexistente.
+
+**Auditoría (RNF-11):**
+
+- *Dominio:* el registro de auditoría valida usuario y descripción, almacena el detalle de cambios como JSON y admite eventos sin entidad asociada (como el inicio de sesión).
+- *Application:* las operaciones sobre socios registran alta, baja y reactivación en la auditoría, y no generan registro si la operación falla.
+
+> Nota: los recordatorios automáticos de cuota (RF-06) también tienen pruebas automatizadas (`ProcesarRecordatoriosCommandTests`, `NotificarCuotaCommandTests`), pero su forma actual (jobs disparables + notificaciones in-app) se consolidó en la Iteración 5 y se documenta allí.
+
+El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4, clase por clase, está en [[pruebas-automatizadas-it1-4]].
 
 ## Pruebas de API realizadas con Postman
 
@@ -418,33 +461,6 @@ Las pruebas cubren los principales escenarios funcionales y de error:
 **Ajustes realizados**
 
 Durante la validación se detectaron inconsistencias en algunos controladores: ciertos endpoints devolvían 204 No Content aunque modificaban recursos. Estos casos fueron corregidos para devolver 200 OK junto con el recurso actualizado, manteniendo el mismo patrón REST utilizado en la iteración 1.
-
-## Pruebas automatizadas (xUnit)
-
-Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`, ejecutadas con `dotnet test` desde `backend/`. Cobertura correspondiente a esta iteración:
-
-**Cuotas (RF-07):**
-
-- *Dominio:* la cuota valida que el monto no sea negativo; marcar como pagada solo aplica desde estado pendiente y registra la fecha de pago; la anulación es una baja lógica que no aplica a cuotas ya pagadas; revertir el pago y revertir la anulación validan el estado previo; un vencimiento con día 31 se ajusta al último día del mes.
-- *Application:* marcar la cuota como pagada registra auditoría y envía el email de confirmación — si el email falla o lanza excepción, el pago igual se confirma; revertir pago, anular y revertir anulación validan existencia y estado, y auditan; la generación de cuotas crea cuota al socio sin cuota previa o con la última vencida, no duplica si la última sigue vigente y no genera si la unidad no tiene plan; el listado admin busca las cuotas por socio con sus filtros; la vista de estado de cuota clasifica a cada socio como al día, pendiente o vencido, ordena los vencidos primero y obtiene los datos sin consultas N+1.
-
-**Roles y permisos (RNF-01):**
-
-- *Dominio:* la creación del rol valida el nombre; los roles de sistema no pueden renombrarse ni cambiar sus permisos; reemplazar permisos quita los anteriores, agrega los nuevos y deduplica silenciosamente.
-- *Application:* el filtro `[RequierePermiso]` devuelve 401 sin autenticación, 403 sin claim de rol o sin el permiso requerido, y deja pasar cuando el permiso existe; crear, actualizar y eliminar roles validan nombre vacío o duplicado y protegen los roles de sistema; un rol con usuarios activos no puede eliminarse; las operaciones invalidan la cache de permisos y registran auditoría.
-
-**Portal del socio (RF-05 / RNF-09b):**
-
-- *Application:* el perfil devuelve los datos del socio autenticado y falla de forma controlada si no existe; las solicitudes de modificación y de baja registran auditoría (con o sin motivo) y validan el detalle vacío y el socio inexistente.
-
-**Auditoría (RNF-11):**
-
-- *Dominio:* el registro de auditoría valida usuario y descripción, almacena el detalle de cambios como JSON y admite eventos sin entidad asociada (como el inicio de sesión).
-- *Application:* las operaciones sobre socios registran alta, baja y reactivación en la auditoría, y no generan registro si la operación falla.
-
-> Nota: los recordatorios automáticos de cuota (RF-06) también tienen pruebas automatizadas (`ProcesarRecordatoriosCommandTests`, `NotificarCuotaCommandTests`), pero su forma actual (jobs disparables + notificaciones in-app) se consolidó en la Iteración 5 y se documenta allí.
-
-El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4, clase por clase, está en [[pruebas-automatizadas-it1-4]].
 
 ## Pruebas funcionales de frontend
 

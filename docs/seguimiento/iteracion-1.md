@@ -1,12 +1,12 @@
 ---
-title: DOCUMENTACION ITERACIÓN 1 FASE DE CONSTRUCCIÓN
+title: DOCUMENTACIÓN ITERACIÓN 1
 tags:
   - seguimiento
 related:
   - "[[seguimiento_index]]"
 ---
 
-# DOCUMENTACION ITERACIÓN 1 FASE DE CONSTRUCCIÓN
+# DOCUMENTACIÓN ITERACIÓN 1
 
 **Iteración 1 --- Fase de Construcción (15/04/2026 -- 29/04/2026)**
 
@@ -173,12 +173,6 @@ Funcionalidades presentadas (Iteración 1):
 
 En general, el cliente calificó el avance como prolijo y sencillo, destacando que las funcionalidades básicas cumplen con lo esperado para esta etapa inicial.
 
-## Pruebas de API realizadas con Postman
-
-Se realizaron pruebas funcionales y de integración a nivel API sobre los endpoints de GymFlow, utilizando Postman como herramienta. Las pruebas verifican el correcto funcionamiento de los módulos de Auth, Socios, Planes, Unidades y Auditoría, validando para cada endpoint: el código de estado HTTP devuelto según la operación (200, 201, 204, 400, 401, 404, 409), la estructura JSON de las respuestas conforme a los DTOs definidos en el backend, los tipos de datos de cada campo, el tiempo de respuesta (menor a 500ms) y las reglas de negocio. Los tests se ejecutan de forma encadenada mediante variables de colección, permitiendo simular flujos completos.
-
-*(capturas de pantalla en el .docx)*
-
 ## Pruebas automatizadas (xUnit)
 
 Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`, ejecutadas con `dotnet test` desde `backend/`. Cobertura correspondiente a esta iteración:
@@ -198,6 +192,12 @@ Además de las pruebas de API con Postman, los módulos de esta iteración cuent
 - *Dominio:* el empleado se crea activo y exige el hash de contraseña (nunca texto plano); el cambio de rol valida que el identificador recibido sea válido.
 
 El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4, clase por clase, está en [[pruebas-automatizadas-it1-4]].
+
+## Pruebas de API realizadas con Postman
+
+Se realizaron pruebas funcionales y de integración a nivel API sobre los endpoints de GymFlow, utilizando Postman como herramienta. Las pruebas verifican el correcto funcionamiento de los módulos de Auth, Socios, Planes, Unidades y Auditoría, validando para cada endpoint: el código de estado HTTP devuelto según la operación (200, 201, 204, 400, 401, 404, 409), la estructura JSON de las respuestas conforme a los DTOs definidos en el backend, los tipos de datos de cada campo, el tiempo de respuesta (menor a 500ms) y las reglas de negocio. Los tests se ejecutan de forma encadenada mediante variables de colección, permitiendo simular flujos completos.
+
+*(capturas de pantalla en el .docx)*
 
 ## Pruebas funcionales de frontend módulo de Socios
 

@@ -1,12 +1,13 @@
 ---
-title: DOCUMENTACION ITERACIÓN 3 FASE DE CONSTRUCCIÓN
+title: DOCUMENTACIÓN ITERACIÓN 3
 tags:
   - seguimiento
 related:
   - "[[seguimiento_index]]"
+  - "[[deploy-iteracion-3]]"
 ---
 
-# DOCUMENTACION ITERACIÓN 3 FASE DE CONSTRUCCIÓN
+# DOCUMENTACIÓN ITERACIÓN 3
 
 **Iteración 3 --- Fase de Construcción (15/05/2026 -- 29/05/2026)**
 
@@ -203,6 +204,40 @@ Requerimientos no funcionales implementados:
 - **E4 — Clase ya activa:** "La clase ya está activa."
 - **E5 — Horario inválido:** Hora de fin debe ser posterior a hora de inicio.
 
+## Deploy a producción
+
+El 21/05 se hizo el primer deploy de GymFlow a **Azure Container Apps**, dejando la app accesible públicamente por HTTPS. El deploy se ejecutó manualmente vía Azure CLI; la automatización vía GitHub Actions queda para la iteración 4.
+
+**URL pública:** https://ca-gymflow.gentlemeadow-5931333d.eastus2.azurecontainerapps.io
+
+**Arquitectura elegida**
+
+*(diagrama en el .docx)*
+
+| **Componente** | **Decisión** | **Por qué** |
+|----|----|----|
+| Empaquetado | Single container (front + back en una imagen) | Sin CORS, deploy atómico, una sola URL |
+| Hosting | Azure Container Apps, minReplicas=0, maxReplicas=1 | Scale-to-zero: solo paga cuando hay tráfico |
+| Base de datos | Azure Database for PostgreSQL Flexible Server (B1ms, 32 GB) | Datos persistentes |
+| Registry | Azure Container Registry (Basic) | Imágenes privadas, ~$5/mes |
+| Suscripción | Azure for Students ($100/año, sin tarjeta) | Crédito alcanza |
+| Región | East US 2 | Catálogo completo, latencia |
+| Secrets | Container Apps Secrets (no Key Vault) | Suficiente para el TFG, menos complejidad |
+
+**Cambios de código necesarios**
+
+Mergeados en un PR previo al deploy: nuevo Dockerfile, cambios en Program.cs y nuevo appsettings.Production.json.
+
+**Verificación post-deploy**
+
+- GET / devuelve el index.html del SPA.
+- POST /api/auth/login con el admin seed devuelve JWT 200 OK.
+- Login desde el browser funciona contra la URL de Azure (sin CORS, mismo origen).
+
+**Documentación de referencia**
+
+- [azure-deploy-design](https://fi365.sharepoint.com/:w:/s/ProyectoIntegrador-Febrero2026-N5A-TA-13-Notte-Compan-Acua/IQAdXMEZhtCNSL3TGI9gT0YmATnUA7Ijm27ibl1QPg7oeyk?e=yaMJcI) - Documento de arquitectura ampliado (ruta en teams: Documents – Seguimiento - Iteración 3 - azure-deploy-design). Detalle local en [[deploy-iteracion-3]].
+
 ## Reuniones con el cliente
 
 Se realizó una reunión con el cliente (Maurice, propietario de Espacio Mora) donde se revisaron los avances de las iteraciones 2 y 3 de la plataforma GymFlow, destacando nuevas funcionalidades para la gestión de clases, pagos y roles de usuario.
@@ -221,6 +256,26 @@ Sugerencias y ajustes solicitados:
 - **Notificaciones:** El cliente solicitó ajustar el recordatorio de vencimiento a dos días antes (en lugar de seis o siete) y agregar saludos automáticos por cumpleaños. También se pidió notificar al socio cuando se ingrese su pago y darle una bienvenida al inscribirse.
 - **Datos Médicos:** Se acordó incluir campos para la sociedad médica y el carné de salud, con alertas de vencimiento para este último.
 - **Métodos de Pago:** Ante la preferencia del gimnasio por las transferencias bancarias para evitar comisiones, se propuso una función para que los socios adjunten el comprobante (PDF o imagen) directamente en la app para su validación manual.
+
+## Pruebas automatizadas (xUnit)
+
+Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`, ejecutadas con `dotnet test` desde `backend/`. Suite en verde (0 fallos). Cobertura agregada en esta iteración:
+
+**Gestión de clases (RF-08):**
+
+- *Dominio:* el constructor valida nombre, capacidad (con mínimo y máximo), duración e instructor; la actualización rechaza reducir la capacidad por debajo de las inscripciones activas y acepta el caso límite de capacidad igual a inscripciones; la cancelación es una baja lógica que no puede repetirse; la reactivación solo aplica a clases canceladas.
+- *Application:* el alta y la edición validan los datos, rechazan unidades o clases inexistentes y registran auditoría; la cancelación cancela las inscripciones activas y notifica a los socios por email — si el envío falla, la cancelación no se rompe y la auditoría registra los envíos fallidos; una clase sin inscriptos se cancela sin enviar correos; el listado aplica los filtros por unidad.
+
+**Gestión de horarios (RF-09):**
+
+- *Dominio:* el rango horario debe ser válido (hora de fin posterior a la de inicio); la sala se normaliza (se recortan espacios y en blanco queda sin sala); la detección de conflicto de sala cubre mismo día y misma sala con solape parcial o contenido, distinta sala, distinto día, sala nula y comparación de sala sin distinguir mayúsculas.
+- *Application:* crear y editar validan que la clase exista y esté activa, revalidan el rango horario y el conflicto de sala, y registran auditoría; al editar un horario con socios inscriptos se les notifica el cambio; la eliminación valida existencia y audita; el listado aplica filtros.
+
+**Inscripciones (base para RF-10/RF-11):**
+
+- *Dominio:* la inscripción nace activa y asociada a su horario; cancelarla la marca como inactiva.
+
+El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4, clase por clase, está en [[pruebas-automatizadas-it1-4]].
 
 ## Pruebas de API realizadas con Postman
 
@@ -283,26 +338,6 @@ Se implementó una colección automatizada en Postman con **52 tests** organizad
 | Horarios (RF-09)            | 12        | Pasaron           |
 | Inscripciones (RF-10/RF-11) | 8         | Pasaron           |
 
-
-## Pruebas automatizadas (xUnit)
-
-Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`, ejecutadas con `dotnet test` desde `backend/`. Suite en verde (0 fallos). Cobertura agregada en esta iteración:
-
-**Gestión de clases (RF-08):**
-
-- *Dominio:* el constructor valida nombre, capacidad (con mínimo y máximo), duración e instructor; la actualización rechaza reducir la capacidad por debajo de las inscripciones activas y acepta el caso límite de capacidad igual a inscripciones; la cancelación es una baja lógica que no puede repetirse; la reactivación solo aplica a clases canceladas.
-- *Application:* el alta y la edición validan los datos, rechazan unidades o clases inexistentes y registran auditoría; la cancelación cancela las inscripciones activas y notifica a los socios por email — si el envío falla, la cancelación no se rompe y la auditoría registra los envíos fallidos; una clase sin inscriptos se cancela sin enviar correos; el listado aplica los filtros por unidad.
-
-**Gestión de horarios (RF-09):**
-
-- *Dominio:* el rango horario debe ser válido (hora de fin posterior a la de inicio); la sala se normaliza (se recortan espacios y en blanco queda sin sala); la detección de conflicto de sala cubre mismo día y misma sala con solape parcial o contenido, distinta sala, distinto día, sala nula y comparación de sala sin distinguir mayúsculas.
-- *Application:* crear y editar validan que la clase exista y esté activa, revalidan el rango horario y el conflicto de sala, y registran auditoría; al editar un horario con socios inscriptos se les notifica el cambio; la eliminación valida existencia y audita; el listado aplica filtros.
-
-**Inscripciones (base para RF-10/RF-11):**
-
-- *Dominio:* la inscripción nace activa y asociada a su horario; cancelarla la marca como inactiva.
-
-El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4, clase por clase, está en [[pruebas-automatizadas-it1-4]].
 
 ## Pruebas funcionales de frontend
 
@@ -406,3 +441,35 @@ El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4, cl
 **Resultado esperado:** El sistema rechaza el cambio con mensaje de error indicando que no se puede reducir por debajo de las inscripciones activas.
 
 **Descripción:** Se verifica la regla de negocio RN-24 que impide reducir el cupo por debajo de las inscripciones activas existentes.
+
+## Registro de tiempos
+
+**Desarrollo -- tiempo por commit**
+
+| **Hash** | **Fecha** | **Descripción** | **Tiempo (hs)** |
+|:--:|----|----|:--:|
+| 5ee5821 | 2026-05-19 | Merge PRs RF-08/RF-09 + mejoras reqs | 0.25 |
+| da840e3 | 2026-05-20 | RF-08: gestionar clases (CRUD completo) | 1.50 |
+| 51b00f6 | 2026-05-20 | RF-09: gestionar horarios semanales | 1.50 |
+| d1adf86 | 2026-05-20 | Fix: bloqueantes code review RF-08 | 1.25 |
+| ce9a839 | 2026-05-25 | Merge PR #11: deploy | 0.25 |
+| 2eb3780 | 2026-05-25 | Cambios repo para deploy | 1.00 |
+| fa20843 | 2026-05-26 | Eliminar usuarios de vista login | 1.50 |
+| 8be55e0 | 2026-05-27 | Correcciones modulo clases e inscripcion | 1.50 |
+| 1bb7b47 | 2026-05-28 | Merge PR #14 + trigger CI workflow | 0.25 |
+|  |  | **Subtotal Desarrollo** | **9.0** |
+
+**Otras actividades**
+
+| **Actividad** | **Tiempo (hs)** |
+|----|:--:|
+| Planificación Plan de testing - Frontend | 1 |
+| Ejecución plan de testing - Frontend | 1 |
+| Planificación Plan de testing - Endpoints en Postman | 2 |
+| Ejecución Plan de testing - Endpoints en Postman | 3 |
+| Taller de deploy | 6 |
+| Deploy en azure | 10 |
+| Documentación | 5 |
+| **Subtotal Otras Actividades** | **28** |
+
+**TOTAL HORAS - Iteración 3: 37**
