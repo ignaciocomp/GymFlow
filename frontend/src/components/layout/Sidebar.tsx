@@ -170,18 +170,21 @@ export default function Sidebar({ collapsed, mobileOpen, onMobileClose }: Sideba
       </div>
 
       <nav className="mt-4 flex flex-col gap-1 px-3">
-        <Link
-          to="/admin/dashboard"
-          onClick={handleLinkClick}
-          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
-            isActive('/admin/dashboard')
-              ? 'bg-sidebar-accent text-primary border-l-3 border-primary'
-              : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
-          }`}
-        >
-          <LayoutDashboard className="h-5 w-5 shrink-0" />
-          {showLabels && <span>Inicio</span>}
-        </Link>
+        {/* RF-18: el dashboard se gatea por el permiso Dashboard-Lectura, como los otros módulos. */}
+        {puedeLeer('Dashboard') && (
+          <Link
+            to="/admin/dashboard"
+            onClick={handleLinkClick}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+              isActive('/admin/dashboard')
+                ? 'bg-sidebar-accent text-primary border-l-3 border-primary'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
+            }`}
+          >
+            <LayoutDashboard className="h-5 w-5 shrink-0" />
+            {showLabels && <span>Dashboard</span>}
+          </Link>
+        )}
 
         {visibleGroups.map((group) => {
           const isOpen = openGroups.includes(group.label)
