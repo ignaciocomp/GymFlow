@@ -25,7 +25,6 @@ La sexta iteración está dedicada al **pago online de cuotas con Mercado Pago**
 
 ## Tareas planificadas
 
-
 Funcionalidades a implementar:
 
 - **RF-21** — Pago de cuotas online con Mercado Pago (Checkout Pro + confirmación por webhook).
@@ -167,6 +166,108 @@ Requerimientos no funcionales implementados:
 - La métrica "cuotas pendientes" del diseño se desglosó en **próximas a vencer** (ventana de 5 días) y **vencidas**, y se agregó **pagadas del mes** como dato complementario.
 - Se agregó la **gráfica de actividad con selector de vista** (socios por sede, cuotas por estado, inscripciones de los últimos 7 días), no prevista en el diseño; la vista elegida se persiste en el navegador.
 - De paso se corrigió un defecto preexistente del formulario de roles: no ofrecía el módulo Eventos, por lo que no se podía otorgar a roles custom; ahora ofrece Eventos y Dashboard, como exige RN-16.
+
+**Diagrama de clases --- variante del patrón Observer sobre SSE:**
+
+El siguiente diagrama de clases documenta el diseño de la implementación del tiempo real del dashboard como una **variante del patrón Observer** (publicador/suscriptor) sobre Server-Sent Events. Las flechas están numeradas con los pasos del flujo (1 a 5), que se detalla a continuación del diagrama. La fuente del diagrama vive en `docs/diagramas/diagrama-clases-rf18-dashboard.md` (con su copia `.puml`).
+
+```plantuml
+@startuml diagrama-clases-rf18-dashboard
+' RF-18 / CU-10: dashboard en tiempo real.
+' Variante del patrón Observer (publicador/suscriptor) sobre Server-Sent Events:
+' no hay lista de observadores en memoria; cada suscriptor abre su propia conexión
+' HTTP persistente y el publicador le empuja el estado observado cuando cambia.
+' Las flechas están numeradas con los pasos del flujo (1 a 5).
+
+set separator none
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 12
+skinparam ArrowColor #444444
+skinparam ClassBorderColor #666666
+skinparam ClassBackgroundColor #FDFDFD
+skinparam PackageBorderColor #999999
+skinparam NoteBackgroundColor #F5F5F0
+skinparam NoteBorderColor #AAAAAA
+skinparam PackageStyle rectangle
+hide empty members
+
+package "Frontend (React)" {
+
+    class DashboardPage <<observador de estado>> {
+        + DashboardPage() : JSX.Element
+    }
+
+    class useDashboardStream <<hook>> <<suscriptor>> {
+        + useDashboardStream(unidadId? : string) : DashboardStreamState
+    }
+
+    interface DashboardStreamState {
+        + data : DashboardDto | null
+        + live : boolean
+        + actualizadoEn : Date | null
+    }
+
+    class dashboardApi <<servicio>> {
+        + get(unidadId? : string) : Promise<DashboardDto>
+    }
+}
+
+package "Backend (GymFlow.API / Application)" {
+
+    class DashboardController <<publicador>> {
+        - {static} IntervaloStream : TimeSpan = 10s
+        + Get(unidadId : Guid?) : Task<ActionResult<DashboardDto>>
+        + Stream(unidadId : Guid?) : Task<IActionResult>
+    }
+
+    interface IUnidadesVisiblesResolver {
+        + ResolverAsync(userId : Guid, rolId : Guid) : Task<IReadOnlyCollection<Guid>?>
+    }
+
+    class GetDashboardQuery {
+        + ExecuteAsync(unidadId : Guid?, unidadesPermitidas : IReadOnlyCollection<Guid>?) : Task<DashboardDto>
+    }
+
+    class DashboardSnapshotDiff <<static>> {
+        + {static} HaCambiado(jsonAnterior : string?, jsonActual : string) : bool
+    }
+
+    class DashboardDto <<record>> <<estado observado>> {
+        + GeneradoEn : DateTime
+        + SociosActivos, Cuotas, ClasesDelDia, ...
+    }
+}
+
+' ── Flujo (los números son el orden del proceso) ──────────────────────────
+
+DashboardPage --> useDashboardStream : usa el hook y se re-renderiza\ncon cada estado nuevo (4)
+
+useDashboardStream --> dashboardApi : (1) snapshot inicial\n(5) polling de fallback cada 15s
+dashboardApi ..> DashboardController : GET /api/dashboard
+
+useDashboardStream ..> DashboardController : (2) abre el stream SSE\nGET /api/dashboard/stream
+
+useDashboardStream ..> DashboardStreamState : (4) expone data,\nlive y actualizadoEn
+
+DashboardController --> IUnidadesVisiblesResolver : (2) valida permiso y sedes\nvisibles antes de emitir
+DashboardController --> GetDashboardQuery : (3) recalcula el snapshot\ncada ~10s
+DashboardController ..> DashboardSnapshotDiff : (3) emite solo si cambió;\nsi no, heartbeat ": ping"
+GetDashboardQuery ..> DashboardDto : construye
+
+@enduml
+```
+
+El flujo numerado en el diagrama es el siguiente:
+
+1. **Carga inicial:** `DashboardPage` invoca el hook `useDashboardStream`, que pide un snapshot por GET a `/api/dashboard` (vía `dashboardApi`) para mostrar datos de inmediato.
+2. **Suscripción:** el hook abre la conexión SSE contra GET `/api/dashboard/stream` usando `fetch` (`EventSource` no permite enviar el header Authorization con el JWT). Antes de emitir, el backend valida el permiso y resuelve las sedes visibles según el rol (`IUnidadesVisiblesResolver`), mientras todavía puede responder 403.
+3. **Bucle del publicador:** `DashboardController` recalcula el snapshot cada ~10 segundos (`GetDashboardQuery` → `DashboardDto`) y lo compara con el último enviado mediante `DashboardSnapshotDiff.HaCambiado` (ignora el timestamp `generadoEn`). Si cambió emite `data: {json}`; si no, un heartbeat `: ping` que mantiene viva la conexión. Esto garantiza la antigüedad máxima de 30 segundos del dato que exige RN-15.
+4. **Actualización:** al llegar un `data:`, el hook actualiza su `DashboardStreamState` (`data`, `live`, `actualizadoEn`) y React re-renderiza la página, que muestra el indicador "En vivo" y la hora de última actualización.
+5. **Falla de conexión:** si el stream se corta, el hook reintenta 2 veces con backoff exponencial (1 s, 2 s); si falla, degrada a polling por GET cada 15 segundos con `live = false` y la página muestra "Actualización en pausa" (escenario E2 del CU-10).
+
+En términos del patrón: `DashboardController` es el **publicador**, `useDashboardStream` el **suscriptor**, `DashboardDto` el **estado observado** y `DashboardPage` el **observador de estado**. La diferencia con el Observer clásico es que no hay una lista de observadores en memoria: la conexión HTTP persistente la reemplaza, y cada cliente conectado constituye una suscripción independiente a la que el publicador empuja el estado cuando cambia.
 
 ### CU-11: Pago online de cuota con Mercado Pago
 
@@ -373,3 +474,60 @@ Suite backend en verde (0 fallos). Cobertura agregada en esta iteración:
 **Resultado esperado:** Sin el permiso, el usuario aterriza en Socios, no ve el ítem "Dashboard" en el menú y el acceso directo es denegado. Con el permiso otorgado, el dashboard pasa a ser su pantalla de inicio y aparece en el menú.
 
 **Descripción:** Verifica el control de acceso por el permiso del módulo (RN-16, CA-04) y que el permiso es otorgable a roles custom desde la interfaz.
+
+## Registro de tiempos
+
+**Desarrollo -- tiempo por commit**
+
+| **Hash** | **Fecha** | **Descripción** | **Tiempo (hs)** |
+|:--:|----|----|:--:|
+| ab57038 | 2026-06-28 | Documentación completa para it.6 | [COMPLETAR] |
+| fccfa73 | 2026-07-01 | Docs: spec de pago online con Mercado Pago (CU-11) | [COMPLETAR] |
+| 94395e4 | 2026-07-01 | Docs: plan de implementación de Mercado Pago | [COMPLETAR] |
+| d2f431c | 2026-07-01 | Docs: ajustes al plan tras review (webhook 401/200, rutas, dev config) | [COMPLETAR] |
+| 4bc48e7 | 2026-07-01 | Pagos: entidad Pago + estado (dominio) | [COMPLETAR] |
+| c1cad8a | 2026-07-01 | Pagos: persistencia y migración de Pago | [COMPLETAR] |
+| 3125de5 | 2026-07-01 | Pagos: repositorio de Pago | [COMPLETAR] |
+| 175676d | 2026-07-01 | Pagos: MercadoPagoService (preferencia, consulta, firma HMAC) | [COMPLETAR] |
+| 3d2b734 | 2026-07-01 | Pagos: comando IniciarPagoCuota (crea preferencia) | [COMPLETAR] |
+| c85814a | 2026-07-01 | Pagos: comando ProcesarWebhookPago (HMAC + idempotente) | [COMPLETAR] |
+| 7eec7d7 | 2026-07-01 | Pagos: historial de pagos del socio | [COMPLETAR] |
+| 8bd7115 | 2026-07-01 | Pagos: endpoints iniciar/webhook/mis-pagos | [COMPLETAR] |
+| c223371 | 2026-07-01 | Portal: botón pagar cuota con Mercado Pago | [COMPLETAR] |
+| a8b6d77 | 2026-07-01 | Portal: páginas de retorno de pago e historial | [COMPLETAR] |
+| 174acba | 2026-07-01 | CI: workflow configure-mercadopago + docs | [COMPLETAR] |
+| 4818cc1 | 2026-07-01 | Merge PR #66: pago de cuotas online con Mercado Pago (Checkout Pro + webhook HMAC) | [COMPLETAR] |
+| 88d9632 | 2026-07-01 | Fix pagos: validar firma conforme a docs de Mercado Pago | [COMPLETAR] |
+| 956da94 | 2026-07-01 | Fix pagos: pedir formato webhook moderno (source_news=webhooks) | [COMPLETAR] |
+| 77499d7 | 2026-07-01 | Pagos: camino IPN sin firma en ProcesarWebhookPagoCommand | [COMPLETAR] |
+| 7158198 | 2026-07-01 | Fix API: webhook de MP acepta formato IPN legacy y loguea cada request | [COMPLETAR] |
+| 0886024 | 2026-07-04 | Docs: spec y plan del dashboard en tiempo real | [COMPLETAR] |
+| bcc2e5b | 2026-07-04 | Docs: correcciones del review (camelCase SSE, 403, RolForm, Sidebar, ventanas) | [COMPLETAR] |
+| 2de3b02 | 2026-07-04 | Dashboard: módulo Dashboard con permiso de lectura (seed + migración) | [COMPLETAR] |
+| b397b4e | 2026-07-04 | Dashboard: agregados de métricas en repositorios | [COMPLETAR] |
+| 8d731ce | 2026-07-04 | Dashboard: GetDashboardQuery con métricas y series | [COMPLETAR] |
+| 00f4fec | 2026-07-04 | Dashboard: endpoints snapshot y stream SSE | [COMPLETAR] |
+| 5ac3a9c | 2026-07-04 | Dashboard: api y hook de stream con fallback a polling | [COMPLETAR] |
+| a29d37a | 2026-07-04 | Dashboard: página con métricas, gráfica y estado en vivo | [COMPLETAR] |
+| a32779f | 2026-07-04 | Dashboard: inicio del admin gateado por permiso | [COMPLETAR] |
+| 198c4f4 | 2026-07-05 | Corrección del nombre de RF-21 (figuraba como RF-23) | [COMPLETAR] |
+| d9f16ad | 2026-07-05 | Documento de la iteración 6 (faltaba RF del dashboard y testing) | [COMPLETAR] |
+| 189a84e | 2026-07-05 | Se agrega posible plan de pruebas e2e | [COMPLETAR] |
+| 830d2d6 | 2026-07-06 | Mejoras en documentación de iteraciones anteriores | [COMPLETAR] |
+| 8b36e37 | 2026-07-06 | Ajuste documentación de iteraciones anteriores | [COMPLETAR] |
+| e26c5d5 | 2026-07-07 | Merge PR #69: dashboard en tiempo real multi-espacio (SSE + permisos) | [COMPLETAR] |
+| 8f087db | 2026-07-07 | Avance en la documentación it6 | [COMPLETAR] |
+|  |  | **Subtotal Desarrollo** | **[COMPLETAR]** |
+
+**Otras actividades**
+
+| **Actividad** | **Tiempo (hs)** |
+|----|:--:|
+| Plan de testing - Frontend | [COMPLETAR] |
+| Ejecución plan de testing - Frontend | [COMPLETAR] |
+| Planificación Plan de testing - Endpoints en Postman | [COMPLETAR] |
+| Ejecución Plan de testing - Endpoints en Postman | [COMPLETAR] |
+| Documentación | [COMPLETAR] |
+| **Subtotal Otras Actividades** | **[COMPLETAR]** |
+
+**TOTAL HORAS - Iteración 6: [COMPLETAR]**
