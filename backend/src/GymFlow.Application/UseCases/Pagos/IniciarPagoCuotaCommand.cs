@@ -5,7 +5,7 @@ using GymFlow.Domain.Enums;
 namespace GymFlow.Application.UseCases.Pagos;
 
 /// <summary>
-/// RF-23 / CU-08: el socio inicia el pago online de una cuota pendiente.
+/// RF-21 / CU-08: el socio inicia el pago online de una cuota pendiente.
 /// Valida que la cuota exista, sea del socio autenticado y esté Pendiente (E4),
 /// crea un <see cref="Pago"/> Pendiente, genera la preferencia de Checkout Pro en MP
 /// y devuelve el init_point al que redirigir. Si MP falla al crear la preferencia (E5),

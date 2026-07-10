@@ -61,12 +61,12 @@ incorrectamente a las iteraciones 1-4.
 
 ### Dominio (`GymFlow.Domain.Tests`)
 
-| Clase de test | Entidad / área | Casos (aprox.) |
-|-|-|-|
-| `Entities/SocioTests.cs` | `Socio`: validación de datos, cédula uruguaya, consentimiento Ley 18.331, baja lógica | ~11 |
-| `Entities/UnidadTests.cs` | `Unidad`: creación y validaciones de la unidad de negocio | ~4 |
-| `Entities/UsuarioTests.cs` | `Usuario` (base TPH): atributos comunes y estado | ~6 |
-| `Entities/EmpleadoTests.cs` | `Empleado` (subclase de `Usuario`): datos y password hash | ~5 |
+| Clase de test               | Entidad / área                                                                        | Casos (aprox.) |
+| --------------------------- | ------------------------------------------------------------------------------------- | -------------- |
+| `Entities/SocioTests.cs`    | `Socio`: validación de datos, cédula uruguaya, consentimiento Ley 18.331, baja lógica | ~11            |
+| `Entities/UnidadTests.cs`   | `Unidad`: creación y validaciones de la unidad de negocio                             | ~4             |
+| `Entities/UsuarioTests.cs`  | `Usuario` (base TPH): atributos comunes y estado                                      | ~6             |
+| `Entities/EmpleadoTests.cs` | `Empleado` (subclase de `Usuario`): datos y password hash                             | ~5             |
 
 ### Application (`GymFlow.Application.Tests`)
 

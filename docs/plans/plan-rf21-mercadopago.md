@@ -1,4 +1,4 @@
-# RF-23 Pago Online con Mercado Pago — Implementation Plan
+# RF-21 Pago Online con Mercado Pago — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax. Cada tarea: test que falla → implementación mínima → tests verdes → commit.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** .NET 8 Clean Arch (Domain/Application/Infrastructure/API), EF Core + PostgreSQL, xUnit + Moq. Frontend React 18 + Vite + TS + Tailwind + TanStack Query + axios, Vitest + RTL. Mercado Pago **Checkout Pro** vía HTTP (`https://api.mercadopago.com`), sin SDK.
 
-**Spec:** `docs/specs/spec-rf23-mercadopago.md`  · **Branch:** `feature/rf23-mercadopago` (off main)
+**Spec:** `docs/specs/spec-rf21-mercadopago.md`  · **Branch:** `feature/rf23-mercadopago` (off main — el branch conserva el nombre histórico con el RF mal numerado)
 
 **Convenciones ya verificadas (seguir):**
 - Command: `class XCommand { ctor(deps); Task<...> ExecuteAsync(...) }`, registrado en `backend/src/GymFlow.API/DependencyInjection.cs` con `.AddScoped<XCommand>()`.
@@ -105,7 +105,7 @@ public class PagoTests
 - [ ] **Step 2: Run → FAIL** (`dotnet test --filter PagoTests`).
 - [ ] **Step 3: Implementar** `EstadoPago { Pendiente, Aprobado, Rechazado }` y `Pago` (constructor `(Guid cuotaId, Guid socioId, decimal monto, string mpPreferenceId)`; propiedades private set; `MarcarAprobado(string mpPaymentId, string medioPago)` valida que esté Pendiente; `MarcarRechazado()`; `FechaCreacion = DateTime.UtcNow`). Seguir el estilo de `Cuota.cs`.
 - [ ] **Step 4: Run → PASS**
-- [ ] **Step 5: Commit** — `feat(pagos): entidad Pago + estado (dominio) (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(pagos): entidad Pago + estado (dominio) (#RF-21)`
 
 ---
 
@@ -117,7 +117,7 @@ public class PagoTests
 - [ ] **Step 2:** En `GymFlowDbContext.cs` agregar `public DbSet<Pago> Pagos => Set<Pago>();`.
 - [ ] **Step 3:** Generar migración: `dotnet ef migrations add "AddPagos" --project backend/src/GymFlow.Infrastructure --startup-project backend/src/GymFlow.API`. Verificar que crea la tabla `Pagos` con la FK.
 - [ ] **Step 4:** `dotnet build` OK + `dotnet ef migrations has-pending-model-changes` → sin cambios pendientes.
-- [ ] **Step 5: Commit** — `feat(pagos): persistencia y migracion de Pago (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(pagos): persistencia y migracion de Pago (#RF-21)`
 
 ---
 
@@ -129,7 +129,7 @@ public class PagoTests
 - [ ] **Step 2: Run → FAIL**
 - [ ] **Step 3: Implementar** interface + repo (mirror `CuotaRepository`: `_context.Pagos.Include(p => p.Cuota)...`). Registrar en `Infrastructure/DependencyInjection.cs`: `services.AddScoped<IPagoRepository, PagoRepository>();`.
 - [ ] **Step 4: Run → PASS**
-- [ ] **Step 5: Commit** — `feat(pagos): repositorio de Pago (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(pagos): repositorio de Pago (#RF-21)`
 
 ---
 
@@ -176,7 +176,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
   - `appsettings.json`: sección `"MercadoPago": { "Habilitado": false, "AccessToken": "", "WebhookSecret": "", "BackUrlBase": "http://localhost:5173" }`. **Crear** `appsettings.Development.json` (NO existe aún) con el AccessToken/WebhookSecret de **sandbox** para dev — o dejar `Habilitado:false` para el flujo simulado.
   - DI (`Infrastructure/DependencyInjection.cs`): `services.AddHttpClient<IMercadoPagoService, MercadoPagoService>();`
 - [ ] **Step 4: Run → PASS**
-- [ ] **Step 5: Commit** — `feat(pagos): MercadoPagoService (preferencia, consulta, firma HMAC) (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(pagos): MercadoPagoService (preferencia, consulta, firma HMAC) (#RF-21)`
 
 ---
 
@@ -192,7 +192,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 - [ ] **Step 2: Run → FAIL**
 - [ ] **Step 3: Implementar** `ExecuteAsync(Guid cuotaId, Guid socioId): Task<IniciarPagoResultado>`: GetById; validar `cuota.SocioId == socioId` y `Estado == Pendiente`; crear `Pago(cuota.Id, socioId, cuota.Monto, "")`... (crear preferencia primero con un id temporal NO — mejor: `AddAsync(pago)` + `SaveChanges` para tener el `pago.Id`, luego `CrearPreferenciaAsync(pago.Id, ...)`, guardar `MpPreferenceId` en el pago, `SaveChanges`). Devolver initPoint. Registrar en `API/DependencyInjection.cs`.
 - [ ] **Step 4: Run → PASS**
-- [ ] **Step 5: Commit** — `feat(pagos): comando IniciarPagoCuota (crea preferencia) (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(pagos): comando IniciarPagoCuota (crea preferencia) (#RF-21)`
 
 ---
 
@@ -215,7 +215,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
   6. `else if (info.Estado == "rejected")`: `pago.MarcarRechazado()`, SaveChanges.
   Registrar en DI.
 - [ ] **Step 4: Run → PASS**
-- [ ] **Step 5: Commit** — `feat(pagos): comando ProcesarWebhookPago (HMAC + idempotente) (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(pagos): comando ProcesarWebhookPago (HMAC + idempotente) (#RF-21)`
 
 ---
 
@@ -225,7 +225,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 
 - [ ] **Step 1: Test** — devuelve los pagos del socio (mapeados a `PagoDto`: fecha, monto, medio, mpPaymentId, estado, nombrePlan) ordenados por fecha desc.
 - [ ] **Step 2–4:** Implementar `ExecuteAsync(Guid socioId): Task<IEnumerable<PagoDto>>` usando `IPagoRepository.GetBySocioIdAsync`. Registrar DI. Tests verdes.
-- [ ] **Step 5: Commit** — `feat(pagos): historial de pagos del socio (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(pagos): historial de pagos del socio (#RF-21)`
 
 ---
 
@@ -241,7 +241,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 - [ ] **Step 2: Run → FAIL**
 - [ ] **Step 3: Implementar** el controller (rutas arriba; el webhook parsea `data.id` — MP lo manda en query `?data.id=` o en el body `{data:{id}}`, contemplar ambos). Devolver **401 si firma inválida, 200 en el resto**.
 - [ ] **Step 4: Run → PASS** + `dotnet test` (todo el backend) verde.
-- [ ] **Step 5: Commit** — `feat(pagos): endpoints iniciar/webhook/mis-pagos (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(pagos): endpoints iniciar/webhook/mis-pagos (#RF-21)`
 
 ---
 
@@ -253,7 +253,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 - [ ] **Step 2: Run → FAIL**
 - [ ] **Step 3: Implementar** en `api.ts`: `pagosApi = { iniciar: (cuotaId) => api.post('/pagos/iniciar', { cuotaId }).then(r => r.data), getMisPagos: () => api.get('/pagos/mis-pagos').then(r => r.data) }`. En `MisCuotasPage`: reemplazar **los DOS** botones `disabled`/"Pagar (próximamente)" (el de la tabla desktop ~L90 y el de la card mobile ~L133) por uno que en `onClick` llame `iniciar` y haga `window.location.href = initPoint` (con estado de loading + manejo de error → toast "No se pudo iniciar el pago").
 - [ ] **Step 4: Run → PASS**
-- [ ] **Step 5: Commit** — `feat(portal): boton pagar cuota con Mercado Pago (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(portal): boton pagar cuota con Mercado Pago (#RF-21)`
 
 ---
 
@@ -265,7 +265,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 - [ ] **Step 2: Run → FAIL**
 - [ ] **Step 3: Implementar** las 2 páginas + rutas en `App.tsx` bajo `/portal`: `pago/resultado` (back_urls de MP apuntan acá con el status), `mis-pagos`. La de éxito puede invalidar la query `mis-cuotas` para refrescar. Agregar "Mis pagos" al nav del portal si hay uno.
 - [ ] **Step 4: Run → PASS** + `npm run build` OK.
-- [ ] **Step 5: Commit** — `feat(portal): paginas de retorno de pago e historial (#RF-23)`
+- [ ] **Step 5: Commit** — `feat(portal): paginas de retorno de pago e historial (#RF-21)`
 
 ---
 
@@ -275,7 +275,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 
 - [ ] **Step 1:** Crear `configure-mercadopago.yml` (mirror `configure-email.yml`): `workflow_dispatch`; toma GitHub secrets `MERCADOPAGO_ACCESS_TOKEN` + `MERCADOPAGO_WEBHOOK_SECRET`; `az containerapp secret set` → `mercadopago-access-token`, `mercadopago-webhook-secret`; `az containerapp update --set-env-vars "MercadoPago__Habilitado=true" "MercadoPago__AccessToken=secretref:mercadopago-access-token" "MercadoPago__WebhookSecret=secretref:mercadopago-webhook-secret" "MercadoPago__BackUrlBase=https://<app-url>"`. Validar que los secrets existan antes.
 - [ ] **Step 2:** Documentar en `SETUP-CICD.md` la sección "Activar Mercado Pago": crear la app en MP, sacar Access Token + Webhook Secret de **prueba**, cargar los 2 GitHub secrets, configurar el webhook en MP apuntando a `…/api/pagos/webhook`, correr el workflow, probar con usuario/tarjetas de prueba.
-- [ ] **Step 3: Commit** — `ci(pagos): workflow configure-mercadopago + docs (#RF-23)`
+- [ ] **Step 3: Commit** — `ci(pagos): workflow configure-mercadopago + docs (#RF-21)`
 
 ---
 
@@ -283,7 +283,7 @@ public void ValidarFirma_ConV1Correcto_DevuelveTrue()
 
 - [ ] **Step 1:** `dotnet test` (backend) verde; `npm test` + `npm run build` (frontend) verde.
 - [ ] **Step 2:** `dotnet ef migrations has-pending-model-changes` → sin pendientes.
-- [ ] **Step 3:** Push `feature/rf23-mercadopago` + `gh pr create --base main` con body: qué incluye, que la migración `AddPagos` se auto-aplica al arrancar (tabla nueva, no destructivo), que requiere cargar 2 secrets + correr el workflow para probar, y "Closes #RF-23" si hay issue. NO mergear.
+- [ ] **Step 3:** Push `feature/rf23-mercadopago` + `gh pr create --base main` con body: qué incluye, que la migración `AddPagos` se auto-aplica al arrancar (tabla nueva, no destructivo), que requiere cargar 2 secrets + correr el workflow para probar, y "Closes #RF-21" si hay issue. NO mergear.
 - [ ] **Step 4:** Reportar PR URL + conteo de tests.
 
 ---

@@ -19,7 +19,7 @@ public enum WebhookResultado
 }
 
 /// <summary>
-/// RF-23 / CU-08 — corazón de seguridad. Procesa la notificación (webhook) de Mercado Pago:
+/// RF-21 / CU-08 — corazón de seguridad. Procesa la notificación (webhook) de Mercado Pago:
 /// 1) valida la firma HMAC (RN-31); si es inválida, audita el evento sospechoso y descarta (CA-36).
 /// 2) consulta el estado REAL del pago en la API de MP (no se confía en el payload).
 /// 3) reconcilia contra el <see cref="Pago"/> por external_reference y aplica el resultado:
