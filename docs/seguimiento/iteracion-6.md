@@ -80,7 +80,6 @@ Requerimientos no funcionales implementados:
 |-|-|-|-|
 | RF-16 (canal email) | — | Pendiente (arrastrado de IT5) | Unificación del canal email con el centro de notificaciones in-system. Los emails ya se envían; falta que pasen por la misma infraestructura que maneja la campanita del portal. Sin avances en esta iteración. |
 | RNF-06 | — | En medición | Disponibilidad ≥ 95% del despliegue en Azure. Resultado de la medición del período: [COMPLETAR]. |
-| Pruebas Postman de la iteración | — | Pendiente | La colección de Postman todavía no incluye tests de los endpoints de pagos ni del snapshot del dashboard (ver sección de pruebas de API). |
 
 ## Pantallas implementadas
 
@@ -351,9 +350,79 @@ Suite backend en verde (0 fallos). Cobertura agregada en esta iteración:
 
 ## Pruebas de API realizadas con Postman
 
-**PENDIENTE** — La colección `GymFlow API Tests.postman_collection.json` todavía no incorpora tests para los endpoints de esta iteración: los de pagos (`/api/pagos/iniciar`, `/api/pagos/webhook`, `/api/pagos/mis-pagos`) ni el snapshot del dashboard (`/api/dashboard`, incluyendo el control de permiso y el rechazo de una unidad no visible). Al agregarlos se documentarán aquí con las tablas de tests agregados/modificados y el resumen de aserciones, como en iteraciones anteriores.
+Se ampliaron los tests automatizados de la colección Postman (`GymFlow API Tests.postman_collection.json`) para cubrir los endpoints nuevos de la iteración: pagos con Mercado Pago (RF-21) y dashboard en tiempo real (RF-18). Además se saldó una deuda de cobertura de iteraciones anteriores: los jobs manuales de cuotas —generación y recordatorios (RF-06/RF-07)— no tenían tests en la colección. La suite completa quedó en **296 aserciones, 0 fallos**.
 
-> Nota: el flujo feliz del webhook requiere una notificación real firmada por Mercado Pago contra una URL pública, por lo que —igual que el login con Google en IT5— la colección podrá cubrir principalmente los caminos de error (firma inválida, cuota ajena, cuota ya pagada, sin autenticación) y el flujo completo se valida de punta a punta contra el despliegue (ver Prueba 6.1). El stream SSE del dashboard tampoco es testeable desde Postman (la conexión queda abierta); se cubre con las pruebas automatizadas y la prueba funcional 6.8.
+### Tests agregados
+
+**Pagos Mercado Pago (RF-21) --- 18 tests**
+
+| **Test** | **Método** | **Endpoint** | **Validación** |
+|-|-|-|-|
+| Setup - Login admin (MFA) | POST | `/api/auth/login` | Sesión de admin con el helper de login MFA-aware compartido |
+| Setup - Login socio (MFA-aware) | POST | `/api/auth/login` | Sesión del socio seed para los tests de pago |
+| Setup - Generar cuotas para asegurar una pendiente | POST | `/api/cuotas/generar` | Corre el job de generación para garantizar una cuota pendiente |
+| Setup - Capturar cuota pendiente del socio | GET | `/api/cuotas/mis-cuotas` | Toma una cuota en estado Pendiente para encadenar los tests |
+| 404 - Iniciar pago de cuota inexistente | POST | `/api/pagos/iniciar` | Error 404 con ID de cuota inexistente |
+| 403 - Iniciar pago de cuota ajena (admin autenticado) | POST | `/api/pagos/iniciar` | Un usuario que no es el socio dueño de la cuota no puede iniciar el pago |
+| Setup - Marcar cuota como pagada (admin) | PUT | `/api/cuotas/{id}/pagar` | Prepara el caso de cuota no pendiente |
+| 409 - Iniciar pago de cuota no pendiente | POST | `/api/pagos/iniciar` | Rechazo cuando la cuota ya está pagada |
+| Cleanup - Revertir pago de la cuota (admin) | PUT | `/api/cuotas/{id}/revertir-pago` | La cuota vuelve a Pendiente para dejar el entorno limpio |
+| 401 - Iniciar pago sin token | POST | `/api/pagos/iniciar` | Rechazo sin autenticación |
+| 401 - Webhook moderno con firma inválida | POST | `/api/pagos/webhook` | Único caso de rechazo del webhook: la firma no valida (RN-31) |
+| 401 - Webhook moderno sin firma | POST | `/api/pagos/webhook` | Notificación moderna sin encabezado de firma también se rechaza |
+| 200 - Webhook moderno con type distinto de payment | POST | `/api/pagos/webhook` | Notificaciones que no son de pagos se ignoran respondiendo 200 |
+| 200 - Webhook IPN legacy (topic=payment) | POST | `/api/pagos/webhook` | El formato antiguo (sin firma) responde 200; un ID forjado no mapea a ningún pago propio y se ignora |
+| 200 - Webhook IPN con topic distinto de payment | POST | `/api/pagos/webhook` | El IPN de otros temas se ignora respondiendo 200 |
+| 200 - Webhook sin formato reconocible | POST | `/api/pagos/webhook` | Un request sin formato conocido responde 200 para que la pasarela no reintente |
+| 200 - Mis pagos del socio | GET | `/api/pagos/mis-pagos` | Historial como array con la estructura `PagoDto` |
+| 401 - Mis pagos sin token | GET | `/api/pagos/mis-pagos` | Rechazo sin autenticación |
+
+> El flujo feliz del webhook requiere una notificación real firmada por Mercado Pago contra una URL pública, por lo que —igual que el login con Google en IT5— la colección cubre los caminos de error y de descarte, y el flujo completo se valida de punta a punta contra el despliegue en el sandbox (ver Prueba 6.1).
+
+**Cuotas --- Jobs manuales (RF-06/RF-07) --- 9 tests**
+
+Los endpoints para disparar manualmente los jobs de cuotas existían desde iteraciones anteriores pero nunca habían entrado a la colección; se agregaron ahora para cerrar esa deuda de cobertura.
+
+| **Test** | **Método** | **Endpoint** | **Validación** |
+|-|-|-|-|
+| Setup - Login admin (MFA) | POST | `/api/auth/login` | Sesión de admin |
+| Setup - Login socio (MFA-aware) | POST | `/api/auth/login` | Sesión de socio para los casos de permiso |
+| 200 - Procesar recordatorios (admin) | POST | `/api/cuotas/procesar-recordatorios` | Ejecuta el job y valida la estructura del resultado |
+| 200 - Procesar recordatorios es idempotente | POST | `/api/cuotas/procesar-recordatorios` | La segunda corrida del día no re-envía recordatorios (enviados = 0) |
+| 200 - Generar cuotas (admin) | POST | `/api/cuotas/generar` | Ejecuta el job y valida la estructura del resultado |
+| 403 - Procesar recordatorios como socio | POST | `/api/cuotas/procesar-recordatorios` | Solo roles administrativos pueden disparar el job |
+| 403 - Generar cuotas como socio | POST | `/api/cuotas/generar` | Solo roles administrativos pueden disparar el job |
+| 401 - Procesar recordatorios sin token | POST | `/api/cuotas/procesar-recordatorios` | Rechazo sin autenticación |
+| 401 - Generar cuotas sin token | POST | `/api/cuotas/generar` | Rechazo sin autenticación |
+
+**Dashboard en tiempo real (RF-18) --- 8 tests**
+
+| **Test** | **Método** | **Endpoint** | **Validación** |
+|-|-|-|-|
+| Setup - Login admin (MFA) | POST | `/api/auth/login` | Sesión de admin (rol con permiso del módulo Dashboard) |
+| Setup - Login socio (MFA-aware) | POST | `/api/auth/login` | Sesión de socio (sin permiso) para los casos de rechazo |
+| 200 - Snapshot del dashboard (admin) | GET | `/api/dashboard` | Estructura `DashboardDto` y al menos una unidad en el desglose por sede |
+| 200 - Snapshot filtrado por unidad | GET | `/api/dashboard?unidadId=` | El desglose solo trae la unidad pedida |
+| 403 - Snapshot como socio | GET | `/api/dashboard` | Sin permiso de lectura del módulo Dashboard se rechaza (RN-16) |
+| 403 - Stream SSE como socio | GET | `/api/dashboard/stream` | El permiso se valida antes de iniciar la transmisión |
+| 401 - Snapshot sin token | GET | `/api/dashboard` | Rechazo sin autenticación |
+| 401 - Stream SSE sin token | GET | `/api/dashboard/stream` | Rechazo sin autenticación |
+
+> El camino feliz del stream SSE no es testeable desde Postman (la conexión queda abierta indefinidamente): la colección solo verifica sus rechazos 401/403, que el backend resuelve antes de empezar a transmitir. La actualización en vivo se cubre con las pruebas automatizadas del backend/frontend y la prueba funcional 6.8.
+
+### Tests modificados
+
+A diferencia de la iteración anterior, no hubo cambios de contrato que obligaran a tocar tests existentes: el resto de la colección corre exactamente igual que en la iteración 5. Solo se agregaron dos variables de colección (`pagosCuotaPendienteId`, `dashUnidadId`) para encadenar los tests nuevos.
+
+### Resumen de resultados
+
+| **Módulo** | **Tests** | **Resultado** |
+|-|-|-|
+| Pagos Mercado Pago (RF-21) | 18 | Pasaron |
+| Cuotas --- Jobs manuales (RF-06/RF-07) | 9 | Pasaron |
+| Dashboard en tiempo real (RF-18) | 8 | Pasaron |
+| Resto de la colección (sin cambios) | 129 | Pasaron |
+| **Total de la colección** | **296 aserciones** | **0 fallos** |
 
 ## Pruebas funcionales de frontend
 
