@@ -5,7 +5,7 @@
 | *Nombre* | Gestión de Cuotas y Recordatorios Automáticos |
 | *Actor principal* | Sistema (proceso automático) / Administrador / Socio |
 | *Precondición* | Para generación automática: existe `BackgroundService` configurado y socios activos con plan asignado. Para gestión: admin autenticado con permisos del módulo Cuotas. Para vista del socio: socio autenticado. |
-| *Postcondición* | Cuotas generadas automáticamente cada 30 días. Recordatorios enviados según calendario. El admin puede registrar pagos manualmente, anular cuotas, revertir pagos y reactivar cuotas anuladas. Todas las acciones quedan en auditoría. |
+| *Postcondición* | Cuotas generadas automáticamente cada mes. Recordatorios enviados según calendario. El admin puede registrar pagos manualmente, anular cuotas, revertir pagos y reactivar cuotas anuladas. Todas las acciones quedan en auditoría. |
 | *RF cubiertos* | RF-06 (recordatorios automáticos), RF-07 (control de estado de cuota) |
 | *Iteración(es) de entrega* | IT-2 — Generación automática de cuotas + vista admin/socio + recordatorios por email |
 | *Referencia original* | [GymFlow_Requerimientos_Completos.md § CU-03](../GymFlow_Requerimientos_Completos.md#cu-03--gestión-de-cuotas-y-recordatorios-automáticos) |
@@ -17,9 +17,9 @@
 
 1. Un `BackgroundService` se ejecuta una vez al día (hora configurable en `appsettings.json`, ej. `03:00` UTC).
 2. Por cada socio activo con plan asignado, el sistema verifica si la última cuota ya venció (o si no tiene cuotas).
-3. Si corresponde, genera una nueva cuota pendiente con: socio, unidad, plan vigente (snapshot), monto (precio actual del plan), fecha de emisión, fecha de vencimiento (`FechaEmision + 30 días`), estado `Pendiente`.
+3. Si corresponde, genera una nueva cuota pendiente con: socio, unidad, plan vigente (snapshot), monto (precio actual del plan), fecha de emisión, fecha de vencimiento (`FechaEmision + 1 mes`), estado `Pendiente`.
 4. Si el socio pertenece a 2 unidades, se generan 2 cuotas separadas (una por unidad).
-5. La primera cuota de un socio se genera al momento del alta del socio con plan asignado (vencimiento = `FechaAlta + 30 días`).
+5. La primera cuota de un socio se genera al momento del alta del socio con plan asignado (vencimiento = `FechaAlta + 1 mes`).
 
 **Flujo principal — Recordatorios automáticos (RF-06):**
 

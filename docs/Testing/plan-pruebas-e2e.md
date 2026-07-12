@@ -10,7 +10,7 @@ related:
 
 # Plan de Pruebas End-to-End (E2E) — GymFlow
 
-> Plan de pruebas manuales de punta a punta sobre el sistema desplegado. Cubre los flujos completos de usuario de los casos de uso CU-01 a CU-11, más una sección de pruebas de seguridad y permisos. Los resultados de ejecución se registran en este mismo documento.
+> Plan de pruebas manuales de punta a punta sobre el sistema desplegado. Cubre los flujos completos de usuario de los casos de uso CU-01 a CU-12, más una sección de pruebas de seguridad y permisos. Los resultados de ejecución se registran en este mismo documento.
 
 ## 1. Introducción — qué es una prueba E2E y dónde encaja
 
@@ -29,7 +29,7 @@ El diferencial del nivel E2E respecto de las pruebas funcionales por iteración 
 
 ## 2. Alcance
 
-**Incluye:** los flujos principales y las excepciones de mayor riesgo de todos los casos de uso implementados (CU-01, CU-02, CU-03, CU-05, CU-06, CU-07, CU-08, CU-09, CU-11 y CU-10) y un conjunto de pruebas transversales de seguridad y permisos (RNF-01, RNF-05).
+**Incluye:** los flujos principales y las excepciones de mayor riesgo de todos los casos de uso implementados (CU-01, CU-02, CU-03, CU-05, CU-06, CU-07, CU-08, CU-09, CU-11, CU-10 y CU-12) y un conjunto de pruebas transversales de seguridad y permisos (RNF-01, RNF-05).
 
 **No incluye:**
 
@@ -87,14 +87,15 @@ Estados posibles: **Pasó** | **Falló** (se registra defecto en la sección 8) 
 |-|-|-|-|
 | [[CU-01-gestion-socios\|CU-01]] | Gestión de socios | RF-01..05, RF-20, RF-22, RNF-09 | E2E-01 a E2E-04 |
 | [[CU-02-inscripcion-clase\|CU-02]] | Inscripción a clase | RF-10, RF-11 | E2E-05 a E2E-07 |
-| [[CU-03-cuotas-recordatorios\|CU-03]] | Cuotas y recordatorios | RF-06, RF-07 | E2E-08 a E2E-11 |
+| [[CU-03-cuotas-recordatorios\|CU-03]] | Cuotas y recordatorios | RF-06, RF-07 | E2E-08 a E2E-11, E2E-33 |
 | [[CU-05-autenticacion\|CU-05]] | Autenticación y control de acceso | RNF-01, RNF-05, RNF-10 | E2E-12 a E2E-15 |
 | [[CU-06-clases-horarios\|CU-06]] | Clases y horarios | RF-08, RF-09 | E2E-16 a E2E-19 |
 | [[CU-07-empleados-roles\|CU-07]] | Empleados, roles y permisos | RF-12, RF-13, RF-14, RNF-01 | E2E-20 a E2E-23 |
 | [[CU-08-gestion-eventos\|CU-08]] | Gestión de eventos | RF-15 | E2E-24, E2E-25 |
 | [[CU-09-notificaciones-insystem\|CU-09]] | Notificaciones in-system | RF-16 | E2E-26 |
 | [[CU-10-dashboard-tiempo-real\|CU-10]] | Dashboard en tiempo real | RF-18, RNF-02 | E2E-27, E2E-28 |
-| [[CU-11-pago-online-mercadopago\|CU-11]] | Pago online Mercado Pago | RF-21, RNF-05 | E2E-29 a E2E-32 |
+| [[CU-11-pago-online-mercadopago\|CU-11]] | Pago online Mercado Pago | RF-21, RNF-05 | E2E-29 a E2E-32, E2E-34 |
+| [[CU-12-gestion-planes\|CU-12]] | Gestión de planes | Soporte de RF-22 y RF-07, RNF-11 | E2E-35 |
 | — | Seguridad transversal | RNF-01, RNF-05 | E2E-SEC-01 a E2E-SEC-05 |
 
 ## 5. Casos de prueba por caso de uso
@@ -393,6 +394,39 @@ Estados posibles: **Pasó** | **Falló** (se registra defecto en la sección 8) 
 
 - Llega el email del tipo correspondiente a la ventana (informativo / urgente / vencimiento) y se crea la notificación in-system.
 - El segundo disparo del mismo día no duplica el recordatorio del mismo tipo (idempotencia por `RecordatorioCuota`).
+
+**Registro de ejecución:**
+
+| Fecha | Ejecutor | Versión | Resultado | Evidencia |
+|-|-|-|-|-|
+| | | | Pendiente | |
+
+#### E2E-33 — Generación automática de cuotas por unidad (job)
+
+| | |
+|-|-|
+| **Trazabilidad** | CU-03 flujo principal generación automática — RF-07, RF-22 |
+| **Prioridad** | Crítica |
+| **Precondiciones** | Socio E2E-Test activo en las dos unidades con un plan asignado en cada una (el de E2E-01). Acceso al endpoint manual de disparo del job (`POST /api/cuotas/generar`, requiere permiso Cuotas-Modificación) o esperar la corrida diaria del `CuotaGeneracionBackgroundService`. Precio vigente de cada plan anotado desde `/admin/planes`. |
+
+**Pasos:**
+
+1. Preparar el escenario "última cuota vencida": en la gestión de cuotas del admin, anular las cuotas pendientes vigentes del socio en ambas unidades (el generador ignora las anuladas, por lo que el socio queda sin cuota vigente y corresponde emitir).
+2. Disparar el job con `POST /api/cuotas/generar` (token de admin) y anotar la cantidad de cuotas generadas que devuelve la respuesta (o esperar la corrida diaria).
+3. En la gestión de cuotas del admin, buscar al socio por documento y revisar las cuotas nuevas de cada unidad.
+4. Como socio, verificar `/portal/mis-cuotas`.
+5. Como admin, editar el precio del plan de una de las unidades (anotar el valor original) y guardar.
+6. Volver a revisar el monto de la cuota generada en el paso 2.
+7. Disparar de nuevo `POST /api/cuotas/generar` el mismo día.
+8. Verificar que el socio no tiene cuotas nuevas.
+9. Restaurar el precio original del plan editado en el paso 5.
+
+**Resultado esperado:**
+
+- Tras el paso 2 existen **dos cuotas nuevas, una por unidad**, en estado Pendiente, cada una con el monto igual al precio vigente del plan de esa unidad y vencimiento un mes después de la emisión (al no haber cuota previa vigente, la emisión es la fecha de la corrida; si la última cuota hubiera vencido, la emisión encadena con ese vencimiento).
+- El socio ve ambas cuotas en `/portal/mis-cuotas` con plan, unidad, monto y vencimiento correctos.
+- **Snapshot de precio:** el cambio del paso 5 no altera el monto de la cuota ya emitida; solo afectará a las cuotas que se emitan después.
+- **Idempotencia:** el segundo disparo no genera cuotas para el socio (devuelve 0 generadas para él) mientras su última cuota siga vigente.
 
 **Registro de ejecución:**
 
@@ -972,6 +1006,74 @@ Estados posibles: **Pasó** | **Falló** (se registra defecto en la sección 8) 
 |-|-|-|-|-|
 | | | | Pendiente | |
 
+#### E2E-34 — Webhook de Mercado Pago duplicado (reintento idempotente)
+
+| | |
+|-|-|
+| **Trazabilidad** | CU-11 E3 — RF-21, RNF-05 |
+| **Prioridad** | Crítica |
+| **Precondiciones** | Pago aprobado ya procesado de punta a punta (E2E-29): cuota Pagada, email de confirmación recibido y confirmación registrada en auditoría. Número de transacción MP del pago visible en `/portal/mis-pagos`. Postman apuntando al webhook público `POST /api/pagos/webhook`. |
+
+**Pasos:**
+
+1. Anotar el estado de partida: fecha de pago de la cuota en "Mis Cuotas", número de transacción y datos del pago en "Mis Pagos", y el registro de auditoría de la confirmación original.
+2. Simular el reintento de Mercado Pago reenviando la notificación del mismo pago: `POST /api/pagos/webhook?topic=payment&id={numeroTransaccionMP}` (formato IPN, sin firma: el backend consulta el estado real del pago a la API de Mercado Pago). Alternativa en formato moderno: `?data.id={numeroTransaccionMP}&type=payment` con el header `x-signature` recalculado con el `WebhookSecret` del entorno.
+3. Verificar el código de respuesta.
+4. Repetir el reenvío una segunda vez.
+5. Verificar "Mis Cuotas" y "Mis Pagos" del socio.
+6. Revisar la casilla del socio.
+7. Como admin, revisar auditoría.
+
+**Resultado esperado:**
+
+- Cada reenvío responde **200** (la pasarela no sigue reintentando).
+- El reprocesamiento es idempotente: no se crea ningún pago nuevo en "Mis Pagos" (sigue el único pago Aprobado con el mismo número de transacción) y la cuota sigue Pagada con la **misma fecha de pago** original.
+- No llega un segundo email de confirmación.
+- La auditoría no registra una segunda confirmación de pago: los reenvíos terminan ignorados sin efectos.
+
+**Registro de ejecución:**
+
+| Fecha | Ejecutor | Versión | Resultado | Evidencia |
+|-|-|-|-|-|
+| | | | Pendiente | |
+
+### CU-12 — Gestión de Planes
+
+#### E2E-35 — ABM de plan: alta, snapshot de precio, baja lógica y reactivación
+
+| | |
+|-|-|
+| **Trazabilidad** | [[CU-12-gestion-planes\|CU-12]] completo — soporte de RF-22 y RF-07, RNF-11 |
+| **Prioridad** | Alta |
+| **Precondiciones** | Admin logueado. Existen las dos unidades. Otro plan activo disponible en la unidad elegida (para reasignar al socio de prueba antes de la baja). |
+
+**Pasos:**
+
+1. En `/admin/planes` → "Nuevo plan", crear el "Plan E2E-Test" con precio, descripción y una unidad.
+2. Ir al alta de socio: verificar que al elegir esa unidad el plan aparece disponible, y que al elegir la otra unidad no se ofrece.
+3. Dar de alta un socio "E2E-Test" en esa unidad con el "Plan E2E-Test" y verificar que su cuota inicial se emite con el monto igual al precio del plan.
+4. Editar el plan en `/admin/planes/:id/editar`: modificar el precio y guardar. Verificar que el campo unidad aparece deshabilitado.
+5. Verificar la cuota emitida en el paso 3: debe conservar su monto original (snapshot).
+6. Intentar dar de baja el "Plan E2E-Test" con el socio aún asignado.
+7. Reasignar al socio de prueba a otro plan de la unidad (edición del socio) y dar de baja el "Plan E2E-Test".
+8. Verificar en el alta de socio que el plan ya no se ofrece para esa unidad, y que en `/admin/planes` figura como Inactivo.
+9. Reactivar el plan desde el listado y verificar que vuelve a ofrecerse en el alta.
+10. Como admin, revisar auditoría.
+
+**Resultado esperado:**
+
+- El plan creado queda Activo, visible en `/admin/planes` con su unidad y precio, y se ofrece solo en el alta de socios de su unidad.
+- **Snapshot de precio:** la cuota emitida antes de la edición conserva su monto; el precio nuevo aplica solo a cuotas futuras.
+- El intento de baja del paso 6 es **bloqueado** con "El plan tiene socios asignados. Reasígnelos antes de darlo de baja.", sin cambiar el estado del plan.
+- Tras reasignar, la baja es lógica (estado Inactivo, sigue en el listado) y el plan deja de ofrecerse en el alta; la reactivación lo devuelve a Activo y vuelve a ofrecerse.
+- La auditoría registra creación, modificación, baja y reactivación del plan, con usuario y timestamp.
+
+**Registro de ejecución:**
+
+| Fecha | Ejecutor | Versión | Resultado | Evidencia |
+|-|-|-|-|-|
+| | | | Pendiente | |
+
 ## 6. Pruebas transversales de seguridad y permisos
 
 #### E2E-SEC-01 — Acceso sin autenticación
@@ -1109,14 +1211,15 @@ Completar al cierre de cada corrida.
 |-|-|-|-|-|-|
 | CU-01 | E2E-01 a 04 | | | | |
 | CU-02 | E2E-05 a 07 | | | | |
-| CU-03 | E2E-08 a 11 | | | | |
+| CU-03 | E2E-08 a 11, 33 | | | | |
 | CU-05 | E2E-12 a 15 | | | | |
 | CU-06 | E2E-16 a 19 | | | | |
 | CU-07 | E2E-20 a 23 | | | | |
 | CU-08 | E2E-24, 25 | | | | |
 | CU-09 | E2E-26 | | | | |
 | CU-10 | E2E-27, 28 | | | 2 | RF-18 sin integrar |
-| CU-11 | E2E-29 a 32 | | | | |
+| CU-11 | E2E-29 a 32, 34 | | | | |
+| CU-12 | E2E-35 | | | | |
 | Seguridad | E2E-SEC-01 a 05 | | | | |
 
 ## 8. Defectos encontrados

@@ -320,12 +320,6 @@ Requerimientos no funcionales implementados:
 | RNF-03 | Responsive | Completado | Vistas del portal de socios (horarios, mis inscripciones) y vistas de admin (horarios, clases) optimizadas para móvil. |
 | RNF-05 | Seguridad | Completado | Controller de inscripciones usa `[Authorize]` con validación de ownership. Contraseñas temporales generadas con criterios de seguridad (mayúsculas, minúsculas, números, especiales). |
 
-## Tareas pendientes
-
-| **Requerimiento** | **Caso de uso** | **Estado** | **Detalle** |
-|-|-|-|-|
-| — | Forzar cambio de password en primer login | Deuda técnica | Existe flujo manual de cambio de password, pero no se fuerza al primer ingreso del empleado. |
-
 ## Pantallas implementadas
 
 **Pantalla Horarios Portal del Socio (rediseñada)**

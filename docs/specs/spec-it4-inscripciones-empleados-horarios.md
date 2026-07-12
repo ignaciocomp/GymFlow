@@ -39,7 +39,6 @@ RF-13 y RF-14 se consideran cubiertos por el sistema de roles y permisos configu
 - Lista de espera: no se crea entidad, flag, DTO ni promocion automatica.
 - Asignacion fija profesor-clase: se resuelve por roles/permisos configurables desde interfaz.
 - MFA TOTP y OAuth para socios: quedan para IT5.
-- Forzar cambio de password en primer login: deuda tecnica futura; existe flujo manual de cambio de password.
 
 ## Decisiones de diseno
 

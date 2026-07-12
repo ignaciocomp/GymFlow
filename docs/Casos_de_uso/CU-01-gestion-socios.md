@@ -25,7 +25,7 @@
 2. El administrador asigna el socio a una o más unidades (Gimnasio Nuevo Malvín / Espacio Mora / ambas) y selecciona un plan por cada unidad asignada (RF-22).
 3. El administrador acepta la cláusula de consentimiento informado de la Ley 18.331 — checkbox obligatorio.
 4. El sistema valida los datos, persiste al socio con estado `Activo` y guarda el timestamp de aceptación del consentimiento.
-5. Si el socio tiene plan asignado, se genera automáticamente su primera cuota pendiente con vencimiento a `FechaAlta + 30 días` (RF-07).
+5. Si el socio tiene plan asignado, se genera automáticamente su primera cuota pendiente con vencimiento a `FechaAlta + 1 mes` (RF-07).
 6. El sistema registra la operación en el log de auditoría con usuario, timestamp y detalle.
 
 **Subflujo B — Edición de socio (RF-03):**
@@ -75,7 +75,7 @@
 - **Baja lógica:** los socios nunca se borran físicamente; se marcan como `Inactivo` y pueden reactivarse.
 - **Trazabilidad total:** toda alta, modificación, baja y reactivación queda en `RegistroAuditoria` con usuario, timestamp UTC, tipo de acción y `detallesCambios` en JSON.
 - **ARCO Ley 18.331 (RNF-09b):** el socio puede solicitar modificación/baja de sus datos personales; la solicitud queda en auditoría para procesamiento manual.
-- **Generación automática de cuota inicial:** al crear un socio con plan asignado, se genera su primera cuota pendiente con vencimiento a `FechaAlta + 30 días`.
+- **Generación automática de cuota inicial:** al crear un socio con plan asignado, se genera su primera cuota pendiente con vencimiento a `FechaAlta + 1 mes`.
 
 **Pantallas implementadas:**
 
