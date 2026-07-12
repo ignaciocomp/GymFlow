@@ -92,7 +92,7 @@ repeat
     de la iteración en Markdown
     (Obsidian);
     note right
-      Usando template + Claude
+      Usando template,
       desde specs y código
     end note
     :Exportar a .docx
@@ -128,7 +128,6 @@ stop
 @enduml
 
 ````
-
 **Recomendaciones:** 
 Exportar con pandoc para mejorar visualización.
 

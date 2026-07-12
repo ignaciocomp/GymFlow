@@ -171,192 +171,85 @@ Requerimientos no funcionales:
 | DELETE | /api/roles/{id} | Eliminar rol |
 | GET | /api/permisos | Listar catálogo de permisos disponibles |
 
-## Requerimiento RF-07
+## Caso de uso extendido --- Iteración 2
 
-El sistema debe generar cuotas automáticamente para cada socio activo y permitir su visualización tanto para el socio como para el admin. El admin debe poder marcar cuotas como pagadas y anular cuotas generadas por error.
+### CU-03: Gestión de Cuotas y Recordatorios Automáticos
 
-**Incluido**
+| *Campo* | |
+|-|-|
+| *Nombre* | Gestión de Cuotas y Recordatorios Automáticos |
+| *Actor principal* | Sistema (proceso automático) / Administrador / Socio |
+| *Precondición* | Para generación automática y recordatorios: `BackgroundService` configurado y socios activos con plan asignado. Para gestión: admin autenticado con permisos del nuevo módulo Cuotas (lectura, escritura, modificación, eliminación). Para la vista "Mis cuotas": socio autenticado. |
+| *Postcondición* | Cuotas generadas automáticamente cada 30 días. Recordatorios enviados según calendario y registrados en `RecordatorioCuota`. El admin puede registrar pagos manualmente, anular cuotas, revertir pagos y reactivar cuotas anuladas. Todas las acciones quedan en auditoría. |
 
-- Generación automática de cuotas cada 30 días por socio activo con plan asignado.
-- Vista del socio con sus cuotas (estado, monto, vencimiento, botón "Pagar" sin funcionalidad por ahora).
-- Vista del admin con búsqueda por cédula de socios y te muestra sus cuotas. Incluye filtros por estado/mes/año/unidad, y ordenamiento por vencimiento.
-- El admin puede marcar una cuota como pagada manualmente (para pagos en efectivo o transferencia).
-- El admin puede anular una cuota generada por error (soft delete).
-- Cuotas separadas por unidad (si el socio pertenece a 2 unidades, tiene 2 cuotas por período).
-- Nuevo módulo de permisos Cuotas (lectura, escritura, modificación, eliminación).
-- BackgroundService diario para generación automática de cuotas, configurable desde appsettings.json.
+**Flujo principal — Generación automática de cuotas (RF-07):**
 
-**Fuera de alcance (queda para RF-06 u otras iteraciones)**
+1. Un `BackgroundService` se ejecuta una vez al día (hora configurable en `appsettings.json`, ej. `"HoraEjecucion": "03:00"`, hora del servidor en UTC).
+2. Por cada socio activo con plan asignado, el sistema verifica si la última cuota generada ya venció (o si el socio no tiene cuotas).
+3. Si corresponde, genera una nueva cuota pendiente con: socio, unidad, plan vigente (snapshot al momento de generación), monto (precio del plan en ese instante — los cambios futuros del plan no afectan cuotas ya emitidas), fecha de emisión y fecha de vencimiento (`FechaEmision + 30 días`).
+4. Si el socio pertenece a 2 unidades, se generan 2 cuotas separadas (una por unidad, cada una con el monto de su plan correspondiente); no existe cuota combinada.
+5. La primera cuota se genera automáticamente al crear un socio con plan asignado (vencimiento = `FechaAlta + 30 días`).
 
-- Botón "Notificar" individual por cuota pendiente - RF-06.
-- Recordatorios automáticos por email (5 días, 1 día, día del vencimiento) - RF-06.
-- Infraestructura de email (servicio, configuración, proveedor) - RF-06.
-- Entidad RecordatorioCuota (registro de notificaciones enviadas) - RF-06.
-- Pago online: el botón "Pagar" del socio existe pero no procesa pagos. Se implementa en una iteración futura.
-- Notificaciones in-app (campanita/push): solo email por ahora. Queda para RF-16 (Iteración 6).
-- Notificación masiva: solo se notifica individualmente por cuota. Un botón "notificar a todos" podría agregarse después.
-- Configuración de días de anticipación desde la UI: se configura en el servidor (appsettings.json).
-- Cuota combinada para socios en 2 unidades: por ahora son 2 cuotas separadas.
-- Recordatorios post-vencimiento (ej. a 7 días de mora): se puede agregar después.
+**Flujo principal — Recordatorios automáticos por email (RF-06):**
 
-**3. Generación automática de cuotas**
+1. Diariamente, un job evalúa las fechas de vencimiento de todas las cuotas pendientes de socios activos.
+2. Envía recordatorios por email según calendario: 5 días antes (informativo, "Tu cuota vence pronto"), 1 día antes (urgente, "Tu cuota vence mañana") y el día del vencimiento ("Tu cuota venció hoy"). No se envían recordatorios posteriores al vencimiento. Los días de anticipación se configuran en el servidor (`appsettings.json`), no desde la UI.
+3. Cada envío queda registrado en la entidad `RecordatorioCuota` con timestamp, tipo (`CincoDias` / `UnDia` / `DiaVencimiento` / `Manual`), resultado (exitoso / con error) y mensaje de error si falló.
+4. No se envía más de un recordatorio del mismo tipo por socio por día (`RecordatorioCuota` actúa como llave de idempotencia).
+5. Los recordatorios solo aplican a cuotas en estado pendiente. El servicio de email se puede deshabilitar por configuración para desarrollo/testing.
 
-- Cuando un socio se registra (o se le asigna un plan a una unidad), el sistema genera su primera cuota con estado pendiente.
-- La fecha de vencimiento de la primera cuota es 30 días después de la FechaAlta del socio.
-- Cada 30 días se genera automáticamente una nueva cuota pendiente para cada socio activo que tenga plan asignado.
-- Si el socio pertenece a 2 unidades, se generan 2 cuotas separadas (una por unidad, cada una con el monto de su plan correspondiente).
+**Flujo alternativo — Notificación manual del admin:**
 
-Las cuotas se generan con los siguientes datos:
+1. El admin accede a la vista de gestión de cuotas y busca por cédula del socio.
+2. Sobre una cuota pendiente, hace clic en "Notificar".
+3. El sistema envía un email al socio con nombre, plan, unidad, monto y fecha de vencimiento.
+4. Si el socio no tiene correo registrado, se muestra un error al admin.
+5. No se puede reenviar la misma notificación manual al mismo socio por la misma cuota más de una vez por día. La notificación es individual por cuota; no existe envío masivo ("notificar a todos").
 
-- Socio al que pertenece
-- Unidad (Gimnasio Nuevo Malvín o Espacio Mora)
-- Plan vigente del socio en esa unidad (snapshot al momento de generación)
-- Monto a pagar (precio del plan al momento de generación)
-- Fecha de emisión (fecha en que se generó)
-- Fecha de vencimiento (fecha de emisión + 30 días)
-- Estado: pendiente
+**Flujo alternativo — Marcar cuota como pagada (admin):**
 
-**4. Vista del socio — "Mis cuotas"**
+1. El admin busca al socio por documento (`GET /api/cuotas/admin?documentoIdentidad=...` — documento obligatorio para forzar contexto de búsqueda). Las cuotas se listan ordenadas por fecha de vencimiento (las más próximas a vencer arriba), con filtros por estado, mes/año y unidad.
+2. Sobre una cuota `Pendiente`, hace clic en "Marcar como pagada" y confirma.
+3. El sistema valida que no esté ya pagada ni anulada (`Cuota.MarcarComoPagada()`).
+4. Cambia el estado a `Pagada` y setea `FechaPago = UtcNow`.
+5. Registra en auditoría quién marcó el pago y cuándo.
 
-El socio accede desde su portal y ve una lista de sus cuotas con los siguientes datos por cada una:
+**Flujo alternativo — Revertir pago:**
 
-| **Dato** | **Descripción** |
-|:---|:---|
-| Plan activo | Nombre del plan con el que se generó la cuota |
-| Monto a pagar | Precio del plan |
-| Fecha de vencimiento | Hasta cuándo tiene para pagar |
-| Estado | Pagada o Pendiente (badge con color: verde/rojo) |
-| Botón "Pagar" | Visible solo si la cuota está pendiente. Por ahora no hace nada — se muestra un mensaje "Próximamente" o se deja deshabilitado. |
+1. Sobre una cuota `Pagada`, el admin hace clic en "Revertir pago" y confirma.
+2. La cuota vuelve a `Pendiente` y se limpia `FechaPago`.
+3. Queda registrado en auditoría.
 
-**5. Vista del admin — "Gestión de cuotas"**
+**Flujo alternativo — Anular cuota:**
 
-El admin (o cualquier usuario con permisos sobre el módulo Cuotas) accede desde el panel de administración.
+1. Sobre una cuota `Pendiente`, el admin hace clic en "Anular" y confirma.
+2. Soft delete: la cuota nunca se borra físicamente, queda con `FechaBaja = UtcNow` y estado `Anulada`.
+3. No se puede anular una cuota ya pagada.
 
-**5.1. Filtros disponibles**
+**Flujo alternativo — Reactivar cuota anulada:**
 
-| **Filtro** | **Opciones** |
-|------------|-------------------------------------------------------------|
-| Estado | Pendiente / Pagada / Todas |
-| Mes / Año | Selector de mes y año para filtrar por fecha de vencimiento |
-| Unidad | Gimnasio Nuevo Malvín / Espacio Mora / Todas |
+1. El admin filtra por estado `Anulada` y elige "Reactivar".
+2. La cuota vuelve a `Pendiente` y se limpia `FechaBaja`. Ambas acciones (anulación + reversión) quedan en auditoría.
 
-**5.2. Datos visibles por cuota**
+**Flujo alternativo — Vista del socio "Mis cuotas":**
 
-| **Dato** | **Descripción** |
-|----|----|
-| Socio | Nombre completo del socio |
-| Unidad | A qué unidad corresponde la cuota |
-| Plan | Nombre del plan |
-| Monto | Monto a pagar |
-| Fecha de vencimiento | Fecha límite de pago |
-| Estado | Pagada o Pendiente (badge con color) |
-| Acciones | Botón "Marcar como pagada" (si pendiente) + Botón "Anular" (si pendiente) |
+1. El socio accede a `/portal/mis-cuotas` desde su portal.
+2. Ve sus cuotas con plan, unidad, monto, fecha de vencimiento, estado (badge de color) y botón "Pagar", visible solo si la cuota está pendiente y deshabilitado con tooltip "Próximamente" (el pago online se implementa en una iteración futura).
+3. El endpoint `GET /api/cuotas/mis-cuotas` resuelve el `socioId` desde el JWT: el backend nunca expone IDs de otros socios (previene IDOR).
 
-**5.3. Ordenamiento**
+**Estados de la cuota:**
 
-Por defecto: fecha de vencimiento descendente (los más próximos a vencer arriba).
+- **Pendiente al día:** la cuota fue generada y no se registró el pago; vencimiento futuro.
+- **Pendiente vencida:** sin pago registrado y `FechaVencimiento < hoy`.
+- **Pagada:** el pago fue registrado manualmente por el admin (o futuro pago online).
+- **Anulada:** baja lógica por generación errónea (soft delete).
 
-**5.4. Botón "Marcar como pagada"**
+**Flujos de excepción:**
 
-- Visible solo si la cuota está pendiente.
-- Al hacer clic, el admin confirma y el sistema cambia el estado a pagada y registra la fecha de pago.
-- Se genera log de auditoría (quién marcó el pago, cuándo).
-
-**5.5. Botón "Anular cuota"**
-
-- Visible solo si la cuota está pendiente.
-- Al hacer clic, el admin confirma y el sistema realiza un soft delete (establece FechaBaja).
-- Se genera log de auditoría.
-
-**6. Estados de la cuota**
-
-| **Estado** | **Significado** |
-|----|----|
-| Pendiente | La cuota fue generada pero no se registró el pago. Badge rojo. |
-| Pagada | El pago fue registrado (manual por admin o futuro pago online). Badge verde. |
-
-**7. Entidad de dominio**
-
-Entidad Cuota:
-
-- Id (Guid)
-- SocioId (FK - Socio)
-- UnidadId (FK - Unidad)
-- PlanId (FK - Plan)
-- Monto (snapshot del precio del plan al generar)
-- FechaEmision (cuándo se generó)
-- FechaVencimiento (FechaEmision + 30 días)
-- Estado (Pendiente / Pagada)
-- FechaPago (nullable, se llena cuando se marca como pagada)
-- FechaBaja (nullable, soft delete si se anula por error)
-
-**8. BackgroundService para generación automática**
-
-Se implementa un BackgroundService dentro de la aplicación ASP.NET que se ejecuta una vez al día para generar cuotas pendientes a socios activos con plan asignado.
-
-- La hora de ejecución se configura en appsettings.json (ej: "HoraEjecucion": "03:00").
-- Usa la hora del servidor (UTC).
-- Por cada socio activo con plan asignado, verifica si la última cuota generada ya venció (o no tiene cuotas) y genera una nueva.
-- Al crear un socio con plan asignado, también se genera la primera cuota automáticamente (FechaVencimiento = FechaAlta + 30 días).
-
-**9. Cambio necesario en el alta de socio**
-
-El socio ya tiene FechaAlta. Este campo se usa como referencia para generar la primera cuota (fecha de vencimiento = FechaAlta + 30 días). Al crear un socio con plan asignado, se genera automáticamente su primera cuota pendiente.
-
-## Requerimiento RF-06
-
-Implementar un sistema de notificaciones por email que permita al admin enviar recordatorios manuales individuales por cuota pendiente, y que el sistema envíe recordatorios automáticos antes del vencimiento de cada cuota.
-
-**2. Alcance**
-
-**Incluido**
-
-- Infraestructura de email (servicio abstracto, configuración SMTP en appsettings.json, implementación con MailKit o similar).
-- Servicio de email deshabilitable en configuración para desarrollo/testing.
-- Botón "Notificar" individual por cuota pendiente en la vista admin (envío de email al socio).
-- Recordatorios automáticos por email: 5 días antes, 1 día antes, y el día del vencimiento.
-- Entidad RecordatorioCuota para registro de notificaciones enviadas (evitar duplicados).
-
-**Fuera de alcance**
-
-- Notificaciones in-app (campanita/push) - RF-16.
-- Notificación masiva ("notificar a todos").
-- Recordatorios post-vencimiento.
-
-**3. Botón "Notificar" (manual del admin)**
-
-- Es por cuota individual, se agrega a la vista admin de Gestión de cuotas.
-- Al hacer clic, el sistema envía un email al socio recordándole que tiene una cuota pendiente.
-- El email incluye: nombre del socio, plan, unidad, monto y fecha de vencimiento.
-- Si el socio no tiene correo registrado, se muestra un mensaje de error al admin.
-- No se puede reenviar la misma notificación más de una vez por día al mismo socio por la misma cuota.
-
-**4. Recordatorios automáticos**
-
-Además del botón manual del admin, el sistema envía recordatorios automáticos por email:
-
-- 5 días antes del vencimiento: email informativo ("Tu cuota vence pronto").
-- 1 día antes del vencimiento: email urgente ("Tu cuota vence mañana").
-- El día del vencimiento: email de aviso ("Tu cuota venció hoy").
-
-**Reglas**
-
-- No se envía más de un recordatorio del mismo tipo por socio por día.
-- Si el socio no tiene correo, se omite y queda registrado en el sistema.
-- Los recordatorios solo se envían para cuotas en estado pendiente.
-- El servicio de email se puede deshabilitar en configuración para desarrollo/testing.
-
-**5. Entidad RecordatorioCuota**
-
-Tabla auxiliar para registro de notificaciones enviadas (evitar duplicados):
-
-- Id (Guid)
-- CuotaId (FK - Cuota)
-- SocioId (FK - Socio)
-- TipoRecordatorio (CincoDias / UnDia / DiaVencimiento / Manual)
-- FechaEnvio
-- Exitoso (bool)
-- Error (string nullable, mensaje si falló)
+- **E1 — Cuota ya pagada al marcar como pagada:** error de validación; la entidad bloquea el cambio de estado.
+- **E2 — Anular cuota ya pagada:** no permitido.
+- **E3 — Socio sin correo al notificar:** mensaje de error al admin; no se envía email. En los recordatorios automáticos, el socio sin correo se omite y queda registrado en el sistema.
+- **E4 — Falla SMTP en recordatorio automático:** el `RecordatorioCuota` queda registrado con `Exitoso = false` y el mensaje de error; no bloquea la ejecución del resto.
 
 ## Diagrama de actividades Recordatorios Automáticos de Cuota
 
