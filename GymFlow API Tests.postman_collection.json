@@ -6191,6 +6191,1562 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Pagos Mercado Pago (RF-21)",
+      "description": "Pago online de cuotas vía Mercado Pago Checkout Pro: iniciar pago (casos de error de negocio), webhook de notificaciones (formato moderno firmado e IPN legacy) e historial mis-pagos. El happy path de POST /pagos/iniciar llama a la API real de MP, por lo que requiere MercadoPago:AccessToken configurado y NO se incluye acá. En local (sin WebhookSecret) toda firma se considera inválida, así que el webhook moderno responde 401 con o sin x-signature.",
+      "item": [
+        {
+          "name": "Setup - Login admin (MFA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                  "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                  "loginConMfa({",
+                  "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                  "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                  "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                  "    tokenKey: \"token\",",
+                  "    secretKey: \"adminMfaSecret\"",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Login socio (MFA-aware)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Login MFA-aware via helper compartido (el socio del seed no requiere MFA, el helper lo resuelve igual).",
+                  "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                  "loginConMfa({",
+                  "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                  "    correo: pm.collectionVariables.get(\"socioEmail\"),",
+                  "    password: pm.collectionVariables.get(\"socioPassword\"),",
+                  "    tokenKey: \"socioToken\",",
+                  "    secretKey: \"socioMfaSecret\"",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{socioEmail}}\",\n  \"password\": \"{{socioPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Generar cuotas para asegurar una pendiente (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// El job es idempotente: si la última cuota del socio está vencida genera la",
+                  "// siguiente (Pendiente); si sigue vigente no crea nada. Garantiza que el",
+                  "// setup siguiente encuentre una cuota Pendiente aunque estén todas pagadas.",
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "generar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Capturar cuota pendiente del socio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const cuotas = pm.response.json();",
+                  "pm.test(\"El socio tiene al menos una cuota\", function () {",
+                  "    pm.expect(cuotas).to.be.an(\"array\").and.to.have.lengthOf.at.least(1);",
+                  "});",
+                  "const pendiente = cuotas.find(c => c.estado === \"Pendiente\");",
+                  "pm.test(\"Existe una cuota Pendiente para los tests de pago\", function () {",
+                  "    pm.expect(pendiente, \"cuota Pendiente (si no hay, correr POST /cuotas/generar como admin)\").to.exist;",
+                  "});",
+                  "if (pendiente) {",
+                  "    pm.collectionVariables.set(\"pagosCuotaPendienteId\", pendiente.id);",
+                  "    console.log(\"Cuota pendiente para pagos: \" + pendiente.id + \" (\" + pendiente.nombrePlan + \")\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/mis-cuotas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "mis-cuotas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "404 - Iniciar pago de cuota inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Body trae error\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"error\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cuotaId\": \"00000000-0000-0000-0000-000000000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/iniciar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "iniciar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Iniciar pago de cuota ajena (admin autenticado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// El admin está autenticado pero la cuota pertenece al socio del seed:",
+                  "// el command lanza UnauthorizedAccessException → Forbid (403).",
+                  "pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cuotaId\": \"{{pagosCuotaPendienteId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/iniciar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "iniciar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Marcar cuota como pagada (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const cuota = pm.response.json();",
+                  "pm.test(\"La cuota quedó Pagada\", function () {",
+                  "    pm.expect(cuota.estado).to.eql(\"Pagada\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/{{pagosCuotaPendienteId}}/pagar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "{{pagosCuotaPendienteId}}",
+                "pagar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "409 - Iniciar pago de cuota no pendiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// La cuota fue marcada Pagada en el setup anterior: E4 → 409 Conflict.",
+                  "pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Body trae error\", function () {",
+                  "    pm.expect(pm.response.json()).to.have.property(\"error\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cuotaId\": \"{{pagosCuotaPendienteId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/iniciar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "iniciar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup - Revertir pago de la cuota (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const cuota = pm.response.json();",
+                  "pm.test(\"La cuota volvió a Pendiente\", function () {",
+                  "    pm.expect(cuota.estado).to.eql(\"Pendiente\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/{{pagosCuotaPendienteId}}/revertir-pago",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "{{pagosCuotaPendienteId}}",
+                "revertir-pago"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Iniciar pago sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cuotaId\": \"{{pagosCuotaPendienteId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/iniciar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "iniciar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Webhook moderno con firma inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// RN-31 / CA-36: firma HMAC que no verifica → 401 y no se toca ningún dato.",
+                  "// En local (WebhookSecret vacío) toda firma se considera inválida, así que también da 401.",
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-signature",
+                "value": "ts=1700000000,v1=abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+              },
+              {
+                "key": "x-request-id",
+                "value": "postman-test-request-id"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/webhook?data.id=123456&type=payment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "webhook"
+              ],
+              "query": [
+                {
+                  "key": "data.id",
+                  "value": "123456"
+                },
+                {
+                  "key": "type",
+                  "value": "payment"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Webhook moderno sin firma (data.id en body)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Formato moderno con data.id solo en el body y SIN header x-signature → 401.",
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"payment\",\n  \"data\": {\n    \"id\": \"123456\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/webhook",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "webhook"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Webhook moderno con type distinto de payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// type != \"payment\" se ignora sin validar firma: 200 para que MP no reintente.",
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/webhook?data.id=123456&type=subscription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "webhook"
+              ],
+              "query": [
+                {
+                  "key": "data.id",
+                  "value": "123456"
+                },
+                {
+                  "key": "type",
+                  "value": "subscription"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Webhook IPN legacy (topic=payment)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Formato IPN legacy (?topic=payment&id=...): sin firma validable, siempre 200.",
+                  "// El command consulta el estado real en la API de MP; un id desconocido queda Ignorado.",
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/webhook?topic=payment&id=123456789",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "webhook"
+              ],
+              "query": [
+                {
+                  "key": "topic",
+                  "value": "payment"
+                },
+                {
+                  "key": "id",
+                  "value": "123456789"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Webhook IPN con topic distinto de payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// topic != \"payment\" (ej. merchant_order) se ignora con 200.",
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/webhook?topic=merchant_order&id=123456789",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "webhook"
+              ],
+              "query": [
+                {
+                  "key": "topic",
+                  "value": "merchant_order"
+                },
+                {
+                  "key": "id",
+                  "value": "123456789"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Webhook sin formato reconocible",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Sin data.id ni topic/id: 200 para que MP no reintente (queda rastro en el log).",
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pagos/webhook",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "webhook"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Mis pagos del socio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const pagos = pm.response.json();",
+                  "pm.test(\"Respuesta es array\", function () { pm.expect(pagos).to.be.an(\"array\"); });",
+                  "// El historial puede estar vacío en local (el happy path de iniciar requiere token de MP).",
+                  "if (pagos.length > 0) {",
+                  "    pm.test(\"Cada pago tiene shape PagoDto\", function () {",
+                  "        pagos.forEach(p => {",
+                  "            pm.expect(p).to.have.all.keys(\"id\", \"fecha\", \"monto\", \"medioPago\", \"mpPaymentId\", \"estado\", \"nombrePlan\");",
+                  "        });",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/mis-pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "mis-pagos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Mis pagos sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/mis-pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "mis-pagos"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cuotas Jobs Manuales (RF-06/RF-07)",
+      "description": "Disparo manual de los jobs de cuotas (el mismo trabajo que corren a diario los BackgroundServices): procesar-recordatorios (RF-06) y generar (RF-07). Requieren permiso Cuotas/Modificación (Admin o Dueño); el socio recibe 403. Ambos jobs son idempotentes.",
+      "item": [
+        {
+          "name": "Setup - Login admin (MFA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                  "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                  "loginConMfa({",
+                  "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                  "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                  "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                  "    tokenKey: \"token\",",
+                  "    secretKey: \"adminMfaSecret\"",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Login socio (MFA-aware)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Login MFA-aware via helper compartido (el socio del seed no requiere MFA, el helper lo resuelve igual).",
+                  "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                  "loginConMfa({",
+                  "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                  "    correo: pm.collectionVariables.get(\"socioEmail\"),",
+                  "    password: pm.collectionVariables.get(\"socioPassword\"),",
+                  "    tokenKey: \"socioToken\",",
+                  "    secretKey: \"socioMfaSecret\"",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{socioEmail}}\",\n  \"password\": \"{{socioPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Procesar recordatorios (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const resultado = pm.response.json();",
+                  "pm.test(\"Body tiene shape ProcesarRecordatoriosResultado\", function () {",
+                  "    pm.expect(resultado).to.have.all.keys(\"enviados\", \"omitidos\", \"fallidos\");",
+                  "    pm.expect(resultado.enviados).to.be.a(\"number\");",
+                  "    pm.expect(resultado.omitidos).to.be.a(\"number\");",
+                  "    pm.expect(resultado.fallidos).to.be.a(\"number\");",
+                  "});",
+                  "console.log(\"Recordatorios: enviados=\" + resultado.enviados + \", omitidos=\" + resultado.omitidos + \", fallidos=\" + resultado.fallidos);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/procesar-recordatorios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "procesar-recordatorios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Procesar recordatorios es idempotente (segunda corrida)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const resultado = pm.response.json();",
+                  "pm.test(\"No re-envía recordatorios ya enviados hoy (enviados = 0)\", function () {",
+                  "    pm.expect(resultado.enviados).to.eql(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/procesar-recordatorios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "procesar-recordatorios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Generar cuotas (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const resultado = pm.response.json();",
+                  "pm.test(\"Body tiene shape GenerarCuotasResultado\", function () {",
+                  "    pm.expect(resultado).to.have.all.keys(\"generadas\");",
+                  "    pm.expect(resultado.generadas).to.be.a(\"number\").and.to.be.at.least(0);",
+                  "});",
+                  "// No se asserta 0 en re-corridas: el job hace catch-up de a un período por corrida",
+                  "// si la última cuota del socio quedó vencida hace más de un mes.",
+                  "console.log(\"Cuotas generadas: \" + resultado.generadas);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "generar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Procesar recordatorios como socio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// El rol Socio no tiene permiso Cuotas/Modificación (RequierePermiso).",
+                  "pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/procesar-recordatorios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "procesar-recordatorios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Generar cuotas como socio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// El rol Socio no tiene permiso Cuotas/Modificación (RequierePermiso).",
+                  "pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "generar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Procesar recordatorios sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/procesar-recordatorios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "procesar-recordatorios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Generar cuotas sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cuotas/generar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cuotas",
+                "generar"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard Tiempo Real (RF-18)",
+      "description": "Dashboard operativo de solo lectura (CU-10): snapshot para la carga inicial y filtro por unidad. Requiere permiso Dashboard/Lectura (Admin o Dueño); el socio recibe 403. El caso 200 del stream SSE no se prueba acá porque la conexión queda abierta indefinidamente (no apta para Postman/newman); sí se prueban sus 401/403, que responden antes de iniciar el stream.",
+      "item": [
+        {
+          "name": "Setup - Login admin (MFA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Login MFA-aware via helper compartido (maneja socio sin MFA y empleado con setup/verify).",
+                  "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                  "loginConMfa({",
+                  "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                  "    correo: pm.collectionVariables.get(\"adminEmail\"),",
+                  "    password: pm.collectionVariables.get(\"adminPassword\"),",
+                  "    tokenKey: \"token\",",
+                  "    secretKey: \"adminMfaSecret\"",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Login socio (MFA-aware)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Login MFA-aware via helper compartido (el socio del seed no requiere MFA, el helper lo resuelve igual).",
+                  "eval(pm.collectionVariables.get(\"mfaHelperSrc\"));",
+                  "loginConMfa({",
+                  "    baseUrl: pm.collectionVariables.get(\"baseUrl\"),",
+                  "    correo: pm.collectionVariables.get(\"socioEmail\"),",
+                  "    password: pm.collectionVariables.get(\"socioPassword\"),",
+                  "    tokenKey: \"socioToken\",",
+                  "    secretKey: \"socioMfaSecret\"",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{socioEmail}}\",\n  \"password\": \"{{socioPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Snapshot del dashboard (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const dashboard = pm.response.json();",
+                  "pm.test(\"Body tiene shape DashboardDto\", function () {",
+                  "    pm.expect(dashboard).to.have.all.keys(\"generadoEn\", \"unidades\", \"sociosActivos\", \"cuotas\", \"clasesDelDia\", \"inscripcionesRecientes\", \"grafica\");",
+                  "    pm.expect(dashboard.unidades).to.be.an(\"array\");",
+                  "    pm.expect(dashboard.cuotas).to.have.all.keys(\"proximasAVencer\", \"vencidas\", \"pagadasMes\");",
+                  "    pm.expect(dashboard.grafica).to.have.all.keys(\"sociosPorSede\", \"cuotasPorEstado\", \"inscripcionesUltimos7Dias\");",
+                  "});",
+                  "pm.test(\"Admin ve al menos una unidad\", function () {",
+                  "    pm.expect(dashboard.unidades).to.have.lengthOf.at.least(1);",
+                  "});",
+                  "if (dashboard.unidades.length > 0) {",
+                  "    pm.collectionVariables.set(\"dashUnidadId\", dashboard.unidades[0].id);",
+                  "    console.log(\"Unidad para filtro del dashboard: \" + dashboard.unidades[0].nombre);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "200 - Snapshot filtrado por unidad",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const dashboard = pm.response.json();",
+                  "pm.test(\"Desglose por unidad solo trae la unidad pedida\", function () {",
+                  "    const id = pm.collectionVariables.get(\"dashUnidadId\");",
+                  "    dashboard.sociosActivos.porUnidad.forEach(u => {",
+                  "        pm.expect(u.unidadId).to.eql(id);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?unidadId={{dashUnidadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "unidadId",
+                  "value": "{{dashUnidadId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Snapshot como socio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// El rol Socio no tiene permiso Dashboard/Lectura (RequierePermiso).",
+                  "pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Stream SSE como socio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// El permiso se valida ANTES de iniciar el stream, por eso responde 403 normal.",
+                  "pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{socioToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stream",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "stream"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Snapshot sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Stream SSE sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stream",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "stream"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "auth": {
@@ -6379,6 +7935,16 @@
     },
     {
       "key": "socioMfaSecret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pagosCuotaPendienteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "dashUnidadId",
       "value": "",
       "type": "string"
     }

@@ -1,3 +1,5 @@
+#diagrama [[spec-rf18-dashboard]]
+
 ```plantuml
 @startuml diagrama-clases-rf18-dashboard
 ' RF-18 / CU-10: dashboard en tiempo real.
