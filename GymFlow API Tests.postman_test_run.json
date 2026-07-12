@@ -1,22 +1,22 @@
 {
-	"id": "7834e0fa-cd4e-4e8e-9045-a2c770ec0893",
+	"id": "5a4d070c-c19a-419a-a778-e216cd753ded",
 	"name": "GymFlow API Tests",
-	"timestamp": "2026-06-24T23:25:01.941Z",
-	"collection_id": "32928777-d3eb974d-c9ab-401b-a6db-7135c8aa9538",
+	"timestamp": "2026-07-11T17:40:03.352Z",
+	"collection_id": "32928777-3edff33f-156b-485c-8e53-e2dee22851d5",
 	"folder_id": 0,
 	"environment_id": "0",
-	"totalPass": 244,
+	"totalPass": 296,
 	"delay": 0,
 	"persist": true,
 	"status": "finished",
-	"startedAt": "2026-06-24T23:24:40.092Z",
+	"startedAt": "2026-07-11T17:39:37.569Z",
 	"totalFail": 0,
 	"results": [
 		{
-			"id": "49adb917-1a76-4773-b78c-104477fd7b24",
+			"id": "3584b7b5-75d7-42ae-a751-1d29d26014af",
 			"name": "200 - Login exitoso (Admin) - paso 1 credenciales",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 312,
+			"time": 144,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -46,7 +46,7 @@
 				}
 			},
 			"times": [
-				312
+				144
 			],
 			"allTests": [
 				{
@@ -58,10 +58,10 @@
 			]
 		},
 		{
-			"id": "b62d9cc8-4ac3-4d7a-af0b-34544efa0772",
+			"id": "e37f3d1a-e5a0-4e3d-9ef3-45fa06a821ae",
 			"name": "200 - Login exitoso (Admin) - paso 2 MFA",
 			"url": "http://localhost:5173/api/auth/me",
-			"time": 12,
+			"time": 33,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -86,7 +86,7 @@
 				}
 			},
 			"times": [
-				12
+				33
 			],
 			"allTests": [
 				{
@@ -97,10 +97,10 @@
 			]
 		},
 		{
-			"id": "22954caf-0459-48ae-b2cf-e0226989e082",
+			"id": "62dcc879-7bb2-457a-b8f1-9bc585901e61",
 			"name": "401 - Login con credenciales inválidas",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 20,
+			"time": 23,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -120,7 +120,7 @@
 				}
 			},
 			"times": [
-				20
+				23
 			],
 			"allTests": [
 				{
@@ -130,10 +130,10 @@
 			]
 		},
 		{
-			"id": "94d67b7c-f03e-42c5-ba92-610fb1c3fe4a",
+			"id": "abaf8388-d9b3-43a5-87f6-2c8e5421b58c",
 			"name": "400 - Login sin campos requeridos",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 43,
+			"time": 23,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -148,7 +148,7 @@
 				}
 			},
 			"times": [
-				43
+				23
 			],
 			"allTests": [
 				{
@@ -157,10 +157,10 @@
 			]
 		},
 		{
-			"id": "33fc3020-f6ea-4b25-9109-753199cbe75d",
+			"id": "9ad11e76-afb7-4322-9b0f-2ffd07ad702c",
 			"name": "200 - Obtener perfil autenticado",
 			"url": "http://localhost:5173/api/auth/me",
-			"time": 34,
+			"time": 37,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -190,7 +190,7 @@
 				}
 			},
 			"times": [
-				34
+				37
 			],
 			"allTests": [
 				{
@@ -202,10 +202,10 @@
 			]
 		},
 		{
-			"id": "77ddcbfb-61a5-4660-9353-a23d1cfac005",
+			"id": "89209ca2-c08d-4b71-b23d-00ae63763f97",
 			"name": "401 - Perfil sin autenticación",
 			"url": "http://localhost:5173/api/auth/me",
-			"time": 13,
+			"time": 19,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -220,7 +220,7 @@
 				}
 			},
 			"times": [
-				13
+				19
 			],
 			"allTests": [
 				{
@@ -229,10 +229,10 @@
 			]
 		},
 		{
-			"id": "7ad7602c-5f1d-4d66-a61e-ef145ba8d118",
+			"id": "c58dc504-5a9d-451b-be63-5e249c58bb39",
 			"name": "200 - Lista Unidades",
 			"url": "http://localhost:5173/api/unidades",
-			"time": 80,
+			"time": 55,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -262,7 +262,7 @@
 				}
 			},
 			"times": [
-				80
+				55
 			],
 			"allTests": [
 				{
@@ -274,10 +274,10 @@
 			]
 		},
 		{
-			"id": "558aa839-4917-4b45-9921-1c8a6a8be68d",
+			"id": "efa412ce-2614-4bd8-9f70-5f38480c6cad",
 			"name": "200 - Lista Planes",
 			"url": "http://localhost:5173/api/planes",
-			"time": 83,
+			"time": 31,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -302,7 +302,7 @@
 				}
 			},
 			"times": [
-				83
+				31
 			],
 			"allTests": [
 				{
@@ -313,10 +313,10 @@
 			]
 		},
 		{
-			"id": "0f0f94db-e046-4d11-bce7-3d840a2f2924",
+			"id": "a1d658ef-996d-4d13-84b5-e1b9587e86ab",
 			"name": "200 - Plan por ID",
 			"url": "http://localhost:5173/api/planes/f24dca59-677d-4a96-9ac5-9d9000015af0",
-			"time": 35,
+			"time": 23,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -336,7 +336,7 @@
 				}
 			},
 			"times": [
-				35
+				23
 			],
 			"allTests": [
 				{
@@ -346,10 +346,10 @@
 			]
 		},
 		{
-			"id": "fc460e40-d1c8-4fe2-a733-db296a657112",
+			"id": "86fec66b-6298-4e04-9db2-d3eb6a5866b2",
 			"name": "404 - Plan no encontrado",
 			"url": "http://localhost:5173/api/planes/00000000-0000-0000-0000-000000000000",
-			"time": 24,
+			"time": 13,
 			"responseCode": {
 				"code": 404,
 				"name": "Not Found"
@@ -364,7 +364,7 @@
 				}
 			},
 			"times": [
-				24
+				13
 			],
 			"allTests": [
 				{
@@ -373,10 +373,10 @@
 			]
 		},
 		{
-			"id": "9735012e-9087-439d-9de3-fde28811a29f",
+			"id": "3d0f0c54-cca9-4772-8367-f960d1d3a924",
 			"name": "201 - Crear Plan",
 			"url": "http://localhost:5173/api/planes",
-			"time": 109,
+			"time": 122,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -401,7 +401,7 @@
 				}
 			},
 			"times": [
-				109
+				122
 			],
 			"allTests": [
 				{
@@ -412,10 +412,10 @@
 			]
 		},
 		{
-			"id": "ceaff205-37b3-4425-b171-1da74b563a6e",
+			"id": "abe0615f-066d-4f45-9449-7077e7bb000e",
 			"name": "400 - Crear Plan sin nombre",
 			"url": "http://localhost:5173/api/planes",
-			"time": 40,
+			"time": 32,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -435,7 +435,7 @@
 				}
 			},
 			"times": [
-				40
+				32
 			],
 			"allTests": [
 				{
@@ -445,10 +445,10 @@
 			]
 		},
 		{
-			"id": "a04eb4b2-731a-4a8c-9a98-70583e1bac23",
+			"id": "328defae-74cf-4de7-8100-cd485c10df27",
 			"name": "400 - Crear Plan con unidad inexistente",
 			"url": "http://localhost:5173/api/planes",
-			"time": 20,
+			"time": 22,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -463,7 +463,7 @@
 				}
 			},
 			"times": [
-				20
+				22
 			],
 			"allTests": [
 				{
@@ -472,10 +472,10 @@
 			]
 		},
 		{
-			"id": "2c3a9915-1c75-4bbf-a455-1cdbef49acb8",
+			"id": "e3c69cf5-e336-4293-8350-038fc77155c9",
 			"name": "200 - Actualizar Plan",
-			"url": "http://localhost:5173/api/planes/8d2f6910-8b46-4345-9727-1abf9caf8f07",
-			"time": 52,
+			"url": "http://localhost:5173/api/planes/53bf198c-19db-4552-9b76-472b3c60f3c5",
+			"time": 33,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -495,7 +495,7 @@
 				}
 			},
 			"times": [
-				52
+				33
 			],
 			"allTests": [
 				{
@@ -505,10 +505,10 @@
 			]
 		},
 		{
-			"id": "53808eb5-8467-49f8-a1b9-eb63e08560fa",
+			"id": "99468a65-5333-491d-91ee-8c25ea7d828c",
 			"name": "204 - Eliminar Plan",
-			"url": "http://localhost:5173/api/planes/8d2f6910-8b46-4345-9727-1abf9caf8f07",
-			"time": 39,
+			"url": "http://localhost:5173/api/planes/53bf198c-19db-4552-9b76-472b3c60f3c5",
+			"time": 82,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -523,7 +523,7 @@
 				}
 			},
 			"times": [
-				39
+				82
 			],
 			"allTests": [
 				{
@@ -532,10 +532,10 @@
 			]
 		},
 		{
-			"id": "674bcf25-a94a-4432-b027-ee1707bd1fc3",
+			"id": "7614070a-ddb3-43d8-b063-f2b7484ea6e1",
 			"name": "404 - Eliminar Plan inexistente",
 			"url": "http://localhost:5173/api/planes/00000000-0000-0000-0000-000000000000",
-			"time": 24,
+			"time": 14,
 			"responseCode": {
 				"code": 404,
 				"name": "Not Found"
@@ -550,7 +550,7 @@
 				}
 			},
 			"times": [
-				24
+				14
 			],
 			"allTests": [
 				{
@@ -559,10 +559,10 @@
 			]
 		},
 		{
-			"id": "81c11e62-e4cc-4415-a839-66bc7029415e",
+			"id": "cfe1fdae-0c24-42e9-86fc-645d699620bc",
 			"name": "200 - Lista Socios",
 			"url": "http://localhost:5173/api/socios",
-			"time": 88,
+			"time": 112,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -592,7 +592,7 @@
 				}
 			},
 			"times": [
-				88
+				112
 			],
 			"allTests": [
 				{
@@ -604,10 +604,10 @@
 			]
 		},
 		{
-			"id": "768b1f59-07ff-4ba3-b1de-ae0be8b904db",
+			"id": "84c6075c-d589-4ca4-8cb2-b56dd8481954",
 			"name": "201 - Crear Socio",
 			"url": "http://localhost:5173/api/socios",
-			"time": 213,
+			"time": 239,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -632,7 +632,7 @@
 				}
 			},
 			"times": [
-				213
+				239
 			],
 			"allTests": [
 				{
@@ -643,10 +643,10 @@
 			]
 		},
 		{
-			"id": "ed004b30-faeb-4948-86ec-dd9641fb1039",
+			"id": "d92aa735-962b-46d7-98fa-4dc5a11bab62",
 			"name": "400 - Crear Socio sin nombre",
 			"url": "http://localhost:5173/api/socios",
-			"time": 36,
+			"time": 21,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -666,7 +666,7 @@
 				}
 			},
 			"times": [
-				36
+				21
 			],
 			"allTests": [
 				{
@@ -676,10 +676,10 @@
 			]
 		},
 		{
-			"id": "bcab700d-229e-46ce-984f-08aad55e5539",
+			"id": "912be58f-3e0e-4e53-adbc-568d0255e472",
 			"name": "400 - Crear Socio sin consentimiento (Ley 18.331)",
 			"url": "http://localhost:5173/api/socios",
-			"time": 17,
+			"time": 44,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -699,7 +699,7 @@
 				}
 			},
 			"times": [
-				17
+				44
 			],
 			"allTests": [
 				{
@@ -709,10 +709,10 @@
 			]
 		},
 		{
-			"id": "c97a8b23-506c-49bf-92d2-415eaf01690a",
+			"id": "5058dcf3-c47e-45f6-8b06-7e6952433574",
 			"name": "400 - Crear Socio con correo duplicado",
 			"url": "http://localhost:5173/api/socios",
-			"time": 23,
+			"time": 15,
 			"responseCode": {
 				"code": 409,
 				"name": "Conflict"
@@ -732,7 +732,7 @@
 				}
 			},
 			"times": [
-				23
+				15
 			],
 			"allTests": [
 				{
@@ -742,10 +742,10 @@
 			]
 		},
 		{
-			"id": "61b01198-b942-4eec-9e90-fa54fa083266",
+			"id": "bab9fa75-949a-4471-a66a-7344fcb8d852",
 			"name": "200 - Socio por ID",
-			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c",
-			"time": 20,
+			"url": "http://localhost:5173/api/socios/877066f2-47bc-4421-96f4-0e181c5f51f7",
+			"time": 32,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -765,7 +765,7 @@
 				}
 			},
 			"times": [
-				20
+				32
 			],
 			"allTests": [
 				{
@@ -775,189 +775,9 @@
 			]
 		},
 		{
-			"id": "9138f0d0-cc07-47ca-ac21-bb0d1b27c1c1",
+			"id": "3b07ed2f-293a-486e-b586-e2c58908dfc1",
 			"name": "404 - Socio no encontrado",
 			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000000",
-			"time": 16,
-			"responseCode": {
-				"code": 404,
-				"name": "Not Found"
-			},
-			"tests": {
-				"Status code is 404": true
-			},
-			"testPassFailCounts": {
-				"Status code is 404": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				16
-			],
-			"allTests": [
-				{
-					"Status code is 404": true
-				}
-			]
-		},
-		{
-			"id": "5f2c3d33-9bdb-43fe-82b8-665fab0ce842",
-			"name": "200 - Actualizar Socio",
-			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c",
-			"time": 85,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"El socio se actualizó correctamente": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"El socio se actualizó correctamente": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				85
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"El socio se actualizó correctamente": true
-				}
-			]
-		},
-		{
-			"id": "7def0d14-5c53-476e-abf4-d243b9aedb5d",
-			"name": "404 - Actualizar Socio inexistente",
-			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000000",
-			"time": 32,
-			"responseCode": {
-				"code": 404,
-				"name": "Not Found"
-			},
-			"tests": {
-				"Status code is 404": true
-			},
-			"testPassFailCounts": {
-				"Status code is 404": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				32
-			],
-			"allTests": [
-				{
-					"Status code is 404": true
-				}
-			]
-		},
-		{
-			"id": "c0ab9af8-d660-4bcb-bcf2-e67c82527779",
-			"name": "200 - Baja lógica de Socio",
-			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c",
-			"time": 54,
-			"responseCode": {
-				"code": 204,
-				"name": "No Content"
-			},
-			"tests": {
-				"Status code is 200 o 204": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200 o 204": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				54
-			],
-			"allTests": [
-				{
-					"Status code is 200 o 204": true
-				}
-			]
-		},
-		{
-			"id": "e01ca74f-e58b-48a9-8622-bb7b480380f7",
-			"name": "200 - Verificar socio inactivo tras baja",
-			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c",
-			"time": 24,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"El socio está inactivo (baja lógica, no eliminado)": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"El socio está inactivo (baja lógica, no eliminado)": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				24
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"El socio está inactivo (baja lógica, no eliminado)": true
-				}
-			]
-		},
-		{
-			"id": "221bdf47-c30e-45e6-b7b2-aae09e7f5a7d",
-			"name": "200 - Reactivar Socio",
-			"url": "http://localhost:5173/api/socios/4e14a213-f902-45e6-91d6-40da7f35c54c/reactivar",
-			"time": 33,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"El socio está activo nuevamente": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"El socio está activo nuevamente": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				33
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"El socio está activo nuevamente": true
-				}
-			]
-		},
-		{
-			"id": "bc9afdb3-607f-4e8d-94e5-e98d09075cd5",
-			"name": "404 - Reactivar Socio inexistente",
-			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000000/reactivar",
 			"time": 17,
 			"responseCode": {
 				"code": 404,
@@ -982,10 +802,190 @@
 			]
 		},
 		{
-			"id": "f0061cb0-ff99-4de3-b4b9-f2c2b4722a5e",
+			"id": "0a086c17-43dc-4c9d-916a-8090439e8a18",
+			"name": "200 - Actualizar Socio",
+			"url": "http://localhost:5173/api/socios/877066f2-47bc-4421-96f4-0e181c5f51f7",
+			"time": 108,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El socio se actualizó correctamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El socio se actualizó correctamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				108
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El socio se actualizó correctamente": true
+				}
+			]
+		},
+		{
+			"id": "314a929a-f8ec-4c18-9c32-d1abcc8ac257",
+			"name": "404 - Actualizar Socio inexistente",
+			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000000",
+			"time": 13,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "fd08c850-f3d4-4a83-95c3-9d3f23e71a24",
+			"name": "200 - Baja lógica de Socio",
+			"url": "http://localhost:5173/api/socios/877066f2-47bc-4421-96f4-0e181c5f51f7",
+			"time": 56,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"Status code is 200 o 204": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200 o 204": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				56
+			],
+			"allTests": [
+				{
+					"Status code is 200 o 204": true
+				}
+			]
+		},
+		{
+			"id": "04867eb8-cd45-4324-877a-09bd22bb7db2",
+			"name": "200 - Verificar socio inactivo tras baja",
+			"url": "http://localhost:5173/api/socios/877066f2-47bc-4421-96f4-0e181c5f51f7",
+			"time": 20,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El socio está inactivo (baja lógica, no eliminado)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El socio está inactivo (baja lógica, no eliminado)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				20
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El socio está inactivo (baja lógica, no eliminado)": true
+				}
+			]
+		},
+		{
+			"id": "2ae23925-4159-4cc3-8e47-cc6be2ac5eb3",
+			"name": "200 - Reactivar Socio",
+			"url": "http://localhost:5173/api/socios/877066f2-47bc-4421-96f4-0e181c5f51f7/reactivar",
+			"time": 35,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El socio está activo nuevamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El socio está activo nuevamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				35
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El socio está activo nuevamente": true
+				}
+			]
+		},
+		{
+			"id": "c6994498-0c67-4589-a168-3494bf389c15",
+			"name": "404 - Reactivar Socio inexistente",
+			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000000/reactivar",
+			"time": 14,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "253f1aae-ce6c-4b65-9670-727e233384e3",
 			"name": "200 - Lista Auditoría (sin filtros)",
 			"url": "http://localhost:5173/api/auditoria",
-			"time": 60,
+			"time": 42,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1015,7 +1015,7 @@
 				}
 			},
 			"times": [
-				60
+				42
 			],
 			"allTests": [
 				{
@@ -1027,10 +1027,10 @@
 			]
 		},
 		{
-			"id": "75a7323c-d2b4-4d43-92d2-d062beaaa974",
+			"id": "8fb8909b-f7b5-4dc1-beb2-f91291ce0623",
 			"name": "200 - Auditoría con filtro por tipoAccion",
 			"url": "http://localhost:5173/api/auditoria?tipoAccion=Creacion",
-			"time": 31,
+			"time": 19,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1050,7 +1050,7 @@
 				}
 			},
 			"times": [
-				31
+				19
 			],
 			"allTests": [
 				{
@@ -1060,10 +1060,10 @@
 			]
 		},
 		{
-			"id": "12269b29-1d30-4043-89ec-21bad353d459",
+			"id": "1689affe-6a60-4aae-a85e-2750bffa0e6c",
 			"name": "200 - Auditoría con filtro por fechas",
 			"url": "http://localhost:5173/api/auditoria?desde=2026-01-01&hasta=2026-12-31",
-			"time": 40,
+			"time": 39,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1083,7 +1083,7 @@
 				}
 			},
 			"times": [
-				40
+				39
 			],
 			"allTests": [
 				{
@@ -1093,10 +1093,10 @@
 			]
 		},
 		{
-			"id": "eba0403e-618b-4813-9737-ed81282ed669",
+			"id": "d2d10184-d868-4f7f-8c8d-6b00a2cc3134",
 			"name": "1. Login Admin",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 136,
+			"time": 134,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1116,7 +1116,7 @@
 				}
 			},
 			"times": [
-				136
+				134
 			],
 			"allTests": [
 				{
@@ -1126,10 +1126,10 @@
 			]
 		},
 		{
-			"id": "bdaeb23f-4ba2-4a06-b222-710e6ab5338d",
+			"id": "42e54ad9-e436-4830-bda9-4822337f5c8b",
 			"name": "2. Obtener Permisos disponibles",
 			"url": "http://localhost:5173/api/permisos",
-			"time": 25,
+			"time": 46,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1149,7 +1149,7 @@
 				}
 			},
 			"times": [
-				25
+				46
 			],
 			"allTests": [
 				{
@@ -1159,10 +1159,10 @@
 			]
 		},
 		{
-			"id": "670e94f5-e642-485a-acd0-f2f4c565670a",
+			"id": "2cbf1002-7a83-4ed9-bf80-337b4f0f9ff7",
 			"name": "3. Obtener Unidades (datos auxiliares)",
 			"url": "http://localhost:5173/api/unidades",
-			"time": 18,
+			"time": 11,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1177,7 +1177,7 @@
 				}
 			},
 			"times": [
-				18
+				11
 			],
 			"allTests": [
 				{
@@ -1186,10 +1186,10 @@
 			]
 		},
 		{
-			"id": "03f6b5ef-6ba2-486a-bb62-16a08d91a27e",
+			"id": "dee1e6e3-1154-4cb7-90fd-f826b3d4a0ff",
 			"name": "4. Crear Rol Restringido (Recepcionista Test)",
 			"url": "http://localhost:5173/api/roles",
-			"time": 52,
+			"time": 47,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -1209,7 +1209,7 @@
 				}
 			},
 			"times": [
-				52
+				47
 			],
 			"allTests": [
 				{
@@ -1219,10 +1219,10 @@
 			]
 		},
 		{
-			"id": "acdf5723-40b7-46bf-8b8f-1abbf0bf6520",
+			"id": "ffd4897e-370d-4be8-a60b-3fcb2888c043",
 			"name": "5. Crear Empleado con Rol Restringido",
 			"url": "http://localhost:5173/api/empleados",
-			"time": 206,
+			"time": 164,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -1242,7 +1242,7 @@
 				}
 			},
 			"times": [
-				206
+				164
 			],
 			"allTests": [
 				{
@@ -1252,10 +1252,10 @@
 			]
 		},
 		{
-			"id": "6de0b4a0-6f73-4e92-88c2-7011437f0963",
+			"id": "5ebf502a-79d7-4493-827c-89aaecaaf9eb",
 			"name": "5.5. Asignar password conocido al empleado (PATCH)",
-			"url": "http://localhost:5173/api/empleados/3a396a29-1e56-4bdb-b520-d7802aca566c/password",
-			"time": 186,
+			"url": "http://localhost:5173/api/empleados/67b1b7af-258d-4494-b8f9-635e270be584/password",
+			"time": 159,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -1270,7 +1270,7 @@
 				}
 			},
 			"times": [
-				186
+				159
 			],
 			"allTests": [
 				{
@@ -1279,49 +1279,49 @@
 			]
 		},
 		{
-			"id": "4bca77b4-2f21-4982-a6fc-5e76d1533104",
+			"id": "80de3ea3-38cc-44cd-9497-db00a40a47e6",
 			"name": "6. Login como Empleado Restringido",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 171,
+			"time": 126,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
 			},
 			"tests": {
-				"Login recepcionista.test.1782343487414@gymflow.com (200)": true,
-				"MFA setup recepcionista.test.1782343487414@gymflow.com": true,
-				"MFA activate recepcionista.test.1782343487414@gymflow.com": true
+				"Login recepcionista.test.1783791584160@gymflow.com (200)": true,
+				"MFA setup recepcionista.test.1783791584160@gymflow.com": true,
+				"MFA activate recepcionista.test.1783791584160@gymflow.com": true
 			},
 			"testPassFailCounts": {
-				"Login recepcionista.test.1782343487414@gymflow.com (200)": {
+				"Login recepcionista.test.1783791584160@gymflow.com (200)": {
 					"pass": 1,
 					"fail": 0
 				},
-				"MFA setup recepcionista.test.1782343487414@gymflow.com": {
+				"MFA setup recepcionista.test.1783791584160@gymflow.com": {
 					"pass": 1,
 					"fail": 0
 				},
-				"MFA activate recepcionista.test.1782343487414@gymflow.com": {
+				"MFA activate recepcionista.test.1783791584160@gymflow.com": {
 					"pass": 1,
 					"fail": 0
 				}
 			},
 			"times": [
-				171
+				126
 			],
 			"allTests": [
 				{
-					"Login recepcionista.test.1782343487414@gymflow.com (200)": true,
-					"MFA setup recepcionista.test.1782343487414@gymflow.com": true,
-					"MFA activate recepcionista.test.1782343487414@gymflow.com": true
+					"Login recepcionista.test.1783791584160@gymflow.com (200)": true,
+					"MFA setup recepcionista.test.1783791584160@gymflow.com": true,
+					"MFA activate recepcionista.test.1783791584160@gymflow.com": true
 				}
 			]
 		},
 		{
-			"id": "6e427aa8-1f5b-4231-94e6-ffe4c67d86ba",
+			"id": "a191fa3b-b6b9-4b43-b441-05b96dab1300",
 			"name": "200 - Leer Socios (tiene Socios.Lectura)",
 			"url": "http://localhost:5173/api/socios",
-			"time": 13,
+			"time": 20,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1346,7 +1346,7 @@
 				}
 			},
 			"times": [
-				13
+				20
 			],
 			"allTests": [
 				{
@@ -1357,10 +1357,10 @@
 			]
 		},
 		{
-			"id": "9b0bf49c-8615-4662-a89a-5246eb3af6bd",
+			"id": "37db3f39-d004-40f6-879b-596ab15930dc",
 			"name": "200 - Leer Planes (tiene Planes.Lectura)",
 			"url": "http://localhost:5173/api/planes",
-			"time": 19,
+			"time": 14,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1385,7 +1385,7 @@
 				}
 			},
 			"times": [
-				19
+				14
 			],
 			"allTests": [
 				{
@@ -1396,10 +1396,10 @@
 			]
 		},
 		{
-			"id": "38a40a7c-56fd-46e3-bf5c-e32c3ff1a996",
+			"id": "c5ac8f54-6f69-48b2-a30b-aa7b5b69036a",
 			"name": "201 - Crear Plan (tiene Planes.Escritura)",
 			"url": "http://localhost:5173/api/planes",
-			"time": 18,
+			"time": 30,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -1419,7 +1419,7 @@
 				}
 			},
 			"times": [
-				18
+				30
 			],
 			"allTests": [
 				{
@@ -1429,10 +1429,10 @@
 			]
 		},
 		{
-			"id": "9dcdef4a-88f9-47df-8131-1e92fa823645",
+			"id": "eeefc8e1-52b8-43b4-ae6a-c6f7f5cd0c0a",
 			"name": "403 - Crear Socio (sin Socios.Escritura)",
 			"url": "http://localhost:5173/api/socios",
-			"time": 20,
+			"time": 11,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1452,7 +1452,7 @@
 				}
 			},
 			"times": [
-				20
+				11
 			],
 			"allTests": [
 				{
@@ -1462,10 +1462,10 @@
 			]
 		},
 		{
-			"id": "d1876c93-2039-4bcc-ba91-c9f5c556dadb",
+			"id": "a68aceb3-2157-43fd-ac07-2ccf2e2e54a4",
 			"name": "403 - Modificar Socio (sin Socios.Modificacion)",
 			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000001",
-			"time": 10,
+			"time": 20,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1485,7 +1485,7 @@
 				}
 			},
 			"times": [
-				10
+				20
 			],
 			"allTests": [
 				{
@@ -1495,10 +1495,10 @@
 			]
 		},
 		{
-			"id": "ddb48df1-6c27-439a-aec3-f90ff018ef4b",
+			"id": "4c2acf3d-b3e3-427c-98d6-2bc943325779",
 			"name": "403 - Eliminar Socio (sin Socios.Eliminacion)",
 			"url": "http://localhost:5173/api/socios/00000000-0000-0000-0000-000000000001",
-			"time": 12,
+			"time": 15,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1518,7 +1518,7 @@
 				}
 			},
 			"times": [
-				12
+				15
 			],
 			"allTests": [
 				{
@@ -1528,10 +1528,10 @@
 			]
 		},
 		{
-			"id": "eb12c426-ccdd-4d5e-b8ac-46d44e35b21f",
+			"id": "90a40110-5b6c-4c27-92b3-0a816f1410ca",
 			"name": "403 - Modificar Plan (sin Planes.Modificacion)",
-			"url": "http://localhost:5173/api/planes/33a09dc6-357e-4742-9d7e-2d9cb23334c0",
-			"time": 8,
+			"url": "http://localhost:5173/api/planes/a2d94fe0-924a-4d37-9112-2eb38d45c878",
+			"time": 11,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1551,7 +1551,7 @@
 				}
 			},
 			"times": [
-				8
+				11
 			],
 			"allTests": [
 				{
@@ -1561,10 +1561,10 @@
 			]
 		},
 		{
-			"id": "4a3a7f83-f89f-455d-9e3d-ff0a04ed1cbb",
+			"id": "6cbc9cd3-2d1c-4ed7-a062-62038db6b43f",
 			"name": "403 - Eliminar Plan (sin Planes.Eliminacion)",
-			"url": "http://localhost:5173/api/planes/33a09dc6-357e-4742-9d7e-2d9cb23334c0",
-			"time": 16,
+			"url": "http://localhost:5173/api/planes/a2d94fe0-924a-4d37-9112-2eb38d45c878",
+			"time": 11,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1584,7 +1584,7 @@
 				}
 			},
 			"times": [
-				16
+				11
 			],
 			"allTests": [
 				{
@@ -1594,10 +1594,10 @@
 			]
 		},
 		{
-			"id": "158e1259-0e52-4e31-bb17-f6ab85e4a699",
+			"id": "758e10de-5033-4f0d-9a37-f26b8462fcb6",
 			"name": "403 - Leer Auditoría (sin acceso al módulo Auditoria)",
 			"url": "http://localhost:5173/api/auditoria",
-			"time": 14,
+			"time": 16,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1617,7 +1617,7 @@
 				}
 			},
 			"times": [
-				14
+				16
 			],
 			"allTests": [
 				{
@@ -1627,10 +1627,10 @@
 			]
 		},
 		{
-			"id": "4fd4a574-9b25-4837-b8fc-ecdb53a76852",
+			"id": "90eb1404-cf4d-4d33-942a-70276087798e",
 			"name": "403 - Leer Empleados (sin acceso al módulo Empleados)",
 			"url": "http://localhost:5173/api/empleados",
-			"time": 16,
+			"time": 12,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1650,7 +1650,7 @@
 				}
 			},
 			"times": [
-				16
+				12
 			],
 			"allTests": [
 				{
@@ -1660,10 +1660,10 @@
 			]
 		},
 		{
-			"id": "b7f9ce90-62ff-4dff-9c17-0060b8d60eb4",
+			"id": "8498bc19-12c2-414b-a3a5-d509e2f0234a",
 			"name": "403 - Leer Unidades (sin acceso al módulo Unidades)",
 			"url": "http://localhost:5173/api/unidades",
-			"time": 14,
+			"time": 11,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1683,7 +1683,7 @@
 				}
 			},
 			"times": [
-				14
+				11
 			],
 			"allTests": [
 				{
@@ -1693,7 +1693,7 @@
 			]
 		},
 		{
-			"id": "4de60238-d2c2-48d1-ba97-f62fa1a72843",
+			"id": "8611db0e-498e-4b6b-862b-0373f7ecb66f",
 			"name": "403 - Crear Rol (sin acceso al módulo Auditoria)",
 			"url": "http://localhost:5173/api/roles",
 			"time": 10,
@@ -1726,10 +1726,10 @@
 			]
 		},
 		{
-			"id": "75b1290b-1e43-4971-9352-2be980b5ee17",
+			"id": "526538db-973c-4c03-9516-7412f536dec5",
 			"name": "403 - Crear Empleado (sin acceso al módulo Empleados)",
 			"url": "http://localhost:5173/api/empleados",
-			"time": 11,
+			"time": 12,
 			"responseCode": {
 				"code": 403,
 				"name": "Forbidden"
@@ -1749,7 +1749,7 @@
 				}
 			},
 			"times": [
-				11
+				12
 			],
 			"allTests": [
 				{
@@ -1759,10 +1759,10 @@
 			]
 		},
 		{
-			"id": "1f5256f1-52f7-4b43-a5e5-b330a7ad86f7",
+			"id": "50a7fa4c-f999-404d-a0e1-3da2ee00f574",
 			"name": "401 - Acceder a Socios sin autenticación",
 			"url": "http://localhost:5173/api/socios",
-			"time": 9,
+			"time": 8,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -1782,7 +1782,7 @@
 				}
 			},
 			"times": [
-				9
+				8
 			],
 			"allTests": [
 				{
@@ -1792,10 +1792,10 @@
 			]
 		},
 		{
-			"id": "d21e6993-9255-4f8e-b15f-50c22ca397f6",
+			"id": "c461b6ce-41ff-4cf5-ba8a-c12f2e029c60",
 			"name": "401 - Acceder a Planes sin autenticación",
 			"url": "http://localhost:5173/api/planes",
-			"time": 13,
+			"time": 11,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -1815,7 +1815,7 @@
 				}
 			},
 			"times": [
-				13
+				11
 			],
 			"allTests": [
 				{
@@ -1825,10 +1825,10 @@
 			]
 		},
 		{
-			"id": "436c5f69-8113-43d7-81ff-fe6f0abad4bb",
+			"id": "7baa196c-c040-4313-b1a8-30bf45e9a4c6",
 			"name": "401 - Crear Socio con token inválido",
 			"url": "http://localhost:5173/api/socios",
-			"time": 18,
+			"time": 11,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -1848,7 +1848,7 @@
 				}
 			},
 			"times": [
-				18
+				11
 			],
 			"allTests": [
 				{
@@ -1858,10 +1858,10 @@
 			]
 		},
 		{
-			"id": "095fe77e-9e64-4c23-9ee9-96d061423c2d",
+			"id": "3e587ae7-c193-4f3e-a969-a1fd7a6a1bc0",
 			"name": "1. Login Admin para cleanup",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 163,
+			"time": 126,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1881,7 +1881,7 @@
 				}
 			},
 			"times": [
-				163
+				126
 			],
 			"allTests": [
 				{
@@ -1891,10 +1891,10 @@
 			]
 		},
 		{
-			"id": "91b0bc5b-8f7c-4083-bbc7-f42e2ff9e0b6",
+			"id": "a88e270a-2519-4daa-96a1-b57009800496",
 			"name": "2. Eliminar Plan creado en test",
-			"url": "http://localhost:5173/api/planes/33a09dc6-357e-4742-9d7e-2d9cb23334c0",
-			"time": 25,
+			"url": "http://localhost:5173/api/planes/a2d94fe0-924a-4d37-9112-2eb38d45c878",
+			"time": 18,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -1909,7 +1909,7 @@
 				}
 			},
 			"times": [
-				25
+				18
 			],
 			"allTests": [
 				{
@@ -1918,10 +1918,10 @@
 			]
 		},
 		{
-			"id": "54697a47-4e01-41c1-8701-4fb4551bb480",
+			"id": "332a02fc-e130-48f4-bfe6-9e0007492924",
 			"name": "3. Reasignar Empleado al rol Admin (evitar FK)",
-			"url": "http://localhost:5173/api/empleados/3a396a29-1e56-4bdb-b520-d7802aca566c",
-			"time": 68,
+			"url": "http://localhost:5173/api/empleados/67b1b7af-258d-4494-b8f9-635e270be584",
+			"time": 58,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -1936,7 +1936,7 @@
 				}
 			},
 			"times": [
-				68
+				58
 			],
 			"allTests": [
 				{
@@ -1945,10 +1945,10 @@
 			]
 		},
 		{
-			"id": "11d70fcd-b8ce-46e0-84ed-bbf6c07bd1a2",
+			"id": "98602f9c-9b51-486d-9e12-de4fb1914048",
 			"name": "4. Dar de baja Empleado test",
-			"url": "http://localhost:5173/api/empleados/3a396a29-1e56-4bdb-b520-d7802aca566c",
-			"time": 37,
+			"url": "http://localhost:5173/api/empleados/67b1b7af-258d-4494-b8f9-635e270be584",
+			"time": 32,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -1963,7 +1963,7 @@
 				}
 			},
 			"times": [
-				37
+				32
 			],
 			"allTests": [
 				{
@@ -1972,10 +1972,10 @@
 			]
 		},
 		{
-			"id": "88078cc6-ce4c-4f00-8032-aabe691b73aa",
+			"id": "2b119d54-6ff6-4b59-a773-fa7cce249da2",
 			"name": "5. Eliminar Rol test",
-			"url": "http://localhost:5173/api/roles/b8a9e0db-2f33-496a-97a8-b39414e286f2",
-			"time": 100,
+			"url": "http://localhost:5173/api/roles/ef3be00b-7cdf-43ef-85ba-1de671342fb5",
+			"time": 41,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -1990,7 +1990,7 @@
 				}
 			},
 			"times": [
-				100
+				41
 			],
 			"allTests": [
 				{
@@ -1999,10 +1999,10 @@
 			]
 		},
 		{
-			"id": "fe78c13d-7e6e-4571-b757-10fb147404a2",
+			"id": "78b48a7c-cd57-444e-b9f2-78fa4c642ddc",
 			"name": "201 - Crear Clase",
 			"url": "http://localhost:5173/api/clases",
-			"time": 198,
+			"time": 82,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -2027,7 +2027,7 @@
 				}
 			},
 			"times": [
-				198
+				82
 			],
 			"allTests": [
 				{
@@ -2038,10 +2038,10 @@
 			]
 		},
 		{
-			"id": "1914dcfa-16c5-4ea1-8d68-6af16db1d43a",
+			"id": "0a3222e6-e50d-40ff-9660-0aa85a83d78d",
 			"name": "400 - Crear Clase sin nombre",
 			"url": "http://localhost:5173/api/clases",
-			"time": 15,
+			"time": 14,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -2061,7 +2061,7 @@
 				}
 			},
 			"times": [
-				15
+				14
 			],
 			"allTests": [
 				{
@@ -2071,10 +2071,10 @@
 			]
 		},
 		{
-			"id": "cc44a3a0-4440-4c14-97ab-fa88bae30c0b",
+			"id": "ee7f61d6-e6f2-447b-bbd2-87e890f434d1",
 			"name": "200 - Lista Clases",
 			"url": "http://localhost:5173/api/clases",
-			"time": 330,
+			"time": 196,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2099,7 +2099,7 @@
 				}
 			},
 			"times": [
-				330
+				196
 			],
 			"allTests": [
 				{
@@ -2110,10 +2110,10 @@
 			]
 		},
 		{
-			"id": "c827038a-e74e-4487-b83e-cfc12a69c304",
+			"id": "c76aaf17-5923-49be-86ec-e19fe030d0c0",
 			"name": "200 - Lista Clases filtradas por unidad",
 			"url": "http://localhost:5173/api/clases?unidadId=11433f70-415f-4902-a56e-d1961af13fcc",
-			"time": 98,
+			"time": 32,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2133,7 +2133,7 @@
 				}
 			},
 			"times": [
-				98
+				32
 			],
 			"allTests": [
 				{
@@ -2143,10 +2143,10 @@
 			]
 		},
 		{
-			"id": "d5f90471-ff1d-4202-9716-b8391bb56476",
+			"id": "a2bb73df-7499-4cc2-9420-f30270f7b17b",
 			"name": "200 - Lista Clases incluyendo inactivas",
 			"url": "http://localhost:5173/api/clases?includeInactive=true",
-			"time": 66,
+			"time": 51,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2166,7 +2166,7 @@
 				}
 			},
 			"times": [
-				66
+				51
 			],
 			"allTests": [
 				{
@@ -2176,10 +2176,10 @@
 			]
 		},
 		{
-			"id": "0c20ab22-c040-490d-a804-c297354371d6",
+			"id": "f1522e4b-5bd9-45a6-868e-4e9d5ee23fba",
 			"name": "200 - Clase por ID",
-			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70",
-			"time": 34,
+			"url": "http://localhost:5173/api/clases/08e2e484-3b98-4615-8180-2c271e530dbc",
+			"time": 25,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2199,7 +2199,7 @@
 				}
 			},
 			"times": [
-				34
+				25
 			],
 			"allTests": [
 				{
@@ -2209,10 +2209,10 @@
 			]
 		},
 		{
-			"id": "465ff609-e951-4064-ae28-cc376bca25dd",
+			"id": "9cce5b7e-cad1-41e3-a5d1-44319db34861",
 			"name": "404 - Clase no encontrada",
 			"url": "http://localhost:5173/api/clases/00000000-0000-0000-0000-000000000000",
-			"time": 11,
+			"time": 16,
 			"responseCode": {
 				"code": 404,
 				"name": "Not Found"
@@ -2227,7 +2227,7 @@
 				}
 			},
 			"times": [
-				11
+				16
 			],
 			"allTests": [
 				{
@@ -2236,10 +2236,10 @@
 			]
 		},
 		{
-			"id": "388b3754-af91-476a-b45e-d336c9befb1e",
+			"id": "89c05999-b3b0-4a53-b16b-43556a6da402",
 			"name": "200 - Actualizar Clase",
-			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70",
-			"time": 52,
+			"url": "http://localhost:5173/api/clases/08e2e484-3b98-4615-8180-2c271e530dbc",
+			"time": 34,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2259,7 +2259,7 @@
 				}
 			},
 			"times": [
-				52
+				34
 			],
 			"allTests": [
 				{
@@ -2269,10 +2269,10 @@
 			]
 		},
 		{
-			"id": "23d9024a-f09d-410b-a995-82c306884efa",
+			"id": "c2e8d51a-b8c3-453a-9c16-b9d160355a1e",
 			"name": "404 - Actualizar Clase inexistente",
 			"url": "http://localhost:5173/api/clases/00000000-0000-0000-0000-000000000000",
-			"time": 14,
+			"time": 18,
 			"responseCode": {
 				"code": 404,
 				"name": "Not Found"
@@ -2287,7 +2287,7 @@
 				}
 			},
 			"times": [
-				14
+				18
 			],
 			"allTests": [
 				{
@@ -2296,10 +2296,10 @@
 			]
 		},
 		{
-			"id": "7ace3257-3ffa-4e8a-ab29-c2d9397f029f",
+			"id": "5b6aaac9-a708-4271-af68-6cad1a42e772",
 			"name": "204 - Cancelar Clase",
-			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70",
-			"time": 50,
+			"url": "http://localhost:5173/api/clases/08e2e484-3b98-4615-8180-2c271e530dbc",
+			"time": 28,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -2314,7 +2314,7 @@
 				}
 			},
 			"times": [
-				50
+				28
 			],
 			"allTests": [
 				{
@@ -2323,10 +2323,10 @@
 			]
 		},
 		{
-			"id": "e2b0c7e4-a232-4803-af9b-d9d5999fb11e",
+			"id": "1e2f679f-9f9f-4666-ac59-34144fbb33c1",
 			"name": "409 - Cancelar Clase ya cancelada",
-			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70",
-			"time": 16,
+			"url": "http://localhost:5173/api/clases/08e2e484-3b98-4615-8180-2c271e530dbc",
+			"time": 9,
 			"responseCode": {
 				"code": 409,
 				"name": "Conflict"
@@ -2346,7 +2346,7 @@
 				}
 			},
 			"times": [
-				16
+				9
 			],
 			"allTests": [
 				{
@@ -2356,10 +2356,10 @@
 			]
 		},
 		{
-			"id": "2c7cd86d-147e-4373-88d0-28fad71200dc",
+			"id": "8c819579-c2b0-4c4f-91f4-268dcd3bb7bb",
 			"name": "200 - Reactivar Clase",
-			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70/reactivar",
-			"time": 40,
+			"url": "http://localhost:5173/api/clases/08e2e484-3b98-4615-8180-2c271e530dbc/reactivar",
+			"time": 25,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2379,7 +2379,7 @@
 				}
 			},
 			"times": [
-				40
+				25
 			],
 			"allTests": [
 				{
@@ -2389,10 +2389,10 @@
 			]
 		},
 		{
-			"id": "478e25fe-d093-476b-ae7e-141c675caa9a",
+			"id": "fb2b8728-ef40-4d9f-8be4-62a1e3efb674",
 			"name": "409 - Reactivar Clase ya activa",
-			"url": "http://localhost:5173/api/clases/d791abe7-03c1-47e9-9a74-9bf29329ee70/reactivar",
-			"time": 22,
+			"url": "http://localhost:5173/api/clases/08e2e484-3b98-4615-8180-2c271e530dbc/reactivar",
+			"time": 13,
 			"responseCode": {
 				"code": 409,
 				"name": "Conflict"
@@ -2412,7 +2412,7 @@
 				}
 			},
 			"times": [
-				22
+				13
 			],
 			"allTests": [
 				{
@@ -2422,10 +2422,10 @@
 			]
 		},
 		{
-			"id": "d069e065-c2dd-4342-830b-1207c57d9199",
+			"id": "f0ade740-68d3-43c5-9211-6bfac8721ad3",
 			"name": "201 - Crear Horario (Lunes 18:00-19:00, Sala 1)",
 			"url": "http://localhost:5173/api/horarios",
-			"time": 188,
+			"time": 60,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -2450,7 +2450,7 @@
 				}
 			},
 			"times": [
-				188
+				60
 			],
 			"allTests": [
 				{
@@ -2461,10 +2461,10 @@
 			]
 		},
 		{
-			"id": "20a2b063-92c5-4eb2-b6f4-f21a4eba3ea2",
+			"id": "255d4434-a472-49d7-bc2d-72bd588a376b",
 			"name": "409 - Crear Horario con conflicto de sala",
 			"url": "http://localhost:5173/api/horarios",
-			"time": 19,
+			"time": 14,
 			"responseCode": {
 				"code": 409,
 				"name": "Conflict"
@@ -2484,7 +2484,7 @@
 				}
 			},
 			"times": [
-				19
+				14
 			],
 			"allTests": [
 				{
@@ -2494,10 +2494,10 @@
 			]
 		},
 		{
-			"id": "73ad1277-f10c-484b-a0b3-92d8b9072ca6",
+			"id": "abddd25c-5301-4623-aa9c-40f5c78cf38b",
 			"name": "400 - Crear Horario con hora fin antes de inicio",
 			"url": "http://localhost:5173/api/horarios",
-			"time": 32,
+			"time": 13,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -2517,7 +2517,7 @@
 				}
 			},
 			"times": [
-				32
+				13
 			],
 			"allTests": [
 				{
@@ -2527,10 +2527,10 @@
 			]
 		},
 		{
-			"id": "6d6b2452-903e-44f3-8869-136ac98836b4",
+			"id": "7f07987f-da6b-4eaf-b4d3-4a02f249bcc6",
 			"name": "201 - Crear Horario sin sala (válido)",
 			"url": "http://localhost:5173/api/horarios",
-			"time": 28,
+			"time": 32,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -2550,7 +2550,7 @@
 				}
 			},
 			"times": [
-				28
+				32
 			],
 			"allTests": [
 				{
@@ -2560,10 +2560,10 @@
 			]
 		},
 		{
-			"id": "eba5e61f-fe1e-4ae1-b9db-01b75cb17349",
+			"id": "49d69032-a853-4d0b-b431-0714d99d60a6",
 			"name": "200 - Lista Horarios",
 			"url": "http://localhost:5173/api/horarios",
-			"time": 45,
+			"time": 22,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2588,7 +2588,7 @@
 				}
 			},
 			"times": [
-				45
+				22
 			],
 			"allTests": [
 				{
@@ -2599,10 +2599,10 @@
 			]
 		},
 		{
-			"id": "f7297f96-6de7-4ca7-b4cc-7e32d8f5d658",
+			"id": "53b8712e-2c70-4c64-a078-e88ae4e273cf",
 			"name": "200 - Lista Horarios filtrados por unidad",
 			"url": "http://localhost:5173/api/horarios?unidadId=11433f70-415f-4902-a56e-d1961af13fcc",
-			"time": 39,
+			"time": 19,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2622,7 +2622,7 @@
 				}
 			},
 			"times": [
-				39
+				19
 			],
 			"allTests": [
 				{
@@ -2632,10 +2632,10 @@
 			]
 		},
 		{
-			"id": "140770f9-3fa3-4859-80ef-13884bb46f49",
+			"id": "39715d82-8c81-4685-94e1-4477f5c13eb4",
 			"name": "200 - Horario por ID",
-			"url": "http://localhost:5173/api/horarios/31efbcda-cafd-459b-9839-c7f86686dccf",
-			"time": 36,
+			"url": "http://localhost:5173/api/horarios/f839f80d-2607-4861-bcb6-380e8ef55416",
+			"time": 30,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2655,7 +2655,7 @@
 				}
 			},
 			"times": [
-				36
+				30
 			],
 			"allTests": [
 				{
@@ -2665,8 +2665,68 @@
 			]
 		},
 		{
-			"id": "d4f8511e-1e66-4d0c-ac94-a3aed24d4663",
+			"id": "be3ab8b5-db55-49ad-a666-376cf53820e7",
 			"name": "404 - Horario no encontrado",
+			"url": "http://localhost:5173/api/horarios/00000000-0000-0000-0000-000000000000",
+			"time": 28,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				28
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "6983b553-7b4f-4918-bdb7-b3e6f1b7fef0",
+			"name": "200 - Actualizar Horario",
+			"url": "http://localhost:5173/api/horarios/f839f80d-2607-4861-bcb6-380e8ef55416",
+			"time": 42,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El horario se actualizó correctamente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El horario se actualizó correctamente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				42
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El horario se actualizó correctamente": true
+				}
+			]
+		},
+		{
+			"id": "2df41c91-7e17-4891-b29d-3ed31ebe1319",
+			"name": "404 - Actualizar Horario inexistente",
 			"url": "http://localhost:5173/api/horarios/00000000-0000-0000-0000-000000000000",
 			"time": 22,
 			"responseCode": {
@@ -2692,70 +2752,10 @@
 			]
 		},
 		{
-			"id": "9838b23f-05c9-4cc8-9574-680539246f50",
-			"name": "200 - Actualizar Horario",
-			"url": "http://localhost:5173/api/horarios/31efbcda-cafd-459b-9839-c7f86686dccf",
-			"time": 54,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"El horario se actualizó correctamente": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"El horario se actualizó correctamente": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				54
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"El horario se actualizó correctamente": true
-				}
-			]
-		},
-		{
-			"id": "96fb7783-5db7-41b0-b6e6-bf651f3d8703",
-			"name": "404 - Actualizar Horario inexistente",
-			"url": "http://localhost:5173/api/horarios/00000000-0000-0000-0000-000000000000",
-			"time": 23,
-			"responseCode": {
-				"code": 404,
-				"name": "Not Found"
-			},
-			"tests": {
-				"Status code is 404": true
-			},
-			"testPassFailCounts": {
-				"Status code is 404": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				23
-			],
-			"allTests": [
-				{
-					"Status code is 404": true
-				}
-			]
-		},
-		{
-			"id": "545e294a-ffa0-4fd4-99db-d87127ea9c27",
+			"id": "cc949383-c875-488b-b584-6d00ce2dd2d2",
 			"name": "204 - Eliminar Horario",
-			"url": "http://localhost:5173/api/horarios/31efbcda-cafd-459b-9839-c7f86686dccf",
-			"time": 48,
+			"url": "http://localhost:5173/api/horarios/f839f80d-2607-4861-bcb6-380e8ef55416",
+			"time": 27,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -2770,7 +2770,7 @@
 				}
 			},
 			"times": [
-				48
+				27
 			],
 			"allTests": [
 				{
@@ -2779,10 +2779,10 @@
 			]
 		},
 		{
-			"id": "55956a6c-fa76-440d-8c13-6a71947a4e9d",
+			"id": "f3fbce74-1749-4090-98c2-9954edfbee6a",
 			"name": "404 - Eliminar Horario inexistente",
 			"url": "http://localhost:5173/api/horarios/00000000-0000-0000-0000-000000000000",
-			"time": 14,
+			"time": 10,
 			"responseCode": {
 				"code": 404,
 				"name": "Not Found"
@@ -2797,7 +2797,7 @@
 				}
 			},
 			"times": [
-				14
+				10
 			],
 			"allTests": [
 				{
@@ -2806,10 +2806,10 @@
 			]
 		},
 		{
-			"id": "f1b71f30-3cee-4e1d-9da2-d2fa944486b2",
+			"id": "5912f9c0-49ab-4d6b-83c0-7a61be2892ce",
 			"name": "1. Login Admin (crear horario para test)",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 170,
+			"time": 139,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2829,7 +2829,7 @@
 				}
 			},
 			"times": [
-				170
+				139
 			],
 			"allTests": [
 				{
@@ -2839,10 +2839,10 @@
 			]
 		},
 		{
-			"id": "3cdaf02f-1a1f-4641-8289-03828cdc58c8",
+			"id": "b367aa80-5da0-4473-a469-1f77d75e4fa2",
 			"name": "2. Crear Horario para test de inscripciones",
 			"url": "http://localhost:5173/api/horarios",
-			"time": 51,
+			"time": 34,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -2857,7 +2857,7 @@
 				}
 			},
 			"times": [
-				51
+				34
 			],
 			"allTests": [
 				{
@@ -2866,10 +2866,10 @@
 			]
 		},
 		{
-			"id": "c287acc4-e4df-4d3a-8698-db2b8d43f135",
+			"id": "960a04be-276d-4584-a9a2-6b4567324e5a",
 			"name": "3. Login como Socio",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 148,
+			"time": 167,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2884,7 +2884,7 @@
 				}
 			},
 			"times": [
-				148
+				167
 			],
 			"allTests": [
 				{
@@ -2893,10 +2893,10 @@
 			]
 		},
 		{
-			"id": "13c1c3c9-1898-406f-9e37-976ee41a0fdb",
+			"id": "48ba4f20-619f-4a8e-9b96-2a7357e0d557",
 			"name": "200 - Inscribir socio a horario",
 			"url": "http://localhost:5173/api/inscripciones",
-			"time": 124,
+			"time": 130,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -2921,7 +2921,7 @@
 				}
 			},
 			"times": [
-				124
+				130
 			],
 			"allTests": [
 				{
@@ -2932,10 +2932,10 @@
 			]
 		},
 		{
-			"id": "cb757ecd-7beb-476c-9240-6ebfb25f286c",
+			"id": "27d87147-1326-49b6-99dc-acc4d2513a3c",
 			"name": "409 - Inscripción duplicada al mismo horario",
 			"url": "http://localhost:5173/api/inscripciones",
-			"time": 35,
+			"time": 12,
 			"responseCode": {
 				"code": 409,
 				"name": "Conflict"
@@ -2955,7 +2955,7 @@
 				}
 			},
 			"times": [
-				35
+				12
 			],
 			"allTests": [
 				{
@@ -2965,10 +2965,10 @@
 			]
 		},
 		{
-			"id": "b8f44220-2496-4a17-8947-dd2ac3153937",
+			"id": "ed2f6cb1-dd61-47d3-99a4-85b83f9c99c4",
 			"name": "404 - Inscribir a horario inexistente",
 			"url": "http://localhost:5173/api/inscripciones",
-			"time": 26,
+			"time": 14,
 			"responseCode": {
 				"code": 404,
 				"name": "Not Found"
@@ -2983,7 +2983,7 @@
 				}
 			},
 			"times": [
-				26
+				14
 			],
 			"allTests": [
 				{
@@ -2992,7 +2992,7 @@
 			]
 		},
 		{
-			"id": "5bf3235c-7c54-49e3-ad8e-48934da37abc",
+			"id": "38a2e8e1-f6c5-4801-bb4c-d722e58dda8f",
 			"name": "200 - Obtener mis inscripciones con día/hora/sala",
 			"url": "http://localhost:5173/api/inscripciones/mis-inscripciones",
 			"time": 46,
@@ -3037,10 +3037,10 @@
 			]
 		},
 		{
-			"id": "ae098f08-a34c-4369-93ae-0e215708b108",
+			"id": "10e4e650-28c7-47e1-b06d-c64983977459",
 			"name": "204 - Cancelar inscripción",
-			"url": "http://localhost:5173/api/inscripciones/300452b6-0d30-466f-afd1-4ada2209da05",
-			"time": 70,
+			"url": "http://localhost:5173/api/inscripciones/df5fad00-c875-4443-bd3d-f8c2c8643dab",
+			"time": 56,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -3055,7 +3055,7 @@
 				}
 			},
 			"times": [
-				70
+				56
 			],
 			"allTests": [
 				{
@@ -3064,10 +3064,10 @@
 			]
 		},
 		{
-			"id": "40fc38c9-8c26-40c9-80ab-b06f400fa478",
+			"id": "b67badd3-0493-41d1-a06b-355f7944020a",
 			"name": "404 - Cancelar inscripción inexistente",
 			"url": "http://localhost:5173/api/inscripciones/00000000-0000-0000-0000-000000000000",
-			"time": 23,
+			"time": 12,
 			"responseCode": {
 				"code": 404,
 				"name": "Not Found"
@@ -3082,7 +3082,7 @@
 				}
 			},
 			"times": [
-				23
+				12
 			],
 			"allTests": [
 				{
@@ -3091,10 +3091,10 @@
 			]
 		},
 		{
-			"id": "10e7af40-9f63-4108-b085-a1f829d9e5c7",
+			"id": "b45645dc-cf62-4603-ae26-49ce6b518c19",
 			"name": "1. Login Admin para cleanup",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 214,
+			"time": 143,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3114,7 +3114,7 @@
 				}
 			},
 			"times": [
-				214
+				143
 			],
 			"allTests": [
 				{
@@ -3124,10 +3124,10 @@
 			]
 		},
 		{
-			"id": "cc3a5fb7-4495-45df-9857-c1c278290a48",
+			"id": "a8e39460-cc60-4adb-a164-4c801ff1b3e7",
 			"name": "2. Eliminar Horario de test inscripciones",
-			"url": "http://localhost:5173/api/horarios/4a8d2eff-560b-461b-835d-3c37cccce030",
-			"time": 27,
+			"url": "http://localhost:5173/api/horarios/a1f06d81-a7af-49fa-8e1d-7223fbe77806",
+			"time": 36,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -3142,7 +3142,7 @@
 				}
 			},
 			"times": [
-				27
+				36
 			],
 			"allTests": [
 				{
@@ -3151,10 +3151,10 @@
 			]
 		},
 		{
-			"id": "05765002-3bb2-40df-b35a-0bfbc5d0340c",
+			"id": "e2ab8a54-c7d9-4b32-a79e-28db8e4dd4fe",
 			"name": "0. Login Admin",
 			"url": "http://localhost:5173/api/auth/login",
-			"time": 156,
+			"time": 136,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3174,7 +3174,7 @@
 				}
 			},
 			"times": [
-				156
+				136
 			],
 			"allTests": [
 				{
@@ -3184,10 +3184,10 @@
 			]
 		},
 		{
-			"id": "6e90d627-2216-4550-9ca3-497efde85b8a",
+			"id": "368855ff-f44f-45dc-b476-4d4a3398d4d7",
 			"name": "201 - Crear empleado sin password",
 			"url": "http://localhost:5173/api/empleados",
-			"time": 149,
+			"time": 144,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -3212,7 +3212,7 @@
 				}
 			},
 			"times": [
-				149
+				144
 			],
 			"allTests": [
 				{
@@ -3223,10 +3223,10 @@
 			]
 		},
 		{
-			"id": "843fe9ec-e692-4205-8990-974788f8124d",
+			"id": "57cf91bb-ee04-4f16-bc51-5ab3a0f2c68e",
 			"name": "409 - Crear empleado con correo duplicado",
 			"url": "http://localhost:5173/api/empleados",
-			"time": 21,
+			"time": 13,
 			"responseCode": {
 				"code": 409,
 				"name": "Conflict"
@@ -3246,7 +3246,7 @@
 				}
 			},
 			"times": [
-				21
+				13
 			],
 			"allTests": [
 				{
@@ -3256,10 +3256,10 @@
 			]
 		},
 		{
-			"id": "02a3397e-c1ff-4792-a00f-4bf891599940",
+			"id": "72c1224e-64b8-4d1f-ae29-aece41c9103b",
 			"name": "200 - Listar empleados",
 			"url": "http://localhost:5173/api/empleados",
-			"time": 37,
+			"time": 97,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3284,7 +3284,7 @@
 				}
 			},
 			"times": [
-				37
+				97
 			],
 			"allTests": [
 				{
@@ -3295,10 +3295,10 @@
 			]
 		},
 		{
-			"id": "43a75b35-2e82-41b6-873a-38d6b55038e3",
+			"id": "ee1deb9f-2709-4a0f-8ada-46bdfa291d60",
 			"name": "401 - Crear empleado sin autenticación",
 			"url": "http://localhost:5173/api/empleados",
-			"time": 12,
+			"time": 10,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -3313,7 +3313,7 @@
 				}
 			},
 			"times": [
-				12
+				10
 			],
 			"allTests": [
 				{
@@ -3322,10 +3322,10 @@
 			]
 		},
 		{
-			"id": "0da6ce2b-d9bb-4f95-9868-7b20fec6fb74",
+			"id": "f1a5fe53-dfd5-43cf-84d0-a4db6f299bf4",
 			"name": "Cleanup - Eliminar empleado test",
-			"url": "http://localhost:5173/api/empleados/6cd053a6-4221-41cc-a0e6-0742f38e7e96",
-			"time": 19,
+			"url": "http://localhost:5173/api/empleados/42128cdd-041a-484c-81f1-62960068c131",
+			"time": 53,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -3340,7 +3340,7 @@
 				}
 			},
 			"times": [
-				19
+				53
 			],
 			"allTests": [
 				{
@@ -3349,10 +3349,10 @@
 			]
 		},
 		{
-			"id": "680465b3-b454-4494-90a9-330e736fafd7",
+			"id": "ce2c186b-0cee-4028-b934-f9ba5b388803",
 			"name": "400 - Token de Google vacío",
 			"url": "http://localhost:5173/api/auth/google",
-			"time": 20,
+			"time": 16,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -3372,7 +3372,7 @@
 				}
 			},
 			"times": [
-				20
+				16
 			],
 			"allTests": [
 				{
@@ -3382,10 +3382,10 @@
 			]
 		},
 		{
-			"id": "affc5f36-9b30-4835-924a-9a193f597bb8",
+			"id": "c14825b2-2c76-4f5a-ae9f-9aa4ef913086",
 			"name": "401 - Token de Google malformado/inválido",
 			"url": "http://localhost:5173/api/auth/google",
-			"time": 16,
+			"time": 10,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -3405,7 +3405,7 @@
 				}
 			},
 			"times": [
-				16
+				10
 			],
 			"allTests": [
 				{
@@ -3415,10 +3415,10 @@
 			]
 		},
 		{
-			"id": "5ffa3e51-9f88-4178-9edd-3c70942d16e9",
+			"id": "db3e2b2b-f5e3-4320-9467-1e3aaad21a15",
 			"name": "400 - Admin no puede resetear su propio MFA",
 			"url": "http://localhost:5173/api/empleados/33333333-3333-3333-3333-333333333333/mfa/reset",
-			"time": 24,
+			"time": 18,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -3438,7 +3438,7 @@
 				}
 			},
 			"times": [
-				24
+				18
 			],
 			"allTests": [
 				{
@@ -3448,10 +3448,10 @@
 			]
 		},
 		{
-			"id": "459c2352-c5bd-4bb9-b5d1-59054336a0b0",
+			"id": "e241e604-2b69-465c-962c-95b8da3e8b76",
 			"name": "404 - Reset MFA empleado inexistente",
 			"url": "http://localhost:5173/api/empleados/00000000-0000-0000-0000-000000000000/mfa/reset",
-			"time": 22,
+			"time": 14,
 			"responseCode": {
 				"code": 404,
 				"name": "Not Found"
@@ -3466,7 +3466,7 @@
 				}
 			},
 			"times": [
-				22
+				14
 			],
 			"allTests": [
 				{
@@ -3475,10 +3475,10 @@
 			]
 		},
 		{
-			"id": "b0751c11-8fd8-4b18-9675-e2c22094959a",
+			"id": "30d8f8a2-7f69-493b-8648-faea67412cb4",
 			"name": "401 - Reset MFA sin token",
 			"url": "http://localhost:5173/api/empleados/00000000-0000-0000-0000-000000000001/mfa/reset",
-			"time": 8,
+			"time": 10,
 			"responseCode": {
 				"code": 401,
 				"name": "Unauthorized"
@@ -3493,7 +3493,7 @@
 				}
 			},
 			"times": [
-				8
+				10
 			],
 			"allTests": [
 				{
@@ -3502,10 +3502,10 @@
 			]
 		},
 		{
-			"id": "5e17a693-3e53-481d-b76f-b962560a06c2",
+			"id": "1e5a4ba2-22d7-4fd2-a942-e1d5748e8c4b",
 			"name": "Setup - Capturar unidad para eventos",
 			"url": "http://localhost:5173/api/unidades",
-			"time": 17,
+			"time": 10,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3525,7 +3525,7 @@
 				}
 			},
 			"times": [
-				17
+				10
 			],
 			"allTests": [
 				{
@@ -3535,10 +3535,10 @@
 			]
 		},
 		{
-			"id": "30a12068-ec45-42d4-97d3-32362f57bc50",
+			"id": "9c76297f-c60a-4b10-8fc7-03d7d075d347",
 			"name": "201 - Crear evento",
 			"url": "http://localhost:5173/api/eventos",
-			"time": 102,
+			"time": 111,
 			"responseCode": {
 				"code": 201,
 				"name": "Created"
@@ -3558,7 +3558,7 @@
 				}
 			},
 			"times": [
-				102
+				111
 			],
 			"allTests": [
 				{
@@ -3568,10 +3568,10 @@
 			]
 		},
 		{
-			"id": "11eef8fd-131a-4f24-9201-06a991fc4a1b",
+			"id": "daf43912-6296-432c-80ee-89ae70a9408a",
 			"name": "400 - Crear evento con fecha pasada",
 			"url": "http://localhost:5173/api/eventos",
-			"time": 16,
+			"time": 10,
 			"responseCode": {
 				"code": 400,
 				"name": "Bad Request"
@@ -3586,7 +3586,7 @@
 				}
 			},
 			"times": [
-				16
+				10
 			],
 			"allTests": [
 				{
@@ -3595,10 +3595,10 @@
 			]
 		},
 		{
-			"id": "e6295bf6-43db-4ee5-83d4-857fdafd9308",
+			"id": "1da6cf40-6044-43b7-9d46-cd3d515867dc",
 			"name": "200 - Listar eventos (por unidad)",
 			"url": "http://localhost:5173/api/eventos?unidadId=2bc1816a-27be-4c3e-ba39-675be0f408c5",
-			"time": 38,
+			"time": 53,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3623,7 +3623,7 @@
 				}
 			},
 			"times": [
-				38
+				53
 			],
 			"allTests": [
 				{
@@ -3634,10 +3634,10 @@
 			]
 		},
 		{
-			"id": "4da9fdd5-cd59-451e-a723-80fccb91cbb5",
+			"id": "b3bd7008-5bf9-46fe-8b1b-c34688b4b6ae",
 			"name": "200 - Detalle de evento",
-			"url": "http://localhost:5173/api/eventos/ddd27bca-ba34-4618-a986-2bcc03fa4c63",
-			"time": 34,
+			"url": "http://localhost:5173/api/eventos/e2c029ed-519a-4a2d-8139-5a3256d4586a",
+			"time": 29,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3657,7 +3657,7 @@
 				}
 			},
 			"times": [
-				34
+				29
 			],
 			"allTests": [
 				{
@@ -3667,7 +3667,7 @@
 			]
 		},
 		{
-			"id": "f0109feb-b142-4a4c-be6b-f823529d9b1e",
+			"id": "7b7c68ea-8cd1-4a3c-97e3-3f3da86efce1",
 			"name": "404 - Detalle evento inexistente",
 			"url": "http://localhost:5173/api/eventos/00000000-0000-0000-0000-000000000000",
 			"time": 17,
@@ -3694,10 +3694,10 @@
 			]
 		},
 		{
-			"id": "83255eab-eb62-4dde-a858-debc911e9035",
+			"id": "96bb258c-66e1-4e04-91a5-2e8c8cb7bd23",
 			"name": "200 - Actualizar evento",
-			"url": "http://localhost:5173/api/eventos/ddd27bca-ba34-4618-a986-2bcc03fa4c63",
-			"time": 27,
+			"url": "http://localhost:5173/api/eventos/e2c029ed-519a-4a2d-8139-5a3256d4586a",
+			"time": 53,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3717,7 +3717,7 @@
 				}
 			},
 			"times": [
-				27
+				53
 			],
 			"allTests": [
 				{
@@ -3727,10 +3727,10 @@
 			]
 		},
 		{
-			"id": "95d3d999-c14b-42ae-8d8b-7f5b84699b31",
+			"id": "56ce35ab-6503-41cf-b160-fd37c0e5ee18",
 			"name": "200 - Re-notificar evento",
-			"url": "http://localhost:5173/api/eventos/ddd27bca-ba34-4618-a986-2bcc03fa4c63/notificar",
-			"time": 35,
+			"url": "http://localhost:5173/api/eventos/e2c029ed-519a-4a2d-8139-5a3256d4586a/notificar",
+			"time": 26,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3750,7 +3750,7 @@
 				}
 			},
 			"times": [
-				35
+				26
 			],
 			"allTests": [
 				{
@@ -3760,10 +3760,10 @@
 			]
 		},
 		{
-			"id": "16db4386-6e02-4b9c-bc48-c6ae7d43e7be",
+			"id": "d188dc51-569f-4538-a00d-df3530d3e447",
 			"name": "204 - Cancelar evento (baja lógica)",
-			"url": "http://localhost:5173/api/eventos/ddd27bca-ba34-4618-a986-2bcc03fa4c63",
-			"time": 43,
+			"url": "http://localhost:5173/api/eventos/e2c029ed-519a-4a2d-8139-5a3256d4586a",
+			"time": 39,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -3778,7 +3778,7 @@
 				}
 			},
 			"times": [
-				43
+				39
 			],
 			"allTests": [
 				{
@@ -3787,10 +3787,10 @@
 			]
 		},
 		{
-			"id": "084c95c4-1679-4fea-9937-ec05f3d96bab",
+			"id": "4307daaa-0074-4cf3-a7de-98b60d662689",
 			"name": "200 - Listar incluyendo cancelados",
 			"url": "http://localhost:5173/api/eventos?unidadId=2bc1816a-27be-4c3e-ba39-675be0f408c5&incluirInactivos=true",
-			"time": 21,
+			"time": 22,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -3810,7 +3810,7 @@
 				}
 			},
 			"times": [
-				21
+				22
 			],
 			"allTests": [
 				{
@@ -3820,9 +3820,282 @@
 			]
 		},
 		{
-			"id": "0d8daaf1-854e-4e03-b976-a630c87fe1f5",
+			"id": "a5628300-9cbf-4682-a154-5aef3471732f",
 			"name": "401 - Listar eventos sin token",
 			"url": "http://localhost:5173/api/eventos",
+			"time": 15,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				15
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "73d7f6ac-626c-4008-98de-9962aec79c2a",
+			"name": "Setup - Login socio (sin MFA)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 153,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Socio NO requiere MFA y trae sesion directa": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Socio NO requiere MFA y trae sesion directa": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				153
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Socio NO requiere MFA y trae sesion directa": true
+				}
+			]
+		},
+		{
+			"id": "6ac4660d-0c96-41ea-8a54-c373e33ee2c8",
+			"name": "Setup - Capturar count inicial de no-leídas",
+			"url": "http://localhost:5173/api/portal/notificaciones/no-leidas/count",
+			"time": 23,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Body trae { count }": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body trae { count }": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				23
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Body trae { count }": true
+				}
+			]
+		},
+		{
+			"id": "9e9e6768-e9f4-48e4-8e40-c0ac7581a4f1",
+			"name": "Trigger - Admin crea evento en la sede del socio",
+			"url": "http://localhost:5173/api/eventos",
+			"time": 40,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"Status code is 201": true
+			},
+			"testPassFailCounts": {
+				"Status code is 201": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				40
+			],
+			"allTests": [
+				{
+					"Status code is 201": true
+				}
+			]
+		},
+		{
+			"id": "c6e35d52-3289-4654-aa3a-8eedf48fe01a",
+			"name": "200 - Count de no-leídas incrementó tras el evento",
+			"url": "http://localhost:5173/api/portal/notificaciones/no-leidas/count",
+			"time": 13,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Count incrementó al menos 1 vs inicial (4)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Count incrementó al menos 1 vs inicial (4)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Count incrementó al menos 1 vs inicial (4)": true
+				}
+			]
+		},
+		{
+			"id": "e7b7faa9-6470-46c3-9987-72599e59676b",
+			"name": "200 - Listar notificaciones (soloNoLeidas=true) y capturar id",
+			"url": "http://localhost:5173/api/portal/notificaciones?soloNoLeidas=true&take=10",
+			"time": 46,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Hay al menos una notificación no leída": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Hay al menos una notificación no leída": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				46
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Hay al menos una notificación no leída": true
+				}
+			]
+		},
+		{
+			"id": "01da1555-a02d-46b3-bc5c-e805ef230b46",
+			"name": "200 - Marcar notificación como leída",
+			"url": "http://localhost:5173/api/portal/notificaciones/c0f24404-b4d9-4202-8b73-78628e05fb74/leer",
+			"time": 37,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Body trae mensaje": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body trae mensaje": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				37
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Body trae mensaje": true
+				}
+			]
+		},
+		{
+			"id": "bcd9ea3b-177a-4cdd-8f3e-952ee5305af8",
+			"name": "200 - Marcar como leída es idempotente (segundo POST)",
+			"url": "http://localhost:5173/api/portal/notificaciones/c0f24404-b4d9-4202-8b73-78628e05fb74/leer",
+			"time": 10,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200 (idempotente)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200 (idempotente)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"Status code is 200 (idempotente)": true
+				}
+			]
+		},
+		{
+			"id": "d54e32ad-7081-4675-9de2-304e14102dcb",
+			"name": "404 - Marcar notificación inexistente",
+			"url": "http://localhost:5173/api/portal/notificaciones/00000000-0000-0000-0000-000000000000/leer",
+			"time": 15,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				15
+			],
+			"allTests": [
+				{
+					"Status code is 404": true
+				}
+			]
+		},
+		{
+			"id": "60f16b93-7f0d-41c8-8a17-8be51c03bb83",
+			"name": "401 - Listar notificaciones sin token",
+			"url": "http://localhost:5173/api/portal/notificaciones",
 			"time": 10,
 			"responseCode": {
 				"code": 401,
@@ -3847,283 +4120,10 @@
 			]
 		},
 		{
-			"id": "82047ce2-4bab-4615-beef-979e5a0ebe5f",
-			"name": "Setup - Login socio (sin MFA)",
-			"url": "http://localhost:5173/api/auth/login",
-			"time": 144,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"Socio NO requiere MFA y trae sesion directa": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"Socio NO requiere MFA y trae sesion directa": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				144
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"Socio NO requiere MFA y trae sesion directa": true
-				}
-			]
-		},
-		{
-			"id": "33989950-afb5-42dd-b305-88d31511f35d",
-			"name": "Setup - Capturar count inicial de no-leídas",
-			"url": "http://localhost:5173/api/portal/notificaciones/no-leidas/count",
-			"time": 24,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"Body trae { count }": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"Body trae { count }": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				24
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"Body trae { count }": true
-				}
-			]
-		},
-		{
-			"id": "faa6f433-f254-4764-ad6f-4681a7badf08",
-			"name": "Trigger - Admin crea evento en la sede del socio",
-			"url": "http://localhost:5173/api/eventos",
-			"time": 35,
-			"responseCode": {
-				"code": 201,
-				"name": "Created"
-			},
-			"tests": {
-				"Status code is 201": true
-			},
-			"testPassFailCounts": {
-				"Status code is 201": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				35
-			],
-			"allTests": [
-				{
-					"Status code is 201": true
-				}
-			]
-		},
-		{
-			"id": "f0b2f91c-92f8-4357-bac7-eacd9c8b4c40",
-			"name": "200 - Count de no-leídas incrementó tras el evento",
-			"url": "http://localhost:5173/api/portal/notificaciones/no-leidas/count",
-			"time": 15,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"Count incrementó al menos 1 vs inicial (2)": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"Count incrementó al menos 1 vs inicial (2)": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				15
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"Count incrementó al menos 1 vs inicial (2)": true
-				}
-			]
-		},
-		{
-			"id": "557725f6-8631-45b0-bdc3-6ca52fa76b32",
-			"name": "200 - Listar notificaciones (soloNoLeidas=true) y capturar id",
-			"url": "http://localhost:5173/api/portal/notificaciones?soloNoLeidas=true&take=10",
-			"time": 58,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"Hay al menos una notificación no leída": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"Hay al menos una notificación no leída": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				58
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"Hay al menos una notificación no leída": true
-				}
-			]
-		},
-		{
-			"id": "04dfb4e1-df66-4139-9062-af9c660e8d73",
-			"name": "200 - Marcar notificación como leída",
-			"url": "http://localhost:5173/api/portal/notificaciones/99ae9cd1-c08f-4a0b-910d-95874701e0fa/leer",
-			"time": 38,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200": true,
-				"Body trae mensaje": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200": {
-					"pass": 1,
-					"fail": 0
-				},
-				"Body trae mensaje": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				38
-			],
-			"allTests": [
-				{
-					"Status code is 200": true,
-					"Body trae mensaje": true
-				}
-			]
-		},
-		{
-			"id": "1f41b7e2-9c50-4529-b754-a873340433d9",
-			"name": "200 - Marcar como leída es idempotente (segundo POST)",
-			"url": "http://localhost:5173/api/portal/notificaciones/99ae9cd1-c08f-4a0b-910d-95874701e0fa/leer",
-			"time": 18,
-			"responseCode": {
-				"code": 200,
-				"name": "OK"
-			},
-			"tests": {
-				"Status code is 200 (idempotente)": true
-			},
-			"testPassFailCounts": {
-				"Status code is 200 (idempotente)": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				18
-			],
-			"allTests": [
-				{
-					"Status code is 200 (idempotente)": true
-				}
-			]
-		},
-		{
-			"id": "5ce7d0e0-6235-4252-9925-a101386101d2",
-			"name": "404 - Marcar notificación inexistente",
-			"url": "http://localhost:5173/api/portal/notificaciones/00000000-0000-0000-0000-000000000000/leer",
-			"time": 13,
-			"responseCode": {
-				"code": 404,
-				"name": "Not Found"
-			},
-			"tests": {
-				"Status code is 404": true
-			},
-			"testPassFailCounts": {
-				"Status code is 404": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				13
-			],
-			"allTests": [
-				{
-					"Status code is 404": true
-				}
-			]
-		},
-		{
-			"id": "ecf91012-4ccb-438e-81e9-08906175fff6",
-			"name": "401 - Listar notificaciones sin token",
-			"url": "http://localhost:5173/api/portal/notificaciones",
-			"time": 9,
-			"responseCode": {
-				"code": 401,
-				"name": "Unauthorized"
-			},
-			"tests": {
-				"Status code is 401": true
-			},
-			"testPassFailCounts": {
-				"Status code is 401": {
-					"pass": 1,
-					"fail": 0
-				}
-			},
-			"times": [
-				9
-			],
-			"allTests": [
-				{
-					"Status code is 401": true
-				}
-			]
-		},
-		{
-			"id": "c1630eaa-2ea1-4e1c-8da2-74d9050a672e",
+			"id": "3b4ae354-eee9-4e37-bbd9-86abe7417619",
 			"name": "200 - Portal eventos del socio",
 			"url": "http://localhost:5173/api/portal/eventos",
-			"time": 25,
+			"time": 36,
 			"responseCode": {
 				"code": 200,
 				"name": "OK"
@@ -4148,7 +4148,7 @@
 				}
 			},
 			"times": [
-				25
+				36
 			],
 			"allTests": [
 				{
@@ -4159,10 +4159,10 @@
 			]
 		},
 		{
-			"id": "31fab776-beb1-4703-a336-351e0067b58d",
+			"id": "f00f2725-2c43-4026-937b-59a5099ea034",
 			"name": "Cleanup - Cancelar evento del trigger",
-			"url": "http://localhost:5173/api/eventos/25c4f429-fc43-4dda-8494-cd7f2f9f86bc",
-			"time": 35,
+			"url": "http://localhost:5173/api/eventos/466464c0-9f41-4b6a-b46d-9fc14fdce024",
+			"time": 24,
 			"responseCode": {
 				"code": 204,
 				"name": "No Content"
@@ -4177,534 +4177,1721 @@
 				}
 			},
 			"times": [
-				35
+				24
 			],
 			"allTests": [
 				{
 					"Cleanup OK (200 o 204)": true
 				}
 			]
+		},
+		{
+			"id": "8c0014a8-ee1e-4f62-ac7b-52e87e4b3e50",
+			"name": "Setup - Login admin (MFA)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 129,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA verify admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA verify admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				129
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA verify admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "5b36e55f-901a-4303-9218-b574693520f5",
+			"name": "Setup - Login socio (MFA-aware)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 156,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login socio@gymflow.com (200)": true
+			},
+			"testPassFailCounts": {
+				"Login socio@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				156
+			],
+			"allTests": [
+				{
+					"Login socio@gymflow.com (200)": true
+				}
+			]
+		},
+		{
+			"id": "a198dc69-08f9-4861-b9fa-410312d47b17",
+			"name": "Setup - Generar cuotas para asegurar una pendiente (admin)",
+			"url": "http://localhost:5173/api/cuotas/generar",
+			"time": 73,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				73
+			],
+			"allTests": [
+				{
+					"Status code is 200": true
+				}
+			]
+		},
+		{
+			"id": "365c8b06-bb35-4a5d-ab4a-2e336e279aeb",
+			"name": "Setup - Capturar cuota pendiente del socio",
+			"url": "http://localhost:5173/api/cuotas/mis-cuotas",
+			"time": 42,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"El socio tiene al menos una cuota": true,
+				"Existe una cuota Pendiente para los tests de pago": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"El socio tiene al menos una cuota": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Existe una cuota Pendiente para los tests de pago": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				42
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"El socio tiene al menos una cuota": true,
+					"Existe una cuota Pendiente para los tests de pago": true
+				}
+			]
+		},
+		{
+			"id": "3f600ced-f09e-4cb9-a529-bb6ac8e6e074",
+			"name": "404 - Iniciar pago de cuota inexistente",
+			"url": "http://localhost:5173/api/pagos/iniciar",
+			"time": 40,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"Status code is 404": true,
+				"Body trae error": true
+			},
+			"testPassFailCounts": {
+				"Status code is 404": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body trae error": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				40
+			],
+			"allTests": [
+				{
+					"Status code is 404": true,
+					"Body trae error": true
+				}
+			]
+		},
+		{
+			"id": "e2028cce-173f-4ea0-b028-5b2c677a4e8c",
+			"name": "403 - Iniciar pago de cuota ajena (admin autenticado)",
+			"url": "http://localhost:5173/api/pagos/iniciar",
+			"time": 15,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				15
+			],
+			"allTests": [
+				{
+					"Status code is 403": true
+				}
+			]
+		},
+		{
+			"id": "e5152fd0-e8a7-4815-8847-3e4a098c8741",
+			"name": "Setup - Marcar cuota como pagada (admin)",
+			"url": "http://localhost:5173/api/cuotas/2000a69a-a1df-499e-8811-721e70515cba/pagar",
+			"time": 38,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La cuota quedó Pagada": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La cuota quedó Pagada": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				38
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La cuota quedó Pagada": true
+				}
+			]
+		},
+		{
+			"id": "6a2435b5-3bb3-44c0-804f-155db2344a6b",
+			"name": "409 - Iniciar pago de cuota no pendiente",
+			"url": "http://localhost:5173/api/pagos/iniciar",
+			"time": 14,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"Status code is 409": true,
+				"Body trae error": true
+			},
+			"testPassFailCounts": {
+				"Status code is 409": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body trae error": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"Status code is 409": true,
+					"Body trae error": true
+				}
+			]
+		},
+		{
+			"id": "3e2988d8-6bf8-4827-87c4-5b63d59a03bf",
+			"name": "Cleanup - Revertir pago de la cuota (admin)",
+			"url": "http://localhost:5173/api/cuotas/2000a69a-a1df-499e-8811-721e70515cba/revertir-pago",
+			"time": 62,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"La cuota volvió a Pendiente": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"La cuota volvió a Pendiente": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				62
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"La cuota volvió a Pendiente": true
+				}
+			]
+		},
+		{
+			"id": "7eec77f3-a3ee-4ce7-bc72-fa997505a8ac",
+			"name": "401 - Iniciar pago sin token",
+			"url": "http://localhost:5173/api/pagos/iniciar",
+			"time": 10,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "4461c459-8b27-4015-9a50-92e5119cb86e",
+			"name": "401 - Webhook moderno con firma inválida",
+			"url": "http://localhost:5173/api/pagos/webhook?data.id=123456&type=payment",
+			"time": 41,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				41
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "7d0d1eb1-a1d3-41a8-a053-330f4c038933",
+			"name": "401 - Webhook moderno sin firma (data.id en body)",
+			"url": "http://localhost:5173/api/pagos/webhook",
+			"time": 30,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				30
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "cb40a8dd-d44a-4b11-8f3a-ab12b4e540ec",
+			"name": "200 - Webhook moderno con type distinto de payment",
+			"url": "http://localhost:5173/api/pagos/webhook?data.id=123456&type=subscription",
+			"time": 18,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				18
+			],
+			"allTests": [
+				{
+					"Status code is 200": true
+				}
+			]
+		},
+		{
+			"id": "270682b9-1f29-420c-a30d-40d45dd77b0a",
+			"name": "200 - Webhook IPN legacy (topic=payment)",
+			"url": "http://localhost:5173/api/pagos/webhook?topic=payment&id=123456789",
+			"time": 755,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				755
+			],
+			"allTests": [
+				{
+					"Status code is 200": true
+				}
+			]
+		},
+		{
+			"id": "5ef57167-b327-4ec0-aba4-506091a36940",
+			"name": "200 - Webhook IPN con topic distinto de payment",
+			"url": "http://localhost:5173/api/pagos/webhook?topic=merchant_order&id=123456789",
+			"time": 16,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"Status code is 200": true
+				}
+			]
+		},
+		{
+			"id": "dfc66afc-9e19-4ecd-87f2-fe81eb5ba9c1",
+			"name": "200 - Webhook sin formato reconocible",
+			"url": "http://localhost:5173/api/pagos/webhook",
+			"time": 11,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				11
+			],
+			"allTests": [
+				{
+					"Status code is 200": true
+				}
+			]
+		},
+		{
+			"id": "16c4a036-14e2-466d-b214-803eb879e625",
+			"name": "200 - Mis pagos del socio",
+			"url": "http://localhost:5173/api/pagos/mis-pagos",
+			"time": 38,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Respuesta es array": true,
+				"Cada pago tiene shape PagoDto": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Respuesta es array": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Cada pago tiene shape PagoDto": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				38
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Respuesta es array": true,
+					"Cada pago tiene shape PagoDto": true
+				}
+			]
+		},
+		{
+			"id": "cf9747f7-a707-4ea3-92a0-2bc3f271236e",
+			"name": "401 - Mis pagos sin token",
+			"url": "http://localhost:5173/api/pagos/mis-pagos",
+			"time": 16,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "293362bc-4302-4da6-b62b-ff4d6b131b2f",
+			"name": "Setup - Login admin (MFA)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 129,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA verify admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA verify admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				129
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA verify admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "b8390e26-8dca-413d-be59-059dc4591082",
+			"name": "Setup - Login socio (MFA-aware)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 133,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login socio@gymflow.com (200)": true
+			},
+			"testPassFailCounts": {
+				"Login socio@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				133
+			],
+			"allTests": [
+				{
+					"Login socio@gymflow.com (200)": true
+				}
+			]
+		},
+		{
+			"id": "1ef47b91-b190-423c-a83d-ceae4b26a928",
+			"name": "200 - Procesar recordatorios (admin)",
+			"url": "http://localhost:5173/api/cuotas/procesar-recordatorios",
+			"time": 30,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Body tiene shape ProcesarRecordatoriosResultado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body tiene shape ProcesarRecordatoriosResultado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				30
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Body tiene shape ProcesarRecordatoriosResultado": true
+				}
+			]
+		},
+		{
+			"id": "63740aad-bb38-486e-9d03-8dba1a6ee80c",
+			"name": "200 - Procesar recordatorios es idempotente (segunda corrida)",
+			"url": "http://localhost:5173/api/cuotas/procesar-recordatorios",
+			"time": 17,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"No re-envía recordatorios ya enviados hoy (enviados = 0)": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"No re-envía recordatorios ya enviados hoy (enviados = 0)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				17
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"No re-envía recordatorios ya enviados hoy (enviados = 0)": true
+				}
+			]
+		},
+		{
+			"id": "3104658a-3c01-4de7-b8a2-15ebece14535",
+			"name": "200 - Generar cuotas (admin)",
+			"url": "http://localhost:5173/api/cuotas/generar",
+			"time": 56,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Body tiene shape GenerarCuotasResultado": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body tiene shape GenerarCuotasResultado": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				56
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Body tiene shape GenerarCuotasResultado": true
+				}
+			]
+		},
+		{
+			"id": "e87320b5-66c5-4fc4-8deb-590ce2c91ae9",
+			"name": "403 - Procesar recordatorios como socio",
+			"url": "http://localhost:5173/api/cuotas/procesar-recordatorios",
+			"time": 14,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"Status code is 403": true
+				}
+			]
+		},
+		{
+			"id": "77121fba-6261-47fe-928e-ae191e1f3643",
+			"name": "403 - Generar cuotas como socio",
+			"url": "http://localhost:5173/api/cuotas/generar",
+			"time": 10,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"Status code is 403": true
+				}
+			]
+		},
+		{
+			"id": "48644933-3e82-4195-980e-543636d79a00",
+			"name": "401 - Procesar recordatorios sin token",
+			"url": "http://localhost:5173/api/cuotas/procesar-recordatorios",
+			"time": 9,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				9
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "4017f75e-0c90-4aca-933c-eb79d6a6e795",
+			"name": "401 - Generar cuotas sin token",
+			"url": "http://localhost:5173/api/cuotas/generar",
+			"time": 13,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "dc297441-652e-46b3-8ed4-a8ced3520787",
+			"name": "Setup - Login admin (MFA)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 163,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login admin@gymflow.com (200)": true,
+				"MFA verify admin@gymflow.com": true
+			},
+			"testPassFailCounts": {
+				"Login admin@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				},
+				"MFA verify admin@gymflow.com": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				163
+			],
+			"allTests": [
+				{
+					"Login admin@gymflow.com (200)": true,
+					"MFA verify admin@gymflow.com": true
+				}
+			]
+		},
+		{
+			"id": "2eef2a58-0c6b-405b-ae0a-2d80266d1118",
+			"name": "Setup - Login socio (MFA-aware)",
+			"url": "http://localhost:5173/api/auth/login",
+			"time": 141,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Login socio@gymflow.com (200)": true
+			},
+			"testPassFailCounts": {
+				"Login socio@gymflow.com (200)": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				141
+			],
+			"allTests": [
+				{
+					"Login socio@gymflow.com (200)": true
+				}
+			]
+		},
+		{
+			"id": "4568497d-b3c3-4ec0-bcf9-4526254caf2c",
+			"name": "200 - Snapshot del dashboard (admin)",
+			"url": "http://localhost:5173/api/dashboard",
+			"time": 116,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Body tiene shape DashboardDto": true,
+				"Admin ve al menos una unidad": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Body tiene shape DashboardDto": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Admin ve al menos una unidad": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				116
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Body tiene shape DashboardDto": true,
+					"Admin ve al menos una unidad": true
+				}
+			]
+		},
+		{
+			"id": "fefed7cf-53f4-40fa-8fe0-373f3b07e3bd",
+			"name": "200 - Snapshot filtrado por unidad",
+			"url": "http://localhost:5173/api/dashboard?unidadId=11433f70-415f-4902-a56e-d1961af13fcc",
+			"time": 97,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Status code is 200": true,
+				"Desglose por unidad solo trae la unidad pedida": true
+			},
+			"testPassFailCounts": {
+				"Status code is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Desglose por unidad solo trae la unidad pedida": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				97
+			],
+			"allTests": [
+				{
+					"Status code is 200": true,
+					"Desglose por unidad solo trae la unidad pedida": true
+				}
+			]
+		},
+		{
+			"id": "032d6df6-1fd9-418f-8b85-410d22bb3440",
+			"name": "403 - Snapshot como socio",
+			"url": "http://localhost:5173/api/dashboard",
+			"time": 7,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				7
+			],
+			"allTests": [
+				{
+					"Status code is 403": true
+				}
+			]
+		},
+		{
+			"id": "78e81de6-896e-4468-8de3-ad6f8b69234f",
+			"name": "403 - Stream SSE como socio",
+			"url": "http://localhost:5173/api/dashboard/stream",
+			"time": 24,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"Status code is 403": true
+			},
+			"testPassFailCounts": {
+				"Status code is 403": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				24
+			],
+			"allTests": [
+				{
+					"Status code is 403": true
+				}
+			]
+		},
+		{
+			"id": "7af1cf21-d3b5-4382-8108-e96518ebb197",
+			"name": "401 - Snapshot sin token",
+			"url": "http://localhost:5173/api/dashboard",
+			"time": 8,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				8
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
+		},
+		{
+			"id": "b404e1d4-3612-478b-83b4-5cfde9ff0c3d",
+			"name": "401 - Stream SSE sin token",
+			"url": "http://localhost:5173/api/dashboard/stream",
+			"time": 12,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"Status code is 401": true
+			},
+			"testPassFailCounts": {
+				"Status code is 401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12
+			],
+			"allTests": [
+				{
+					"Status code is 401": true
+				}
+			]
 		}
 	],
 	"count": 1,
-	"totalTime": 6823,
+	"totalTime": 8164,
 	"collection": {
 		"requests": [
 			{
-				"id": "49adb917-1a76-4773-b78c-104477fd7b24",
+				"id": "3584b7b5-75d7-42ae-a751-1d29d26014af",
 				"method": "POST"
 			},
 			{
-				"id": "b62d9cc8-4ac3-4d7a-af0b-34544efa0772",
+				"id": "e37f3d1a-e5a0-4e3d-9ef3-45fa06a821ae",
 				"method": "GET"
 			},
 			{
-				"id": "22954caf-0459-48ae-b2cf-e0226989e082",
+				"id": "62dcc879-7bb2-457a-b8f1-9bc585901e61",
 				"method": "POST"
 			},
 			{
-				"id": "94d67b7c-f03e-42c5-ba92-610fb1c3fe4a",
+				"id": "abaf8388-d9b3-43a5-87f6-2c8e5421b58c",
 				"method": "POST"
 			},
 			{
-				"id": "33fc3020-f6ea-4b25-9109-753199cbe75d",
+				"id": "9ad11e76-afb7-4322-9b0f-2ffd07ad702c",
 				"method": "GET"
 			},
 			{
-				"id": "77ddcbfb-61a5-4660-9353-a23d1cfac005",
+				"id": "89209ca2-c08d-4b71-b23d-00ae63763f97",
 				"method": "GET"
 			},
 			{
-				"id": "7ad7602c-5f1d-4d66-a61e-ef145ba8d118",
+				"id": "c58dc504-5a9d-451b-be63-5e249c58bb39",
 				"method": "GET"
 			},
 			{
-				"id": "558aa839-4917-4b45-9921-1c8a6a8be68d",
+				"id": "efa412ce-2614-4bd8-9f70-5f38480c6cad",
 				"method": "GET"
 			},
 			{
-				"id": "0f0f94db-e046-4d11-bce7-3d840a2f2924",
+				"id": "a1d658ef-996d-4d13-84b5-e1b9587e86ab",
 				"method": "GET"
 			},
 			{
-				"id": "fc460e40-d1c8-4fe2-a733-db296a657112",
+				"id": "86fec66b-6298-4e04-9db2-d3eb6a5866b2",
 				"method": "GET"
 			},
 			{
-				"id": "9735012e-9087-439d-9de3-fde28811a29f",
+				"id": "3d0f0c54-cca9-4772-8367-f960d1d3a924",
 				"method": "POST"
 			},
 			{
-				"id": "ceaff205-37b3-4425-b171-1da74b563a6e",
+				"id": "abe0615f-066d-4f45-9449-7077e7bb000e",
 				"method": "POST"
 			},
 			{
-				"id": "a04eb4b2-731a-4a8c-9a98-70583e1bac23",
+				"id": "328defae-74cf-4de7-8100-cd485c10df27",
 				"method": "POST"
 			},
 			{
-				"id": "2c3a9915-1c75-4bbf-a455-1cdbef49acb8",
+				"id": "e3c69cf5-e336-4293-8350-038fc77155c9",
 				"method": "PUT"
 			},
 			{
-				"id": "53808eb5-8467-49f8-a1b9-eb63e08560fa",
+				"id": "99468a65-5333-491d-91ee-8c25ea7d828c",
 				"method": "DELETE"
 			},
 			{
-				"id": "674bcf25-a94a-4432-b027-ee1707bd1fc3",
+				"id": "7614070a-ddb3-43d8-b063-f2b7484ea6e1",
 				"method": "DELETE"
 			},
 			{
-				"id": "81c11e62-e4cc-4415-a839-66bc7029415e",
+				"id": "cfe1fdae-0c24-42e9-86fc-645d699620bc",
 				"method": "GET"
 			},
 			{
-				"id": "768b1f59-07ff-4ba3-b1de-ae0be8b904db",
+				"id": "84c6075c-d589-4ca4-8cb2-b56dd8481954",
 				"method": "POST"
 			},
 			{
-				"id": "ed004b30-faeb-4948-86ec-dd9641fb1039",
+				"id": "d92aa735-962b-46d7-98fa-4dc5a11bab62",
 				"method": "POST"
 			},
 			{
-				"id": "bcab700d-229e-46ce-984f-08aad55e5539",
+				"id": "912be58f-3e0e-4e53-adbc-568d0255e472",
 				"method": "POST"
 			},
 			{
-				"id": "c97a8b23-506c-49bf-92d2-415eaf01690a",
+				"id": "5058dcf3-c47e-45f6-8b06-7e6952433574",
 				"method": "POST"
 			},
 			{
-				"id": "61b01198-b942-4eec-9e90-fa54fa083266",
+				"id": "bab9fa75-949a-4471-a66a-7344fcb8d852",
 				"method": "GET"
 			},
 			{
-				"id": "9138f0d0-cc07-47ca-ac21-bb0d1b27c1c1",
+				"id": "3b07ed2f-293a-486e-b586-e2c58908dfc1",
 				"method": "GET"
 			},
 			{
-				"id": "5f2c3d33-9bdb-43fe-82b8-665fab0ce842",
+				"id": "0a086c17-43dc-4c9d-916a-8090439e8a18",
 				"method": "PUT"
 			},
 			{
-				"id": "7def0d14-5c53-476e-abf4-d243b9aedb5d",
+				"id": "314a929a-f8ec-4c18-9c32-d1abcc8ac257",
 				"method": "PUT"
 			},
 			{
-				"id": "c0ab9af8-d660-4bcb-bcf2-e67c82527779",
+				"id": "fd08c850-f3d4-4a83-95c3-9d3f23e71a24",
 				"method": "DELETE"
 			},
 			{
-				"id": "e01ca74f-e58b-48a9-8622-bb7b480380f7",
+				"id": "04867eb8-cd45-4324-877a-09bd22bb7db2",
 				"method": "GET"
 			},
 			{
-				"id": "221bdf47-c30e-45e6-b7b2-aae09e7f5a7d",
+				"id": "2ae23925-4159-4cc3-8e47-cc6be2ac5eb3",
 				"method": "PATCH"
 			},
 			{
-				"id": "bc9afdb3-607f-4e8d-94e5-e98d09075cd5",
+				"id": "c6994498-0c67-4589-a168-3494bf389c15",
 				"method": "PATCH"
 			},
 			{
-				"id": "f0061cb0-ff99-4de3-b4b9-f2c2b4722a5e",
+				"id": "253f1aae-ce6c-4b65-9670-727e233384e3",
 				"method": "GET"
 			},
 			{
-				"id": "75a7323c-d2b4-4d43-92d2-d062beaaa974",
+				"id": "8fb8909b-f7b5-4dc1-beb2-f91291ce0623",
 				"method": "GET"
 			},
 			{
-				"id": "12269b29-1d30-4043-89ec-21bad353d459",
+				"id": "1689affe-6a60-4aae-a85e-2750bffa0e6c",
 				"method": "GET"
 			},
 			{
-				"id": "eba0403e-618b-4813-9737-ed81282ed669",
+				"id": "d2d10184-d868-4f7f-8c8d-6b00a2cc3134",
 				"method": "POST"
 			},
 			{
-				"id": "bdaeb23f-4ba2-4a06-b222-710e6ab5338d",
+				"id": "42e54ad9-e436-4830-bda9-4822337f5c8b",
 				"method": "GET"
 			},
 			{
-				"id": "670e94f5-e642-485a-acd0-f2f4c565670a",
+				"id": "2cbf1002-7a83-4ed9-bf80-337b4f0f9ff7",
 				"method": "GET"
 			},
 			{
-				"id": "03f6b5ef-6ba2-486a-bb62-16a08d91a27e",
+				"id": "dee1e6e3-1154-4cb7-90fd-f826b3d4a0ff",
 				"method": "POST"
 			},
 			{
-				"id": "acdf5723-40b7-46bf-8b8f-1abbf0bf6520",
+				"id": "ffd4897e-370d-4be8-a60b-3fcb2888c043",
 				"method": "POST"
 			},
 			{
-				"id": "6de0b4a0-6f73-4e92-88c2-7011437f0963",
+				"id": "5ebf502a-79d7-4493-827c-89aaecaaf9eb",
 				"method": "PATCH"
 			},
 			{
-				"id": "4bca77b4-2f21-4982-a6fc-5e76d1533104",
+				"id": "80de3ea3-38cc-44cd-9497-db00a40a47e6",
 				"method": "POST"
 			},
 			{
-				"id": "6e427aa8-1f5b-4231-94e6-ffe4c67d86ba",
+				"id": "a191fa3b-b6b9-4b43-b441-05b96dab1300",
 				"method": "GET"
 			},
 			{
-				"id": "9b0bf49c-8615-4662-a89a-5246eb3af6bd",
+				"id": "37db3f39-d004-40f6-879b-596ab15930dc",
 				"method": "GET"
 			},
 			{
-				"id": "38a40a7c-56fd-46e3-bf5c-e32c3ff1a996",
+				"id": "c5ac8f54-6f69-48b2-a30b-aa7b5b69036a",
 				"method": "POST"
 			},
 			{
-				"id": "9dcdef4a-88f9-47df-8131-1e92fa823645",
+				"id": "eeefc8e1-52b8-43b4-ae6a-c6f7f5cd0c0a",
 				"method": "POST"
 			},
 			{
-				"id": "d1876c93-2039-4bcc-ba91-c9f5c556dadb",
+				"id": "a68aceb3-2157-43fd-ac07-2ccf2e2e54a4",
 				"method": "PUT"
 			},
 			{
-				"id": "ddb48df1-6c27-439a-aec3-f90ff018ef4b",
+				"id": "4c2acf3d-b3e3-427c-98d6-2bc943325779",
 				"method": "DELETE"
 			},
 			{
-				"id": "eb12c426-ccdd-4d5e-b8ac-46d44e35b21f",
+				"id": "90a40110-5b6c-4c27-92b3-0a816f1410ca",
 				"method": "PUT"
 			},
 			{
-				"id": "4a3a7f83-f89f-455d-9e3d-ff0a04ed1cbb",
+				"id": "6cbc9cd3-2d1c-4ed7-a062-62038db6b43f",
 				"method": "DELETE"
 			},
 			{
-				"id": "158e1259-0e52-4e31-bb17-f6ab85e4a699",
+				"id": "758e10de-5033-4f0d-9a37-f26b8462fcb6",
 				"method": "GET"
 			},
 			{
-				"id": "4fd4a574-9b25-4837-b8fc-ecdb53a76852",
+				"id": "90eb1404-cf4d-4d33-942a-70276087798e",
 				"method": "GET"
 			},
 			{
-				"id": "b7f9ce90-62ff-4dff-9c17-0060b8d60eb4",
+				"id": "8498bc19-12c2-414b-a3a5-d509e2f0234a",
 				"method": "GET"
 			},
 			{
-				"id": "4de60238-d2c2-48d1-ba97-f62fa1a72843",
+				"id": "8611db0e-498e-4b6b-862b-0373f7ecb66f",
 				"method": "POST"
 			},
 			{
-				"id": "75b1290b-1e43-4971-9352-2be980b5ee17",
+				"id": "526538db-973c-4c03-9516-7412f536dec5",
 				"method": "POST"
 			},
 			{
-				"id": "1f5256f1-52f7-4b43-a5e5-b330a7ad86f7",
+				"id": "50a7fa4c-f999-404d-a0e1-3da2ee00f574",
 				"method": "GET"
 			},
 			{
-				"id": "d21e6993-9255-4f8e-b15f-50c22ca397f6",
+				"id": "c461b6ce-41ff-4cf5-ba8a-c12f2e029c60",
 				"method": "GET"
 			},
 			{
-				"id": "436c5f69-8113-43d7-81ff-fe6f0abad4bb",
+				"id": "7baa196c-c040-4313-b1a8-30bf45e9a4c6",
 				"method": "POST"
 			},
 			{
-				"id": "095fe77e-9e64-4c23-9ee9-96d061423c2d",
+				"id": "3e587ae7-c193-4f3e-a969-a1fd7a6a1bc0",
 				"method": "POST"
 			},
 			{
-				"id": "91b0bc5b-8f7c-4083-bbc7-f42e2ff9e0b6",
+				"id": "a88e270a-2519-4daa-96a1-b57009800496",
 				"method": "DELETE"
 			},
 			{
-				"id": "54697a47-4e01-41c1-8701-4fb4551bb480",
+				"id": "332a02fc-e130-48f4-bfe6-9e0007492924",
 				"method": "PUT"
 			},
 			{
-				"id": "11d70fcd-b8ce-46e0-84ed-bbf6c07bd1a2",
+				"id": "98602f9c-9b51-486d-9e12-de4fb1914048",
 				"method": "DELETE"
 			},
 			{
-				"id": "88078cc6-ce4c-4f00-8032-aabe691b73aa",
+				"id": "2b119d54-6ff6-4b59-a773-fa7cce249da2",
 				"method": "DELETE"
 			},
 			{
-				"id": "fe78c13d-7e6e-4571-b757-10fb147404a2",
+				"id": "78b48a7c-cd57-444e-b9f2-78fa4c642ddc",
 				"method": "POST"
 			},
 			{
-				"id": "1914dcfa-16c5-4ea1-8d68-6af16db1d43a",
+				"id": "0a3222e6-e50d-40ff-9660-0aa85a83d78d",
 				"method": "POST"
 			},
 			{
-				"id": "cc44a3a0-4440-4c14-97ab-fa88bae30c0b",
+				"id": "ee7f61d6-e6f2-447b-bbd2-87e890f434d1",
 				"method": "GET"
 			},
 			{
-				"id": "c827038a-e74e-4487-b83e-cfc12a69c304",
+				"id": "c76aaf17-5923-49be-86ec-e19fe030d0c0",
 				"method": "GET"
 			},
 			{
-				"id": "d5f90471-ff1d-4202-9716-b8391bb56476",
+				"id": "a2bb73df-7499-4cc2-9420-f30270f7b17b",
 				"method": "GET"
 			},
 			{
-				"id": "0c20ab22-c040-490d-a804-c297354371d6",
+				"id": "f1522e4b-5bd9-45a6-868e-4e9d5ee23fba",
 				"method": "GET"
 			},
 			{
-				"id": "465ff609-e951-4064-ae28-cc376bca25dd",
+				"id": "9cce5b7e-cad1-41e3-a5d1-44319db34861",
 				"method": "GET"
 			},
 			{
-				"id": "388b3754-af91-476a-b45e-d336c9befb1e",
+				"id": "89c05999-b3b0-4a53-b16b-43556a6da402",
 				"method": "PUT"
 			},
 			{
-				"id": "23d9024a-f09d-410b-a995-82c306884efa",
+				"id": "c2e8d51a-b8c3-453a-9c16-b9d160355a1e",
 				"method": "PUT"
 			},
 			{
-				"id": "7ace3257-3ffa-4e8a-ab29-c2d9397f029f",
+				"id": "5b6aaac9-a708-4271-af68-6cad1a42e772",
 				"method": "DELETE"
 			},
 			{
-				"id": "e2b0c7e4-a232-4803-af9b-d9d5999fb11e",
+				"id": "1e2f679f-9f9f-4666-ac59-34144fbb33c1",
 				"method": "DELETE"
 			},
 			{
-				"id": "2c7cd86d-147e-4373-88d0-28fad71200dc",
+				"id": "8c819579-c2b0-4c4f-91f4-268dcd3bb7bb",
 				"method": "PATCH"
 			},
 			{
-				"id": "478e25fe-d093-476b-ae7e-141c675caa9a",
+				"id": "fb2b8728-ef40-4d9f-8be4-62a1e3efb674",
 				"method": "PATCH"
 			},
 			{
-				"id": "d069e065-c2dd-4342-830b-1207c57d9199",
+				"id": "f0ade740-68d3-43c5-9211-6bfac8721ad3",
 				"method": "POST"
 			},
 			{
-				"id": "20a2b063-92c5-4eb2-b6f4-f21a4eba3ea2",
+				"id": "255d4434-a472-49d7-bc2d-72bd588a376b",
 				"method": "POST"
 			},
 			{
-				"id": "73ad1277-f10c-484b-a0b3-92d8b9072ca6",
+				"id": "abddd25c-5301-4623-aa9c-40f5c78cf38b",
 				"method": "POST"
 			},
 			{
-				"id": "6d6b2452-903e-44f3-8869-136ac98836b4",
+				"id": "7f07987f-da6b-4eaf-b4d3-4a02f249bcc6",
 				"method": "POST"
 			},
 			{
-				"id": "eba5e61f-fe1e-4ae1-b9db-01b75cb17349",
+				"id": "49d69032-a853-4d0b-b431-0714d99d60a6",
 				"method": "GET"
 			},
 			{
-				"id": "f7297f96-6de7-4ca7-b4cc-7e32d8f5d658",
+				"id": "53b8712e-2c70-4c64-a078-e88ae4e273cf",
 				"method": "GET"
 			},
 			{
-				"id": "140770f9-3fa3-4859-80ef-13884bb46f49",
+				"id": "39715d82-8c81-4685-94e1-4477f5c13eb4",
 				"method": "GET"
 			},
 			{
-				"id": "d4f8511e-1e66-4d0c-ac94-a3aed24d4663",
+				"id": "be3ab8b5-db55-49ad-a666-376cf53820e7",
 				"method": "GET"
 			},
 			{
-				"id": "9838b23f-05c9-4cc8-9574-680539246f50",
+				"id": "6983b553-7b4f-4918-bdb7-b3e6f1b7fef0",
 				"method": "PUT"
 			},
 			{
-				"id": "96fb7783-5db7-41b0-b6e6-bf651f3d8703",
+				"id": "2df41c91-7e17-4891-b29d-3ed31ebe1319",
 				"method": "PUT"
 			},
 			{
-				"id": "545e294a-ffa0-4fd4-99db-d87127ea9c27",
+				"id": "cc949383-c875-488b-b584-6d00ce2dd2d2",
 				"method": "DELETE"
 			},
 			{
-				"id": "55956a6c-fa76-440d-8c13-6a71947a4e9d",
+				"id": "f3fbce74-1749-4090-98c2-9954edfbee6a",
 				"method": "DELETE"
 			},
 			{
-				"id": "f1b71f30-3cee-4e1d-9da2-d2fa944486b2",
+				"id": "5912f9c0-49ab-4d6b-83c0-7a61be2892ce",
 				"method": "POST"
 			},
 			{
-				"id": "3cdaf02f-1a1f-4641-8289-03828cdc58c8",
+				"id": "b367aa80-5da0-4473-a469-1f77d75e4fa2",
 				"method": "POST"
 			},
 			{
-				"id": "c287acc4-e4df-4d3a-8698-db2b8d43f135",
+				"id": "960a04be-276d-4584-a9a2-6b4567324e5a",
 				"method": "POST"
 			},
 			{
-				"id": "13c1c3c9-1898-406f-9e37-976ee41a0fdb",
+				"id": "48ba4f20-619f-4a8e-9b96-2a7357e0d557",
 				"method": "POST"
 			},
 			{
-				"id": "cb757ecd-7beb-476c-9240-6ebfb25f286c",
+				"id": "27d87147-1326-49b6-99dc-acc4d2513a3c",
 				"method": "POST"
 			},
 			{
-				"id": "b8f44220-2496-4a17-8947-dd2ac3153937",
+				"id": "ed2f6cb1-dd61-47d3-99a4-85b83f9c99c4",
 				"method": "POST"
 			},
 			{
-				"id": "5bf3235c-7c54-49e3-ad8e-48934da37abc",
+				"id": "38a2e8e1-f6c5-4801-bb4c-d722e58dda8f",
 				"method": "GET"
 			},
 			{
-				"id": "ae098f08-a34c-4369-93ae-0e215708b108",
+				"id": "10e4e650-28c7-47e1-b06d-c64983977459",
 				"method": "DELETE"
 			},
 			{
-				"id": "40fc38c9-8c26-40c9-80ab-b06f400fa478",
+				"id": "b67badd3-0493-41d1-a06b-355f7944020a",
 				"method": "DELETE"
 			},
 			{
-				"id": "10e7af40-9f63-4108-b085-a1f829d9e5c7",
+				"id": "b45645dc-cf62-4603-ae26-49ce6b518c19",
 				"method": "POST"
 			},
 			{
-				"id": "cc3a5fb7-4495-45df-9857-c1c278290a48",
+				"id": "a8e39460-cc60-4adb-a164-4c801ff1b3e7",
 				"method": "DELETE"
 			},
 			{
-				"id": "05765002-3bb2-40df-b35a-0bfbc5d0340c",
+				"id": "e2ab8a54-c7d9-4b32-a79e-28db8e4dd4fe",
 				"method": "POST"
 			},
 			{
-				"id": "6e90d627-2216-4550-9ca3-497efde85b8a",
+				"id": "368855ff-f44f-45dc-b476-4d4a3398d4d7",
 				"method": "POST"
 			},
 			{
-				"id": "843fe9ec-e692-4205-8990-974788f8124d",
+				"id": "57cf91bb-ee04-4f16-bc51-5ab3a0f2c68e",
 				"method": "POST"
 			},
 			{
-				"id": "02a3397e-c1ff-4792-a00f-4bf891599940",
+				"id": "72c1224e-64b8-4d1f-ae29-aece41c9103b",
 				"method": "GET"
 			},
 			{
-				"id": "43a75b35-2e82-41b6-873a-38d6b55038e3",
+				"id": "ee1deb9f-2709-4a0f-8ada-46bdfa291d60",
 				"method": "POST"
 			},
 			{
-				"id": "0da6ce2b-d9bb-4f95-9868-7b20fec6fb74",
+				"id": "f1a5fe53-dfd5-43cf-84d0-a4db6f299bf4",
 				"method": "DELETE"
 			},
 			{
-				"id": "680465b3-b454-4494-90a9-330e736fafd7",
+				"id": "ce2c186b-0cee-4028-b934-f9ba5b388803",
 				"method": "POST"
 			},
 			{
-				"id": "affc5f36-9b30-4835-924a-9a193f597bb8",
+				"id": "c14825b2-2c76-4f5a-ae9f-9aa4ef913086",
 				"method": "POST"
 			},
 			{
-				"id": "5ffa3e51-9f88-4178-9edd-3c70942d16e9",
+				"id": "db3e2b2b-f5e3-4320-9467-1e3aaad21a15",
 				"method": "POST"
 			},
 			{
-				"id": "459c2352-c5bd-4bb9-b5d1-59054336a0b0",
+				"id": "e241e604-2b69-465c-962c-95b8da3e8b76",
 				"method": "POST"
 			},
 			{
-				"id": "b0751c11-8fd8-4b18-9675-e2c22094959a",
+				"id": "30d8f8a2-7f69-493b-8648-faea67412cb4",
 				"method": "POST"
 			},
 			{
-				"id": "5e17a693-3e53-481d-b76f-b962560a06c2",
+				"id": "1e5a4ba2-22d7-4fd2-a942-e1d5748e8c4b",
 				"method": "GET"
 			},
 			{
-				"id": "30a12068-ec45-42d4-97d3-32362f57bc50",
+				"id": "9c76297f-c60a-4b10-8fc7-03d7d075d347",
 				"method": "POST"
 			},
 			{
-				"id": "11eef8fd-131a-4f24-9201-06a991fc4a1b",
+				"id": "daf43912-6296-432c-80ee-89ae70a9408a",
 				"method": "POST"
 			},
 			{
-				"id": "e6295bf6-43db-4ee5-83d4-857fdafd9308",
+				"id": "1da6cf40-6044-43b7-9d46-cd3d515867dc",
 				"method": "GET"
 			},
 			{
-				"id": "4da9fdd5-cd59-451e-a723-80fccb91cbb5",
+				"id": "b3bd7008-5bf9-46fe-8b1b-c34688b4b6ae",
 				"method": "GET"
 			},
 			{
-				"id": "f0109feb-b142-4a4c-be6b-f823529d9b1e",
+				"id": "7b7c68ea-8cd1-4a3c-97e3-3f3da86efce1",
 				"method": "GET"
 			},
 			{
-				"id": "83255eab-eb62-4dde-a858-debc911e9035",
+				"id": "96bb258c-66e1-4e04-91a5-2e8c8cb7bd23",
 				"method": "PUT"
 			},
 			{
-				"id": "95d3d999-c14b-42ae-8d8b-7f5b84699b31",
+				"id": "56ce35ab-6503-41cf-b160-fd37c0e5ee18",
 				"method": "POST"
 			},
 			{
-				"id": "16db4386-6e02-4b9c-bc48-c6ae7d43e7be",
+				"id": "d188dc51-569f-4538-a00d-df3530d3e447",
 				"method": "DELETE"
 			},
 			{
-				"id": "084c95c4-1679-4fea-9937-ec05f3d96bab",
+				"id": "4307daaa-0074-4cf3-a7de-98b60d662689",
 				"method": "GET"
 			},
 			{
-				"id": "0d8daaf1-854e-4e03-b976-a630c87fe1f5",
+				"id": "a5628300-9cbf-4682-a154-5aef3471732f",
 				"method": "GET"
 			},
 			{
-				"id": "82047ce2-4bab-4615-beef-979e5a0ebe5f",
+				"id": "73d7f6ac-626c-4008-98de-9962aec79c2a",
 				"method": "POST"
 			},
 			{
-				"id": "33989950-afb5-42dd-b305-88d31511f35d",
+				"id": "6ac4660d-0c96-41ea-8a54-c373e33ee2c8",
 				"method": "GET"
 			},
 			{
-				"id": "faa6f433-f254-4764-ad6f-4681a7badf08",
+				"id": "9e9e6768-e9f4-48e4-8e40-c0ac7581a4f1",
 				"method": "POST"
 			},
 			{
-				"id": "f0b2f91c-92f8-4357-bac7-eacd9c8b4c40",
+				"id": "c6e35d52-3289-4654-aa3a-8eedf48fe01a",
 				"method": "GET"
 			},
 			{
-				"id": "557725f6-8631-45b0-bdc3-6ca52fa76b32",
+				"id": "e7b7faa9-6470-46c3-9987-72599e59676b",
 				"method": "GET"
 			},
 			{
-				"id": "04dfb4e1-df66-4139-9062-af9c660e8d73",
+				"id": "01da1555-a02d-46b3-bc5c-e805ef230b46",
 				"method": "POST"
 			},
 			{
-				"id": "1f41b7e2-9c50-4529-b754-a873340433d9",
+				"id": "bcd9ea3b-177a-4cdd-8f3e-952ee5305af8",
 				"method": "POST"
 			},
 			{
-				"id": "5ce7d0e0-6235-4252-9925-a101386101d2",
+				"id": "d54e32ad-7081-4675-9de2-304e14102dcb",
 				"method": "POST"
 			},
 			{
-				"id": "ecf91012-4ccb-438e-81e9-08906175fff6",
+				"id": "60f16b93-7f0d-41c8-8a17-8be51c03bb83",
 				"method": "GET"
 			},
 			{
-				"id": "c1630eaa-2ea1-4e1c-8da2-74d9050a672e",
+				"id": "3b4ae354-eee9-4e37-bbd9-86abe7417619",
 				"method": "GET"
 			},
 			{
-				"id": "31fab776-beb1-4703-a336-351e0067b58d",
+				"id": "f00f2725-2c43-4026-937b-59a5099ea034",
 				"method": "DELETE"
+			},
+			{
+				"id": "8c0014a8-ee1e-4f62-ac7b-52e87e4b3e50",
+				"method": "POST"
+			},
+			{
+				"id": "5b36e55f-901a-4303-9218-b574693520f5",
+				"method": "POST"
+			},
+			{
+				"id": "a198dc69-08f9-4861-b9fa-410312d47b17",
+				"method": "POST"
+			},
+			{
+				"id": "365c8b06-bb35-4a5d-ab4a-2e336e279aeb",
+				"method": "GET"
+			},
+			{
+				"id": "3f600ced-f09e-4cb9-a529-bb6ac8e6e074",
+				"method": "POST"
+			},
+			{
+				"id": "e2028cce-173f-4ea0-b028-5b2c677a4e8c",
+				"method": "POST"
+			},
+			{
+				"id": "e5152fd0-e8a7-4815-8847-3e4a098c8741",
+				"method": "PUT"
+			},
+			{
+				"id": "6a2435b5-3bb3-44c0-804f-155db2344a6b",
+				"method": "POST"
+			},
+			{
+				"id": "3e2988d8-6bf8-4827-87c4-5b63d59a03bf",
+				"method": "PUT"
+			},
+			{
+				"id": "7eec77f3-a3ee-4ce7-bc72-fa997505a8ac",
+				"method": "POST"
+			},
+			{
+				"id": "4461c459-8b27-4015-9a50-92e5119cb86e",
+				"method": "POST"
+			},
+			{
+				"id": "7d0d1eb1-a1d3-41a8-a053-330f4c038933",
+				"method": "POST"
+			},
+			{
+				"id": "cb40a8dd-d44a-4b11-8f3a-ab12b4e540ec",
+				"method": "POST"
+			},
+			{
+				"id": "270682b9-1f29-420c-a30d-40d45dd77b0a",
+				"method": "POST"
+			},
+			{
+				"id": "5ef57167-b327-4ec0-aba4-506091a36940",
+				"method": "POST"
+			},
+			{
+				"id": "dfc66afc-9e19-4ecd-87f2-fe81eb5ba9c1",
+				"method": "POST"
+			},
+			{
+				"id": "16c4a036-14e2-466d-b214-803eb879e625",
+				"method": "GET"
+			},
+			{
+				"id": "cf9747f7-a707-4ea3-92a0-2bc3f271236e",
+				"method": "GET"
+			},
+			{
+				"id": "293362bc-4302-4da6-b62b-ff4d6b131b2f",
+				"method": "POST"
+			},
+			{
+				"id": "b8390e26-8dca-413d-be59-059dc4591082",
+				"method": "POST"
+			},
+			{
+				"id": "1ef47b91-b190-423c-a83d-ceae4b26a928",
+				"method": "POST"
+			},
+			{
+				"id": "63740aad-bb38-486e-9d03-8dba1a6ee80c",
+				"method": "POST"
+			},
+			{
+				"id": "3104658a-3c01-4de7-b8a2-15ebece14535",
+				"method": "POST"
+			},
+			{
+				"id": "e87320b5-66c5-4fc4-8deb-590ce2c91ae9",
+				"method": "POST"
+			},
+			{
+				"id": "77121fba-6261-47fe-928e-ae191e1f3643",
+				"method": "POST"
+			},
+			{
+				"id": "48644933-3e82-4195-980e-543636d79a00",
+				"method": "POST"
+			},
+			{
+				"id": "4017f75e-0c90-4aca-933c-eb79d6a6e795",
+				"method": "POST"
+			},
+			{
+				"id": "dc297441-652e-46b3-8ed4-a8ced3520787",
+				"method": "POST"
+			},
+			{
+				"id": "2eef2a58-0c6b-405b-ae0a-2d80266d1118",
+				"method": "POST"
+			},
+			{
+				"id": "4568497d-b3c3-4ec0-bcf9-4526254caf2c",
+				"method": "GET"
+			},
+			{
+				"id": "fefed7cf-53f4-40fa-8fe0-373f3b07e3bd",
+				"method": "GET"
+			},
+			{
+				"id": "032d6df6-1fd9-418f-8b85-410d22bb3440",
+				"method": "GET"
+			},
+			{
+				"id": "78e81de6-896e-4468-8de3-ad6f8b69234f",
+				"method": "GET"
+			},
+			{
+				"id": "7af1cf21-d3b5-4382-8108-e96518ebb197",
+				"method": "GET"
+			},
+			{
+				"id": "b404e1d4-3612-478b-83b4-5cfde9ff0c3d",
+				"method": "GET"
 			}
 		]
 	}

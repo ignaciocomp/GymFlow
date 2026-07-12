@@ -1,6 +1,6 @@
 # CU-11: Pago de Cuotas Online con Mercado Pago
 
-> **Estado:** Diseño previo a la construcción (Iteración 6). Este CU es el insumo para redactar el spec y el plan de RF-21; los flujos y reglas pueden ajustarse durante la implementación.
+
 
 | *Campo* | |
 |-|-|

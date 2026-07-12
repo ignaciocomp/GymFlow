@@ -83,10 +83,6 @@
 - **Solo el Admin puede crear Dueños.**
 - **Filtrado por sede del lado del servidor (Dueño):** no se confía en el cliente; los repos aceptan el conjunto de sedes habilitadas como parámetro.
 
-**Deuda técnica pendiente (registrada en IT-4):**
-
-- No se fuerza cambio de password en el primer login del empleado. Existe el flujo manual pero no obligatorio.
-
 **Desviaciones respecto del diseño original:**
 
 - **Roles "Profesor" no como rol fijo:** el diseño original definía Profesor como rol del sistema. Se reemplazó por el sistema de permisos dinámicos (un admin crea un rol llamado "Profesor" con los permisos que considere). RF-13 y RF-14 quedan cubiertos por configuración, no por código específico.

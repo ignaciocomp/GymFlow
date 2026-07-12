@@ -34,9 +34,9 @@ $inputFile = Join-Path $seguimientoDir "iteracion-$Iteracion.md"
 $referenceDoc = Join-Path $seguimientoDir "Plantilla_doumentacion_iteraciones.docx"
 $pandoc = "C:\Users\sebas\AppData\Local\Pandoc\pandoc.exe"
 
-# Directorio de salida por defecto: drive de Teams
+# Directorio de salida por defecto: carpeta de documentos oficiales entregados
 if (-not $OutputDir) {
-    $OutputDir = $seguimientoDir
+    $OutputDir = Join-Path $repoRoot "docs\documentacion_oficial"
 }
 
 $outputFile = Join-Path $OutputDir "Documentacion_It.$Iteracion.docx"

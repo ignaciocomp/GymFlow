@@ -1,12 +1,13 @@
 ---
-title: DOCUMENTACION ITERACIÓN 4 FASE DE CONSTRUCCIÓN
+title: DOCUMENTACIÓN ITERACIÓN 4
 tags:
   - seguimiento
 related:
   - "[[seguimiento_index]]"
+  - "[[deploy-iteracion-4]]"
 ---
 
-# DOCUMENTACION ITERACIÓN 4 FASE DE CONSTRUCCIÓN
+# DOCUMENTACIÓN ITERACIÓN 4
 
 **Iteración 4 --- Fase de Construcción (30/05/2026 -- 13/06/2026)**
 
@@ -16,9 +17,38 @@ La cuarta iteración estabilizó los módulos de inscripción a clases, gestión
 
 En paralelo al trabajo de producto, esta iteración formalizó el **marco de trabajo** del equipo y se adoptó **Obsidian** como herramienta unificada para gestionar toda la documentación del proyecto.
 
+## Tareas planificadas
+
+Funcionalidades a implementar:
+
+- **RF-10** — Inscripción a clase por horario individual con validación de cupo, duplicados y cuota al día.
+- **RF-11** — Ver mis clases: vista "Mis Inscripciones" con día, hora y sala.
+- **RF-12** — Gestionar empleados y profesores: credenciales temporales autogeneradas + email de bienvenida.
+- **RF-13** — Profesor registra socios: cubierto por roles y permisos configurables desde interfaz.
+- **RF-14** — Profesor gestiona sus clases: cubierto por roles y permisos configurables desde interfaz.
+
+Requerimientos no funcionales:
+
+- RNF-03 — Responsive: vistas del portal y admin optimizadas para móvil.
+- RNF-11 — Log de auditoría en inscripciones, cancelaciones y creación de empleados.
+
+Tareas técnicas de base:
+
+- Migración de modelo: `InscripcionClase` referencia `HorarioClaseId` en lugar de `ClaseId`.
+- Crear migración EF Core para el cambio de FK en `InscripcionesClase`.
+- Implementar `GeneradorPassword` para credenciales temporales seguras.
+- Optimizar `GetMisInscripcionesQuery` para evitar N+1 (conteo batch por horarios).
+- Agregar `unidadIds` al `LoginResponse` y `/api/auth/me` para filtro de sede en frontend.
+- Eliminar `CatalogoClasesPage` y ruta `/portal/clases` por redundancia.
+- Mejorar `HorariosPortalPage` con filtro de sede obligatorio.
+- Mejorar `HorariosPage` (admin) con split de clases solapadas y filtro de sede.
+- Escribir tests unitarios de dominio (entidad `InscripcionClase`), de aplicación (commands y queries de inscripciones, empleados) y build de frontend.
+
 ## Marco de trabajo
 
 Durante esta iteración se formalizó en un diagrama la metodología que el equipo venía aplicando desde iteraciones anteriores. El objetivo fue dejar explícito el ciclo de trabajo — desde la selección de requerimientos hasta la entrega al cliente — para alinear expectativas y servir como guía operativa para futuras iteraciones.
+
+Si se quiere ver la imagen en ampliada: [marco-de-trabajo](https://fi365.sharepoint.com/:w:/s/ProyectoIntegrador-Febrero2026-N5A-TA-13-Notte-Compan-Acua/IQDt-0anuBMhQoK0aGZHrZViAQNTkhkAP8F9n5zeBxyGJsU?e=D9TkzS) (ruta en teams: Documents – Seguimiento - Iteración 4 – marco_de_trabajo.docx)
 
 ```plantuml
 @startuml metodologia-trabajo
@@ -177,6 +207,8 @@ A partir de esta iteración, **toda la documentación del proyecto se gestiona c
 
 Como parte del trabajo de esta iteración se formalizó también el flujo de ramas y la integración continua. Este diagrama complementa el marco de trabajo general y se relaciona directamente con la automatización del deploy implementada en esta iteración (detalle completo en el documento de deploy de iteración 4).
 
+Si se quiere ver la imagen en ampliada: [diagrama_git_pipelines](https://fi365.sharepoint.com/:w:/s/ProyectoIntegrador-Febrero2026-N5A-TA-13-Notte-Compan-Acua/IQAifhTeSs_QQJ7lsiA3oGVAAWJU3I5_MWxWdjUMDJcqK0s?e=SFxilG) (ruta en teams: Documents – Seguimiento - Iteración 4 – diagrama_git_pipelines.docx)
+
 ```plantuml
 @startuml git-pipelines
 title Flujo de Ramas y Pipelines CI/CD - GymFlow
@@ -267,33 +299,6 @@ stop
 
 El flujo distingue cuatro tipos de ramas: **`main`** mantiene el código estable y listo para entregar, **`develop`** integra las funcionalidades de la iteración en curso, y las ramas **`feature/*`** y **`bugfix/*`** alojan el desarrollo individual de cada requerimiento o corrección. Cada PR dispara el mismo pipeline de CI (backend con `restore`/`build`/`test`, frontend con `install`/`build`/`test`), que se re-ejecuta como verificación tras cada merge a `develop` y a `main`. El cierre de iteración consolida todo el trabajo aceptado, mergea `develop → main` y etiqueta una versión estable.
 
-## Tareas planificadas
-
-Funcionalidades a implementar:
-
-- **RF-10** — Inscripción a clase por horario individual con validación de cupo, duplicados y cuota al día.
-- **RF-11** — Ver mis clases: vista "Mis Inscripciones" con día, hora y sala.
-- **RF-12** — Gestionar empleados y profesores: credenciales temporales autogeneradas + email de bienvenida.
-- **RF-13** — Profesor registra socios: cubierto por roles y permisos configurables desde interfaz.
-- **RF-14** — Profesor gestiona sus clases: cubierto por roles y permisos configurables desde interfaz.
-
-Requerimientos no funcionales:
-
-- RNF-03 — Responsive: vistas del portal y admin optimizadas para móvil.
-- RNF-11 — Log de auditoría en inscripciones, cancelaciones y creación de empleados.
-
-Tareas técnicas de base:
-
-- Migración de modelo: `InscripcionClase` referencia `HorarioClaseId` en lugar de `ClaseId`.
-- Crear migración EF Core para el cambio de FK en `InscripcionesClase`.
-- Implementar `GeneradorPassword` para credenciales temporales seguras.
-- Optimizar `GetMisInscripcionesQuery` para evitar N+1 (conteo batch por horarios).
-- Agregar `unidadIds` al `LoginResponse` y `/api/auth/me` para filtro de sede en frontend.
-- Eliminar `CatalogoClasesPage` y ruta `/portal/clases` por redundancia.
-- Mejorar `HorariosPortalPage` con filtro de sede obligatorio.
-- Mejorar `HorariosPage` (admin) con split de clases solapadas y filtro de sede.
-- Escribir tests unitarios de dominio (entidad `InscripcionClase`), de aplicación (commands y queries de inscripciones, empleados) y build de frontend.
-
 ## ¿Qué se implementó?
 
 Funcionalidades implementadas:
@@ -314,12 +319,6 @@ Requerimientos no funcionales implementados:
 | RNF-11 | Auditoría | Completado | Inscripciones y cancelaciones registran audit log con usuario, timestamp y detalle. Creación de empleados audita envío de email. |
 | RNF-03 | Responsive | Completado | Vistas del portal de socios (horarios, mis inscripciones) y vistas de admin (horarios, clases) optimizadas para móvil. |
 | RNF-05 | Seguridad | Completado | Controller de inscripciones usa `[Authorize]` con validación de ownership. Contraseñas temporales generadas con criterios de seguridad (mayúsculas, minúsculas, números, especiales). |
-
-## Tareas pendientes
-
-| **Requerimiento** | **Caso de uso** | **Estado** | **Detalle** |
-|-|-|-|-|
-| — | Forzar cambio de password en primer login | Deuda técnica | Existe flujo manual de cambio de password, pero no se fuerza al primer ingreso del empleado. |
 
 ## Pantallas implementadas
 
@@ -425,6 +424,36 @@ Requerimientos no funcionales implementados:
 - **E1 — Correo duplicado:** "Ya existe un usuario registrado con ese correo."
 - **E2 — Error envío email:** Se registra el fallo en auditoría. Admin puede reenviar manualmente.
 
+## CI/CD: auto-deploy a Azure en push a main
+
+A partir de esta iteración el deploy a producción es automático. Cada merge a `main` (vía PR desde `develop`) dispara un workflow de GitHub Actions que corre tests, builduea la imagen, la pushea a ACR y actualiza el Container App. Reemplaza el procedimiento manual de la iteración 3.
+
+**Pipeline (`.github/workflows/deploy.yml`)**
+
+Tres jobs encadenados:
+
+1. **Tests** — backend (`dotnet test`) y frontend (`npm run build` + `vitest run`). Bloquea el deploy si fallan.
+2. **Deploy** — Se arma la imagen Docker de la app, se sube a Azure con una etiqueta única del commit, y se le dice a Azure que use esa nueva versión. Azure la levanta primero, verifica que ande, y recién ahí apaga la anterior, así la app nunca queda caída. Si algo falla en las pruebas posteriores, vuelve sola a la versión anterior.
+3. **Smoke test** — polling de `GET /` hasta recibir 200 OK (hasta 30 intentos cada 5 s). Si no responde, el job falla y dispara rollback automático a la revisión anterior.
+
+**Setup realizado**
+
+- **Service Principal `sp-gymflow-cicd`** con rol Contributor scoped solo al Resource Group `rg-gymflow`.
+- **GitHub Secrets:** `AZURE_CREDENTIALS` (JSON del SP).
+- **GitHub Variables:** `AZURE_RG`, `AZURE_ACR_NAME`, `AZURE_ACR_LOGIN_SERVER`, `AZURE_ACA_APP`.
+- **Branch protection en `main`:** require PR, require status checks (test job), block force pushes.
+
+**Iteraciones del pipeline durante la iteración**
+
+- Workflow inicial (07/06).
+- Rollback automático ante smoke test fallido + simplificación del job de tests (sin Postgres, no hacían falta integration tests en el pipeline).
+- Workflow auxiliar `workflow_dispatch` para activar SMTP en el Container App sin re-deployar.
+- Fix: el `az acr build` quedó bloqueado por límites de la suscripción Students; se reemplazó por `docker build` + `docker push` corriendo directo en el runner.
+
+**Documentación de referencia**
+
+- [SETUP-CICD](https://fi365.sharepoint.com/:w:/s/ProyectoIntegrador-Febrero2026-N5A-TA-13-Notte-Compan-Acua/IQBF2znQ8mwiQp7YYxKe95ZIAZbZ9N_ElwL8QiJSaJ5ULak?e=n3bsYx) — checklist setup manual - Service Principal + GitHub Secrets/Variables (ruta teams: Documents – Seguimiento - Iteración 4 - SETUP-CICD). Detalle local en [[deploy-iteracion-4]].
+
 ## Reuniones con el cliente
 
 No se realizaron reuniones formales con el cliente durante esta iteración. Se trabajó sobre los ajustes y sugerencias recopilados en la reunión de la iteración 3.
@@ -436,6 +465,23 @@ Funcionalidades presentadas:
 Sugerencias y ajustes solicitados:
 
 - Los ajustes de la reunión anterior (inscripción desde cronograma, notificaciones de bienvenida) fueron incorporados en esta iteración.
+
+## Pruebas automatizadas (xUnit)
+
+Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`, ejecutadas con `dotnet test` desde `backend/`. Suite en verde (0 fallos). Cobertura agregada en esta iteración:
+
+**Inscripción a clases por horario (RF-10 / RF-11):**
+
+- *Application:* con cupo disponible la inscripción se concreta, envía el email de confirmación y registra auditoría; sin cupo se rechaza; la cancelación valida que la inscripción pertenezca al socio que la solicita y audita la baja; "Mis Inscripciones" obtiene el conteo de cupos con una sola consulta batch (sin problema N+1).
+
+**Gestión de empleados y profesores (RF-12):**
+
+- *Application:* el alta valida nombre, correo no duplicado y rol (existente y distinto de Socio), asigna las unidades del empleado y registra auditoría; la edición repite esas validaciones sobre un empleado existente y audita; el cambio de contraseña exige un largo mínimo y persiste el hash (nunca el texto plano); la baja es lógica y un empleado no puede darse de baja a sí mismo; el listado de empleados aplica los filtros por unidad.
+- *Common:* el generador de contraseñas temporales produce contraseñas que cumplen el largo y la composición requerida (mayúsculas, minúsculas, números y caracteres especiales) y no genera valores repetidos.
+
+RF-13 y RF-14 quedan cubiertos por las pruebas de roles y permisos de la iteración 2 (`RequierePermisoAttributeTests`, commands de `Roles/`), ya que el profesor se modela como un rol configurable con permisos por módulo.
+
+El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4, clase por clase, está en [[pruebas-automatizadas-it1-4]].
 
 ## Pruebas de API realizadas con Postman
 
@@ -480,27 +526,6 @@ Durante la ejecución de los tests de Postman se detectaron y corrigieron los si
 | `ClaseDto` no incluía `inscripcionesActivas` | El DTO de clases fue diseñado antes de la migración a inscripciones por horario. El campo nunca se agregó al DTO, aunque el conteo existía a nivel de `HorarioClaseDto`. | Se agregó el campo `InscripcionesActivas` al `ClaseDto` y se actualizaron `GetClasesQuery` y `GetClaseByIdQuery` para calcular la suma de inscripciones activas de todos los horarios de la clase. En `CreateClaseCommand` y `ReactivarClaseCommand` se retorna 0 (clase nueva/sin inscripciones). En `UpdateClaseCommand` se calcula el total real. |
 | Test RNF-01 fallaba al loguear empleado restringido (401) | `CrearEmpleadoRequest` ya no acepta password (it4: credenciales autogeneradas). El test intentaba loguear con un password hardcodeado que no coincidía con el generado por el sistema. | Se agregó un paso intermedio `PATCH /api/empleados/{id}/password` en el setup de RNF-01 para asignar un password conocido al empleado antes del login. |
 | Test `unidadIds` fallaba para admin (expected array, got null) | `unidadIds` es `null` para usuarios que no son socios (admin, empleados), ya que solo los socios tienen unidades asignadas. | Se actualizó la aserción en los tests de login y `/auth/me` para aceptar `null` (admin/empleados) o `array` (socios). |
-
-## Pruebas automatizadas (xUnit)
-
-Además de las pruebas de API con Postman, los módulos de esta iteración cuentan con pruebas automatizadas hechas en código (xUnit + Moq) en `backend/tests/**`. Se ejecutan con `dotnet test` desde `backend/`. El inventario completo de las pruebas automatizadas de las iteraciones 1 a 4 está en [[pruebas-automatizadas-it1-4]].
-
-**Pruebas de aplicación (`GymFlow.Application.Tests`):**
-
-| Clase de test | Caso de uso / área | Casos (aprox.) |
-|-|-|-|
-| `UseCases/Inscripciones/InscribirSocioCommandTests.cs` | Inscribir a un horario (RF-10): cupo, duplicados RN-09, cuota al día, clase activa | ~4 |
-| `UseCases/Inscripciones/CancelarInscripcionCommandTests.cs` | Cancelar inscripción, liberar cupo | ~2 |
-| `UseCases/Inscripciones/GetMisInscripcionesQueryTests.cs` | "Mis Inscripciones" (RF-11): conteo batch sin N+1 | ~1 |
-| `UseCases/Empleados/CrearEmpleadoCommandTests.cs` | Alta de empleado con credenciales temporales autogeneradas + email (RF-12) | ~9 |
-| `UseCases/Empleados/ActualizarEmpleadoCommandTests.cs` | Editar empleado | ~6 |
-| `UseCases/Empleados/CambiarPasswordCommandTests.cs` | Cambio de password de empleado | ~3 |
-| `UseCases/Empleados/DarDeBajaEmpleadoCommandTests.cs` | Baja lógica de empleado | ~3 |
-| `UseCases/Empleados/ReactivarEmpleadoCommandTests.cs` | Reactivar empleado | ~2 |
-| `UseCases/Empleados/GetEmpleadosQueryTests.cs` | Listado de empleados | ~2 |
-| `Common/GeneradorPasswordTests.cs` | `GeneradorPassword`: contraseñas temporales seguras | ~2 |
-
-**Total aproximado de la iteración:** ~34 casos `[Fact]`/`[Theory]` (todos en Application). RF-13 y RF-14 quedan cubiertos por las pruebas de roles y permisos de la iteración 2 (`RequierePermisoAttributeTests`, commands de `Roles/`), ya que el profesor se modela como un rol configurable.
 
 ## Pruebas funcionales de frontend
 
@@ -588,3 +613,45 @@ Además de las pruebas de API con Postman, los módulos de esta iteración cuent
 **Resultado esperado:** Las clases solapadas se muestran con split visual (bloques divididos) para evitar superposición ilegible.
 
 **Descripción:** Se verifica la mejora de UX en la grilla de horarios del admin cuando hay múltiples clases programadas en la misma franja horaria.
+
+## Registro de tiempos
+
+**Desarrollo -- tiempo por commit**
+
+| **Hash** | **Fecha** | **Descripción** | **Tiempo (hs)** |
+|:--:|----|----|:--:|
+| 37e70b5 | 2026-05-31 | Documentacion completa en Obsidian | 1.50 |
+| 0c545ed | 2026-06-04 | Docs: spec y plan IT4 (inscripciones/empleados) | 1.25 |
+| 0818dab | 2026-06-04 | Inscripcion con cuota, lista espera y email | 1.00 |
+| b4dba9f | 2026-06-04 | Cancelar inscripcion con auditoria | 1.00 |
+| 729482c | 2026-06-04 | Credenciales temporales + email crear empleado | 1.00 |
+| 2228f43 | 2026-06-04 | Catalogo de clases con filtros en portal | 1.00 |
+| 15edf9e | 2026-06-04 | Horarios con filtro sede + split solapados | 1.00 |
+| 2461446 | 2026-06-04 | Fix N+1 en GetMisInscripcionesQuery | 1.00 |
+| 84a6e50 | 2026-06-04 | Preparacion MFA y OAuth para IT5 | 1.50 |
+| d1fe117 | 2026-06-05 | Mejoras IT4 clases y horarios | 1.00 |
+| 2cf36f6 | 2026-06-06 | Correcciones con tests Postman + doc IT4 | 1.50 |
+| d0e59cc | 2026-06-07 | CI: workflow auto-deploy Azure Container Apps | 0.50 |
+| fdeb3a0 | 2026-06-07 | Docs: setup pipeline deploy Azure | 0.75 |
+| 04b3019 | 2026-06-09 | CI: rollback automatico en deploy fallido | 0.50 |
+| a4dbc6b | 2026-06-09 | Fix: re-agregar validacion cuota al inscribir | 0.75 |
+| 1109ea8 | 2026-06-09 | Perf: eliminar N+1 en GetClasesQuery | 1.00 |
+| 3fffb25 | 2026-06-09 | Merge PR #21: CI/CD deploy Azure | 0.25 |
+| aea2968 | 2026-06-12 | Docs: spec y plan login Google (IT5) | 1.25 |
+| 94322c5 | 2026-06-12 | Login con Google: comando, endpoint y boton UI | 1.00 |
+| d79fb7c | 2026-06-12 | Email confirmacion al marcar cuota pagada | 1.00 |
+|  |  | **Subtotal Desarrollo** | **19.8** |
+
+**Otras actividades**
+
+| **Actividad** | **Tiempo (hs)** |
+|----|:--:|
+| Plan de testing - Frontend | 1 |
+| Ejecución plan de testing - Frontend | 2 |
+| Planificación Plan de testing - Endpoints en Postman | 1 |
+| Ejecución Plan de testing - Endpoints en Postman | 2 |
+| Implementación CI/CD en main | 5 |
+| Documentación | 10 |
+| **Subtotal Otras Actividades** | **21** |
+
+**TOTAL HORAS - Iteración 4: 40.8**

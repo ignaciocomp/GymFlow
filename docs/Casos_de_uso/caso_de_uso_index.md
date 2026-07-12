@@ -25,15 +25,19 @@ Cada RF del documento de requerimientos, con el CU que lo satisface (o el motivo
 | RF-15 | Gestionar eventos          | [CU-08](CU-08-gestion-eventos.md)         | Flujo ABM de eventos                                                                                     |
 | RF-16 | Notificaciones             | [CU-09](CU-09-notificaciones-insystem.md) | Flujo notificaciones in-system                                                                           |
 | RF-17 | Crear rutinas              | —                                         | **No se hace**                                                                                           |
-| RF-18 | Dashboard en tiempo real   | [CU-10](CU-10-dashboard-tiempo-real.md)   | CU de diseño (It. 6) — flujo dashboard consolidado + SSE                                                  |
+| RF-18 | Dashboard en tiempo real   | [CU-10](CU-10-dashboard-tiempo-real.md)   | CU de diseño (It. 6) — flujo dashboard consolidado + SSE                                                 |
 | RF-19 | Sitio web público          | —                                         | Implementado en IT-4 ([spec](../specs/spec-rf19-sitio-publico.md)), no genera CU                         |
 | RF-20 | Multi-espacio              | [CU-01](CU-01-gestion-socios.md)          | Prerrequisito arquitectónico — atraviesa también CU-03, CU-06 y CU-07 (filtros y asignación por unidad). |
-| RF-21 | Pago online (Mercado Pago) | [CU-11](CU-11-pago-online-mercadopago.md) | CU de diseño (It. 6) — Checkout Pro + webhook HMAC + confirmación                                         |
-| RF-22 | Plan por unidad de negocio | [CU-01](CU-01-gestion-socios.md)          | Subflujo A — asignación de plan por unidad                                                               |
+| RF-21 | Pago online (Mercado Pago) | [CU-11](CU-11-pago-online-mercadopago.md) | CU de diseño (It. 6) — Checkout Pro + webhook HMAC + confirmación                                        |
+| RF-22 | Plan por unidad de negocio | [CU-01](CU-01-gestion-socios.md)          | Subflujo A — asignación de plan por unidad. ABM de planes documentado en [CU-12](CU-12-gestion-planes.md). |
 
 **Resumen:** 19 RFs implementados (18 a través de un CU + RF-19 como sitio estático sin CU). RF-18 y RF-21 cuentan con CU de diseño (CU-10 y CU-11) como insumo de la It. 6, pendientes de construcción. RF-17 no se implementa.
 
+> **CU de soporte:** [CU-12 — Gestión de planes](CU-12-gestion-planes.md) documenta el ABM de planes por unidad (implementado en IT-1). No tiene RF propio: es funcionalidad de soporte de RF-22 (plan por unidad) y de RF-07 (el precio del plan determina el monto de las cuotas emitidas), por lo que no agrega filas a la tabla de cobertura.
+
 > **Nota sobre numeración:** la numeración `CU-XX` de este índice sigue la usada en los documentos de seguimiento (donde CU-08 = Eventos y CU-09 = Notificaciones), no la del documento original de requerimientos (donde CU-08 sería el pago MP).
+>
+> **No existe un archivo CU-04:** en la numeración original de requerimientos, CU-04 era el "Dashboard Consolidado Multi-Espacio". Como no estaba implementado cuando se documentaron los casos de uso (IT-1 a IT-5), se salteó el número. Al entrar el dashboard al alcance de la Iteración 6 se le creó su documento de diseño como [CU-10](CU-10-dashboard-tiempo-real.md), por lo que el hueco es solo de numeración, no de cobertura.
 
 
 ## Convenciones

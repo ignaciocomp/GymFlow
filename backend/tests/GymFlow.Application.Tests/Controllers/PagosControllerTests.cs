@@ -14,7 +14,7 @@ using Moq;
 namespace GymFlow.Application.Tests.Controllers;
 
 /// <summary>
-/// Cubre los tres endpoints de RF-23 (iniciar pago, webhook de MP, historial),
+/// Cubre los tres endpoints de RF-21 (iniciar pago, webhook de MP, historial),
 /// incluyendo la semántica de seguridad del webhook (401 solo ante firma inválida,
 /// 200 en el resto) y las anotaciones de autorización.
 /// </summary>

@@ -1,5 +1,5 @@
 ---
-title: DOCUMENTACION ITERACIÓN 5 FASE DE CONSTRUCCIÓN
+title: DOCUMENTACIÓN ITERACIÓN 5
 tags:
   - seguimiento
 related:
@@ -16,7 +16,7 @@ related:
   - "[[plan-rf16-notificaciones]]"
 ---
 
-# DOCUMENTACION ITERACIÓN 5 FASE DE CONSTRUCCIÓN
+# DOCUMENTACIÓN ITERACIÓN 5
 
 **Iteración 5 --- Fase de Construcción (14/06/2026 -- 28/06/2026)**
 **Prioridad:** DESEABLE/OPCIONAL
@@ -213,7 +213,7 @@ Requerimientos no funcionales implementados:
 **Flujo principal (MFA ya activado):**
 
 1. El empleado ingresa correo y contraseña en el Login.
-2. El backend valida la contraseña. Al ser empleado, en vez de emitir el token de sesión, devuelve un **ticket temporal** de corta duración (~5 minutos) que solo sirve para pasar por el segundo factor.
+2. El backend valida la contraseña. Al ser empleado, en vez de emitir el token de sesión, devuelve un **ticket temporal** de corta duración (aprox. 5 minutos) que solo sirve para pasar por el segundo factor.
 3. El frontend redirige a la pantalla del código de 6 dígitos.
 4. El empleado abre la app autenticadora, lee el código y lo ingresa.
 5. El backend valida el código (con una pequeña tolerancia para compensar el desfasaje del reloj del celular) y, si es correcto, emite el token de sesión real.
@@ -596,3 +596,59 @@ La obligatoriedad del segundo factor (MFA) para empleados cambió el contrato de
 **Resultado esperado:** El login tradicional funciona sin cambios. El botón de Google convive con el formulario.
 
 **Descripción:** Verifica la no regresión del login email + password tras agregar las vías de Google y MFA.
+
+## Registro de tiempos
+
+**Desarrollo -- tiempo por commit**
+
+| **Hash** | **Fecha** | **Descripción** | **Tiempo (hs)** |
+|:--:|----|----|:--:|
+| 5a90c3d | 2026-06-15 | Merge PR #30: login Google + docs IT5 | 2.00 |
+| 1e26202 | 2026-06-16 | Docs: spec y plan MFA TOTP para empleados | 1.00 |
+| 09e4ab7 | 2026-06-16 | MFA: setup, activar, verificar y recuperacion | 0.75 |
+| e6a868e | 2026-06-16 | MFA: AES-256-GCM + token firmado dedicado | 0.75 |
+| b9c6579 | 2026-06-16 | MFA: UI enrolment, verificacion y reset | 0.75 |
+| 9595898 | 2026-06-16 | MFA: login dos pasos + endpoints + reset API | 0.75 |
+| 5b2589f | 2026-06-16 | MFA: persistencia (repo, EF config, migracion) | 0.75 |
+| 36a233d | 2026-06-16 | Fix CI: build imagen en runner local | 0.75 |
+| c0020d1 | 2026-06-16 | Docs: spec email confirmacion de pago + SMTP | 0.50 |
+| a900a45 | 2026-06-16 | Docs deploy: activacion MFA y reset de emergencia | 0.25 |
+| 472471a | 2026-06-17 | Docs: spec y plan rol Dueno | 1.00 |
+| 674c214 | 2026-06-17 | Dueno: seed rol + resolver unidades visibles | 0.75 |
+| 6d921bb | 2026-06-17 | Dueno: login devuelve unidadIds | 0.75 |
+| fb8a95d | 2026-06-17 | Docs: spec y plan gestion eventos (RF-15) | 1.00 |
+| cfdb247 | 2026-06-17 | Eventos: CRUD + notificacion email + portal | 0.75 |
+| 64026d5 | 2026-06-17 | Docs: spec y plan centro notificaciones (RF-16) | 1.00 |
+| a9458f5 | 2026-06-17 | Cambios en la documentacion | 1.00 |
+| 443d13f | 2026-06-18 | Dueno: UI unidades, selector sede, filtro repos | 0.75 |
+| 36bb3e1 | 2026-06-18 | Dueno: controllers y queries filtran por unidad | 0.75 |
+| 2d6c38f | 2026-06-18 | Notificaciones: entidad, repo, endpoints, UI | 0.75 |
+| a1d39fe | 2026-06-18 | Notificaciones: enganche en cuotas/clases/eventos | 0.75 |
+| 56dcf7e | 2026-06-18 | Fix: cerrar fuga cross-unidad en cuotas | 0.50 |
+| 4b0c8e1 | 2026-06-18 | CI: workflow manual configure-mfa (claves MFA) | 0.25 |
+| 8cb4dd4 | 2026-06-18 | Dueno: permisos de Eventos + filtro unidad en eventos | 0.50 |
+| eeef7d6 | 2026-06-18 | Cuotas: endpoints manuales para disparar jobs | 0.50 |
+| 85b1689 | 2026-06-18 | RF-19: sitio web publico (5 paginas + SEO) | 0.75 |
+| 8b75f95 | 2026-06-19 | Actualizacion de la documentacion iteracion 5 | 1.00 |
+| c7661df | 2026-06-20 | Fix horarios: filtrar planes por sede/espacio | 0.50 |
+| ad41a09 | 2026-06-20 | Eventos: mostrar destinatarios del correo | 0.50 |
+| 84d3526 | 2026-06-20 | UI: formato prolijo de fechas y horas | 0.50 |
+| 64397a2 | 2026-06-20 | Docs: inventario pruebas automatizadas it1-4 | 0.75 |
+| 44621f7 | 2026-06-22 | Casos de uso documentados | 1.00 |
+| 66fb4b3 | 2026-06-23 | Mejoras documentacion casos de uso | 1.00 |
+| f92366e | 2026-06-23 | Avances de documentacion | 0.50 |
+| dd49bfb | 2026-06-24 | Test API finalizado y documentado | 1.00 |
+|  |  | **Subtotal Desarrollo** | **26.8** |
+
+**Otras actividades**
+
+| **Actividad** | **Tiempo (hs)** |
+|----|:--:|
+| Plan de testing - Frontend | 2 |
+| Ejecución plan de testing - Frontend | 4 |
+| Planificación Plan de testing - Endpoints en Postman | 2 |
+| Ejecución Plan de testing - Endpoints en Postman | 2 |
+| Documentación | 8 |
+| **Subtotal Otras Actividades** | **18** |
+
+**TOTAL HORAS - Iteración 5: 44.8**

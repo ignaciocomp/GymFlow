@@ -1,6 +1,8 @@
-# Spec — RF-23 / CU-08: Pago de cuota online con Mercado Pago
+# Spec — RF-21 / CU-08: Pago de cuota online con Mercado Pago
 
-- **RF:** RF-23 (Pago de cuotas online). Caso de uso **CU-08** (sección 8 del doc de requerimientos).
+Referencias: [[spec-rf21-pago-online]] [[]]
+
+- **RF:** RF-21 (Pago de cuotas online). Caso de uso **CU-08** (sección 8 del doc de requerimientos).
 - **Fecha:** 2026-06-21
 - **Iteración:** 6 (fusionada con la 7 por el recorte de alcance #23).
 - **Alcance:** **MVP sólido** (webhook-based). La reconciliación por polling y el flujo detallado de transferencia pendiente quedan fuera (anotados como futuro).
