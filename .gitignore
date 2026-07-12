@@ -75,6 +75,11 @@ Thumbs.db
 desktop.ini
 
 # =========================
+# Microsoft Office (archivos temporales de bloqueo)
+# =========================
+~$*
+
+# =========================
 # Logs
 # =========================
 logs/
