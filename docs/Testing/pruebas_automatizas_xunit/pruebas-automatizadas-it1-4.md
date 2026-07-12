@@ -1,7 +1,6 @@
 ---
 title: Inventario de Pruebas Automatizadas (xUnit) — Iteraciones 1 a 4
 tags:
-  - seguimiento
   - testing
 related:
   - "[[seguimiento_index]]"

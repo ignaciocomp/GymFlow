@@ -1,5 +1,9 @@
 ---
-title: "DOCUMENTACION ITERACIÓN {{N}} FASE DE CONSTRUCCIÓN"
+title: DOCUMENTACION ITERACIÓN {{N}} FASE DE CONSTRUCCIÓN
+tags:
+  - seguimiento
+related:
+  - "[[seguimiento_index]]"
 ---
 
 # DOCUMENTACION ITERACIÓN {{N}} FASE DE CONSTRUCCIÓN

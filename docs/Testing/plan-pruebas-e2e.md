@@ -2,7 +2,6 @@
 title: Plan de Pruebas End-to-End (E2E) — GymFlow
 tags:
   - testing
-  - seguimiento
 related:
   - "[[caso_de_uso_index]]"
   - "[[pruebas-automatizadas-it1-4]]"
