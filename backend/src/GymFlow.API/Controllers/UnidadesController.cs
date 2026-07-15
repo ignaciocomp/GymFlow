@@ -1,7 +1,5 @@
-using GymFlow.API.Authorization;
 using GymFlow.Application.DTOs;
 using GymFlow.Application.UseCases.Unidades;
-using GymFlow.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,8 +17,9 @@ public class UnidadesController : ControllerBase
         _getUnidadesQuery = getUnidadesQuery;
     }
 
+    // Solo autenticación ([Authorize] del controller): el portal del socio necesita listar
+    // las sedes para el filtro de Horarios, y el rol Socio no tiene permisos de módulo.
     [HttpGet]
-    [RequierePermiso(Modulo.Unidades, Operacion.Lectura)]
     public async Task<ActionResult<IEnumerable<UnidadDto>>> GetAll()
     {
         var unidades = await _getUnidadesQuery.ExecuteAsync();
