@@ -41,13 +41,15 @@ API (Presentation) → Application → Domain ← Infrastructure
 - **C# / .NET 8** con ASP.NET Core Web API
 - **Entity Framework Core** (Code-First, migraciones)
 - **PostgreSQL 16**
-- **JWT** para autenticación (+ login de socios con Google OAuth 2.0, implementado en It.5)
+- **JWT** para autenticación (+ login de socios con Google OAuth 2.0 y MFA TOTP obligatorio para empleados, ambos implementados en It.5 — Otp.NET, QRCoder)
+- **Mercado Pago Checkout Pro** para pagos online de cuotas (RF-21)
 - **xUnit + Moq** para testing
 
 ### Frontend
-- **React 19** con **TypeScript**
+- **React 18** con **TypeScript**
 - **Vite** como bundler
-- **Tailwind CSS** + **shadcn/ui** para componentes
+- **Tailwind CSS** + **shadcn/ui** (sobre **@base-ui/react**) para componentes
+- **lucide-react** (iconos) y **recharts** (gráficos del dashboard)
 - **React Query (TanStack Query)** para server state
 - **Context API** para client state (auth, tema)
 - **React Router v7** para ruteo
@@ -84,12 +86,15 @@ GymFlow/
 │   │   ├── hooks/            # Custom hooks
 │   │   ├── services/         # API calls (axios instances)
 │   │   ├── context/          # Auth context, theme
+│   │   ├── content/          # Contenido del sitio público (site.ts)
 │   │   ├── types/            # TypeScript interfaces/types
 │   │   ├── lib/              # Utilidades
+│   │   ├── test/             # Setup de Vitest
 │   │   └── assets/           # Imágenes, fuentes
 │   └── public/
 ├── .github/workflows/        # CI/CD
 ├── docker-compose.yml        # PostgreSQL + Backend API
+├── docker-compose.debug.yml  # Variante para debug
 ├── docs/                     # Documentación
 └── README.md
 ```
@@ -136,12 +141,12 @@ La migración se aplica automáticamente en el próximo `docker compose up`.
 ### Jerarquía de Usuarios (TPH — Table Per Hierarchy)
 
 ```
-Usuario (abstract base, PasswordHash nullable)
-├── Empleado — admin, profesor, recepcionista, etc. Login email + password (BCrypt). PasswordHash siempre seteado.
-└── Socio — Cuotas[], Inscripciones[], Asistencias[], Rutinas[], TipoDocumento, GoogleUserId. Login con Google OAuth (It.5, implementado). PasswordHash null (no gestiona contraseña propia).
+Usuario (abstract base — PasswordHash nullable, GoogleUserId, RolId nullable)
+├── Empleado — Login email + password (BCrypt) + MFA TOTP obligatorio (MfaHabilitado, secreto cifrado con AES-GCM, bloqueo temporal por intentos fallidos). PasswordHash siempre seteado.
+└── Socio — Cuotas[], Inscripciones[], TipoDocumento, DocumentoIdentidad, ConsentimientoInformado (Ley 18.331). Login con Google OAuth (It.5, implementado); el código también acepta email + password si el socio tiene PasswordHash seteado.
 ```
 
-**El rol del usuario es un `RolId` (FK a `Rol`)**, no una subclase. La jerarquía solo refleja diferencias de atributos y mecanismo de auth, no de rol asignado.
+**El rol del usuario es un `RolId` nullable (FK a `Rol`)**, no una subclase. Roles de sistema seeded: Administrador, Socio, Dueño; los demás se crean dinámicamente desde `/admin/roles`. La jerarquía solo refleja diferencias de atributos y mecanismo de auth, no de rol asignado.
 
 **Relación Usuario-Unidad es N:M** — un socio o profesor puede pertenecer a ambas unidades (tabla intermedia `UsuarioUnidad`). La tabla `UsuarioUnidad` incluye `PlanId` (nullable, FK a `Planes`): cada socio puede tener un Plan distinto por Unidad. Un socio ya no tiene un Plan global único.
 
@@ -150,25 +155,29 @@ Usuario (abstract base, PasswordHash nullable)
 | Entidad | Descripción | Relaciones clave |
 |---------|-------------|------------------|
 | **Unidad** | Gimnasio Nuevo Malvín o Espacio Mora | Agrupa Clases, Planes. Usuarios via N:M. |
-| **Clase** | Actividad con cupo y duración | Pertenece a Unidad y Profesor, tiene Horarios[]. Soft delete (`EstaActiva`). |
-| **Horario** | Día + hora inicio/fin | Pertenece a Clase. El cupo se controla por Horario. |
-| **Inscripcion** | Socio inscrito a un Horario específico | Tiene HorarioId (no ClaseId). Estado: Activa/Cancelada. |
-| **Asistencia** | Registro de presencia | SocioId, ClaseId, HorarioId, Fecha. Registrada por profesor. |
+| **Clase** | Actividad con cupo y duración | Pertenece a Unidad. El instructor es un campo de texto (sin FK a Empleado). Tiene HorariosClase[]. Soft delete (`EstaActivo`). |
+| **HorarioClase** | Día + hora inicio/fin | Pertenece a Clase. El cupo se controla por horario. |
+| **InscripcionClase** | Socio inscrito a un HorarioClase específico | Tiene HorarioClaseId (no ClaseId). Cancelación por flag `EstaActiva`. |
 | **Plan** | Tipo de membresía con precio | Pertenece a Unidad. Soft delete (`EstaActivo`). CRUD completo vía UI (RF_22). Eliminación bloqueada si hay socios asignados. |
-| **Cuota** | Pago periódico del socio | FechaVencimiento, FechaPago (nullable), MontoPagado (nullable). **Estado se calcula en Application**, no se persiste. |
-| **Rutina** | Rutina de ejercicios personalizada | Pertenece a Socio, tiene Ejercicios[] |
-| **Ejercicio** | Series, repeticiones, peso | Pertenece a Rutina |
+| **Cuota** | Pago periódico del socio | FechaEmision, FechaVencimiento (emisión + 1 mes), Monto y NombrePlan como snapshot del Plan, FechaPago/FechaBaja nullables. **Estado (`EstadoCuota`) persistido en la entidad.** Generación automática vía `CuotaGeneradorService`. |
+| **Pago** | Pago online de una cuota vía Mercado Pago (RF-21) | CuotaId, SocioId, Monto, Estado (Pendiente/Aprobado/Rechazado), MedioPago, MpPreferenceId/MpPaymentId, FechaAcreditacion. |
+| **RecordatorioCuota** | Recordatorio de cuota enviado por email | Vinculado a Cuota, TipoRecordatorio. Envío vía `SmtpEmailService`. |
 | **Evento** | Actividad especial | Pertenece a Unidad |
-| **Notificacion** | Recordatorio, evento, cambio horario | Dirigida a Socio |
+| **Notificacion** | Recordatorio, evento, cambio horario | Dirigida a Socio. In-app vía `NotificadorInApp` + endpoints del portal (listar, contar no leídas, marcar leídas). |
+| **Rol / Permiso / RolPermiso** | Roles y permisos dinámicos (RNF-01) | Permiso = (Modulo, Operacion). CRUD de roles en `/admin/roles`. Cache en `PermisoCache`. |
+| **RegistroAuditoria** | Auditoría de acciones (incluye inicios de sesión) | UsuarioId, TipoAccionAuditoria, entidad afectada, detalle. Consultable en `/admin/auditoria`. |
+| **CodigoRecuperacionMfa** | Código de recuperación MFA de un Empleado | Pertenece a Empleado. Un solo uso. |
+
+> **No implementado (figuraba en versiones anteriores de este doc):** Asistencia, Rutina y Ejercicio no existen en el código ni en las migraciones.
 
 ---
 
 ## 4 Vistas de Usuario
 
 1. **Página web pública** — Landing con info del negocio, horarios, planes, SEO optimizado. Sin login.
-2. **Panel de administración** — Dashboard en tiempo real, CRUD de socios/clases/cuotas/profesores/eventos, filtrado por unidad.
-3. **Portal de socios** — Ver horarios, inscribirse a clases, ver perfil, cuotas, rutinas. Login requerido.
-4. **Vista de profesores** — Ver clases asignadas, registrar asistencia. Login requerido.
+2. **Panel de administración** — Dashboard con gráficos (recharts), CRUD de socios/usuarios/roles/clases/horarios/cuotas/planes/eventos, auditoría, filtrado por unidad.
+3. **Portal de socios** — Perfil, solicitudes de modificación/baja, horarios e inscripciones, cuotas, pagos online (Mercado Pago), eventos y notificaciones. Login requerido (`PortalController`).
+4. **Vista de profesores** — Planificada, **no implementada** (no hay registro de asistencia ni rutinas en el código).
 
 ---
 
@@ -178,15 +187,17 @@ Usuario (abstract base, PasswordHash nullable)
 
 | Tipo | Login | Roles posibles |
 |---|---|---|
-| **Empleado** | email + password (MFA It.5: pendiente) | Cualquier rol salvo Socio |
+| **Empleado** | email + password + **MFA TOTP obligatorio** (implementado en It.5: setup con QR en el primer login, códigos de recuperación de un solo uso, bloqueo temporal por intentos fallidos) | Cualquier rol salvo Socio |
 | **Socio** | Google OAuth 2.0 (It.5: implementado) | Únicamente el rol Socio |
 
 - **JWT** firmado con clave simétrica, expiración 8 horas. Lleva `userId`, `correo`, `rolId`, `rolNombre`, `nombre`, `apellido`.
-- **Passwords de empleados** hasheados con BCrypt.Net-Next (factor 11).
+- **Passwords de empleados** hasheados con BCrypt.Net-Next (factor 11, default de la librería).
+- **MFA:** TOTP (Otp.NET) con secreto cifrado AES-GCM. El login con password no emite sesión: devuelve un `mfaToken` intermedio de corta vigencia y la sesión se emite al verificar el código en `mfa/verify` (o `mfa/setup` + `mfa/activate` la primera vez).
+- **Rol Dueño:** rol de sistema con visibilidad restringida por unidad (`UnidadesVisiblesResolver`); su sesión incluye `unidadIds`.
 - **Endpoints protegidos** con `[RequierePermiso(Modulo, Operacion)]` (no `[Authorize(Roles=...)]`).
 - **Empleado de bootstrap:** la migración crea `admin@gymflow.com` / `admin123` automáticamente. En producción debe cambiar su password al primer login.
 
-**Estado actual (It.2):** login productivo solo para Empleados. Login de Socios queda para It.5.
+**Estado actual:** login de Empleados (password + MFA) y de Socios (Google OAuth) productivos.
 
 ---
 
@@ -268,6 +279,8 @@ En cada PR a develop:
 4. Run Vitest
 5. **PR bloqueado si algo falla**
 
+Además del CI existen workflows de **deploy** (`deploy.yml`) y de configuración de secretos: `configure-email.yml`, `configure-mercadopago.yml`, `configure-mfa.yml`.
+
 ### Trazabilidad de versiones
 Cada merge a main se etiqueta con un tag de versión. Esto permite trazar:
 - Qué requerimientos se implementaron en cada iteración
@@ -289,7 +302,7 @@ Cada merge a main se etiqueta con un tag de versión. Esto permite trazar:
 7. **React Query para server state** — No pongas data de API en useState.
 8. **Tests** — Backend con xUnit, frontend con Vitest.
 9. **Multi-espacio** — Toda query administrativa debe soportar filtrado por UnidadId.
-10. **No agregues features fuera del alcance** — No hay pagos online, no hay app móvil nativa, no hay QR/molinete.
+10. **No agregues features fuera del alcance** — No hay app móvil nativa, no hay QR/molinete, no hay tienda ni fidelización. (Los pagos online de cuotas vía Mercado Pago SÍ están en alcance: RF-21, implementado.)
 
 ### Al agregar un módulo nuevo (RNF-01 — Roles y Permisos)
 
@@ -317,13 +330,14 @@ Cuando se crea un módulo nuevo en el backend (ej. `Cuotas`, `Eventos`), **es ob
 
 ## Alcance Negativo (NO hacer)
 
-- No procesar pagos online (solo registrar estado de cuota)
 - No hacer app móvil nativa (solo web responsive)
 - No integrar QR/molinete
 - No hacer tienda de productos
 - No hacer programa de fidelización
 - No migrar datos desde SmartGym
 - No cargar datos personales reales de socios durante desarrollo
+
+> Nota: el pago online de cuotas vía Mercado Pago (RF-21) estaba originalmente fuera de alcance, pero **sí está implementado**.
 
 ---
 
