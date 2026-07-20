@@ -16,7 +16,9 @@ public class Evento
     public Evento(string titulo, string descripcion, DateTime fecha, Guid unidadId)
     {
         Id = Guid.NewGuid();
-        Titulo = !string.IsNullOrWhiteSpace(titulo) ? titulo : throw new ArgumentException("El título es obligatorio.", nameof(titulo));
+        // E2E-24 (barrido): sin paramName — el mensaje se muestra al usuario y no debe
+        // llevar el sufijo "(Parameter '...')".
+        Titulo = !string.IsNullOrWhiteSpace(titulo) ? titulo : throw new ArgumentException("El título es obligatorio.");
         Descripcion = descripcion ?? string.Empty;
         Fecha = fecha;
         UnidadId = unidadId;
@@ -30,7 +32,7 @@ public class Evento
     /// </summary>
     public void Actualizar(string titulo, string descripcion, DateTime fecha)
     {
-        Titulo = !string.IsNullOrWhiteSpace(titulo) ? titulo : throw new ArgumentException("El título es obligatorio.", nameof(titulo));
+        Titulo = !string.IsNullOrWhiteSpace(titulo) ? titulo : throw new ArgumentException("El título es obligatorio.");
         Descripcion = descripcion ?? string.Empty;
         Fecha = fecha;
     }

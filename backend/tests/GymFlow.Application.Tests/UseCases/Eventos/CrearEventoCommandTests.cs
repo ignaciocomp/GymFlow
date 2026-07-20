@@ -121,6 +121,23 @@ public class CrearEventoCommandTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_FechaPasada_ElMensajeNoFiltraElParametro()
+    {
+        // E2E-24: el mensaje de validación llega al usuario tal cual; no debe incluir
+        // la plomería de .NET "(Parameter 'request')" que agrega ArgumentException
+        // cuando se le pasa paramName.
+        var unidad = new Unidad("Gimnasio Nuevo Malvin", "Malvin, Montevideo");
+        var request = new CreateEventoRequest("Torneo", "desc",
+            DateTime.UtcNow.AddDays(-1), unidad.Id);
+        _unidadRepo.Setup(r => r.GetByIdAsync(unidad.Id)).ReturnsAsync(unidad);
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            CrearCommand().ExecuteAsync(request, Guid.NewGuid(), "Admin"));
+
+        Assert.Equal("La fecha del evento no puede ser pasada.", ex.Message);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_SiEmailFalla_ElEventoIgualSeCrea()
     {
         var unidad = new Unidad("Gimnasio Nuevo Malvin", "Malvin, Montevideo");

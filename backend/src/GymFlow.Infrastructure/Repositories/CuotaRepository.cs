@@ -66,6 +66,18 @@ public class CuotaRepository : ICuotaRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task<bool> TieneCuotaVencidaAsync(Guid socioId, Guid unidadId, DateTime hoy)
+    {
+        // "Vencida" = Pendiente con vencimiento anterior a hoy (comparación por fecha,
+        // consistente con CountPendientesVencidasAsync: la que vence hoy aún no está vencida).
+        var hoyDate = hoy.Date;
+        return await _context.Cuotas
+            .AnyAsync(c => c.SocioId == socioId
+                && c.UnidadId == unidadId
+                && c.Estado == EstadoCuota.Pendiente
+                && c.FechaVencimiento.Date < hoyDate);
+    }
+
     public async Task<IEnumerable<Cuota>> GetCuotasPendientesDeTodosLosSociosAsync(Guid? unidadId = null)
     {
         var query = _context.Cuotas

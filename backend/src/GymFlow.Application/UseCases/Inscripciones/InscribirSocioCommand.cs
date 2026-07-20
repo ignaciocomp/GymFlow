@@ -10,6 +10,7 @@ public class InscribirSocioCommand
     private readonly IInscripcionClaseRepository _inscripcionRepo;
     private readonly IHorarioClaseRepository _horarioRepo;
     private readonly ISocioRepository _socioRepo;
+    private readonly ICuotaRepository _cuotaRepo;
     private readonly IEmailService _emailService;
     private readonly IAuditLogger _auditLogger;
     private readonly INotificadorInApp _notificador;
@@ -18,6 +19,7 @@ public class InscribirSocioCommand
         IInscripcionClaseRepository inscripcionRepo,
         IHorarioClaseRepository horarioRepo,
         ISocioRepository socioRepo,
+        ICuotaRepository cuotaRepo,
         IEmailService emailService,
         IAuditLogger auditLogger,
         INotificadorInApp notificador)
@@ -25,6 +27,7 @@ public class InscribirSocioCommand
         _inscripcionRepo = inscripcionRepo;
         _horarioRepo = horarioRepo;
         _socioRepo = socioRepo;
+        _cuotaRepo = cuotaRepo;
         _emailService = emailService;
         _auditLogger = auditLogger;
         _notificador = notificador;
@@ -46,6 +49,12 @@ public class InscribirSocioCommand
         var ocupados = await _inscripcionRepo.GetInscripcionesActivasCountAsync(horarioClaseId);
         if (ocupados >= clase.CapacidadMaxima)
             throw new InvalidOperationException("No hay cupos disponibles para este horario.");
+
+        // E2E-07 (RF-10, RN-09): un socio con cuota vencida en la sede de la clase no puede
+        // inscribirse. Se valida antes de crear la inscripción: no se persiste nada ni se
+        // altera el cupo.
+        if (await _cuotaRepo.TieneCuotaVencidaAsync(socioId, clase.UnidadId, DateTime.UtcNow))
+            throw new InvalidOperationException("No podés inscribirte con cuota vencida en esta sede.");
 
         var inscripcion = new InscripcionClase(horarioClaseId, socioId);
         await _inscripcionRepo.AddAsync(inscripcion);

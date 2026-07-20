@@ -99,6 +99,26 @@ public class ActualizarEmpleadoCommandTests
     }
 
     [Fact]
+    public async Task Actualizar_AlRolAdmin_PorNoAdmin_Lanza()
+    {
+        // E2E-21: un actuante no-Admin tampoco puede escalar a otro empleado al rol Admin.
+        var (emp, rol, audit) = Mocks();
+        var id = Guid.NewGuid();
+        var empleado = ExistingEmpleado();
+        emp.Setup(r => r.GetByIdAsync(id, default)).ReturnsAsync(empleado);
+        emp.Setup(r => r.ExisteCorreoAsync(It.IsAny<string>(), id, default)).ReturnsAsync(false);
+        rol.Setup(r => r.GetByIdAsync(RolesSeed.AdminRolId, default))
+            .ReturnsAsync(new Rol(RolesSeed.AdminRolId, "Admin", true, DateTime.UtcNow));
+        var sut = new ActualizarEmpleadoCommand(emp.Object, rol.Object, audit.Object);
+
+        var actuanteNoAdmin = Guid.NewGuid();
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            sut.ExecuteAsync(id, Req("Juan", "Pérez", "juan@gymflow.com", RolesSeed.AdminRolId), Guid.NewGuid(), "Dueño", actuanteNoAdmin));
+
+        emp.Verify(r => r.SaveChangesAsync(default), Times.Never);
+    }
+
+    [Fact]
     public async Task Actualizar_AlRolDueno_PorNoAdmin_Lanza()
     {
         var (emp, rol, audit) = Mocks();

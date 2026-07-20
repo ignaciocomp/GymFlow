@@ -1,3 +1,4 @@
+using GymFlow.Domain.Constants;
 using GymFlow.Domain.Entities;
 using GymFlow.Domain.Enums;
 
@@ -84,6 +85,56 @@ public class HorarioClaseTests
         Assert.Throws<ArgumentException>(() =>
             horario.Actualizar(DiaSemana.Lunes,
                 new TimeOnly(10, 0), new TimeOnly(9, 0), null));
+    }
+
+    // --- Horario de apertura (E2E-18 parte 2): el gym abre de 07:00 a 22:00 ---
+
+    [Fact]
+    public void Constructor_ConInicioAntesDeApertura_LanzaArgumentException()
+    {
+        var ex = Assert.Throws<ArgumentException>(() =>
+            new HorarioClase(Guid.NewGuid(), DiaSemana.Lunes,
+                new TimeOnly(6, 30), new TimeOnly(8, 0), null));
+
+        Assert.Equal("El horario debe estar dentro del horario de apertura (07:00 a 22:00).", ex.Message);
+    }
+
+    [Fact]
+    public void Constructor_ConFinDespuesDelCierre_LanzaArgumentException()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            new HorarioClase(Guid.NewGuid(), DiaSemana.Lunes,
+                new TimeOnly(21, 0), new TimeOnly(22, 30), null));
+    }
+
+    [Fact]
+    public void Constructor_EnLosBordesDeApertura_EsValido()
+    {
+        var horario = new HorarioClase(Guid.NewGuid(), DiaSemana.Lunes,
+            HorarioApertura.Apertura, HorarioApertura.Cierre, null);
+
+        Assert.Equal(new TimeOnly(7, 0), horario.HoraInicio);
+        Assert.Equal(new TimeOnly(22, 0), horario.HoraFin);
+    }
+
+    [Fact]
+    public void Actualizar_ConInicioAntesDeApertura_LanzaArgumentException()
+    {
+        var horario = CrearHorarioValido();
+
+        Assert.Throws<ArgumentException>(() =>
+            horario.Actualizar(DiaSemana.Lunes,
+                new TimeOnly(5, 0), new TimeOnly(8, 0), null));
+    }
+
+    [Fact]
+    public void Actualizar_ConFinDespuesDelCierre_LanzaArgumentException()
+    {
+        var horario = CrearHorarioValido();
+
+        Assert.Throws<ArgumentException>(() =>
+            horario.Actualizar(DiaSemana.Lunes,
+                new TimeOnly(21, 0), new TimeOnly(23, 0), null));
     }
 
     // --- SeSolapaCon tests ---

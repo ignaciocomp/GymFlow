@@ -36,4 +36,31 @@ internal static class HorarioEmailTemplates
 
         return (asunto, cuerpo);
     }
+
+    public static (string Asunto, string Cuerpo) EliminacionHorario(
+        Socio socio, Clase clase, HorarioClase horario)
+    {
+        var nombre = WebUtility.HtmlEncode(socio.Nombre);
+        var claseNombre = WebUtility.HtmlEncode(clase.Nombre);
+        var instructor = WebUtility.HtmlEncode(clase.Instructor);
+        var dia = WebUtility.HtmlEncode(horario.DiaSemana.ToString());
+
+        var asunto = $"Horario eliminado: {claseNombre}";
+        var cuerpo = $@"<html>
+<body style='font-family: Arial, sans-serif;'>
+    <h2>Hola {nombre},</h2>
+    <p>Te informamos que el siguiente horario fue eliminado y tu inscripción quedó sin efecto:</p>
+    <table style='border-collapse: collapse;'>
+        <tr><td><b>Clase:</b></td><td>{claseNombre}</td></tr>
+        <tr><td><b>Instructor:</b></td><td>{instructor}</td></tr>
+        <tr><td><b>Horario:</b></td><td>{dia} {horario.HoraInicio:HH:mm} - {horario.HoraFin:HH:mm}</td></tr>
+    </table>
+    <p>Podés inscribirte a otro horario disponible desde el portal.</p>
+    <p>Disculpá las molestias.</p>
+    <p>Saludos,<br/>Equipo GymFlow</p>
+</body>
+</html>";
+
+        return (asunto, cuerpo);
+    }
 }

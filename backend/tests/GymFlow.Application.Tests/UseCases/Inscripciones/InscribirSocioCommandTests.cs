@@ -11,13 +11,14 @@ public class InscribirSocioCommandTests
     private readonly Mock<IInscripcionClaseRepository> _inscripcionRepo = new();
     private readonly Mock<IHorarioClaseRepository> _horarioRepo = new();
     private readonly Mock<ISocioRepository> _socioRepo = new();
+    private readonly Mock<ICuotaRepository> _cuotaRepo = new();
     private readonly Mock<IEmailService> _emailService = new();
     private readonly Mock<IAuditLogger> _auditLogger = new();
     private readonly Mock<INotificadorInApp> _notificador = new();
 
     private InscribirSocioCommand CrearCommand() =>
         new(_inscripcionRepo.Object, _horarioRepo.Object,
-            _socioRepo.Object, _emailService.Object, _auditLogger.Object, _notificador.Object);
+            _socioRepo.Object, _cuotaRepo.Object, _emailService.Object, _auditLogger.Object, _notificador.Object);
 
     private static Socio CrearSocio() =>
         new(Guid.NewGuid(), "Maria", "Lopez", "m@test.com", "h", DateTime.UtcNow,
@@ -74,6 +75,53 @@ public class InscribirSocioCommandTests
         Assert.Equal("No hay cupos disponibles para este horario.", ex.Message);
         _inscripcionRepo.Verify(r => r.AddAsync(It.IsAny<InscripcionClase>()), Times.Never);
         _emailService.Verify(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConCuotaVencidaEnLaSede_RechazaYNoInscribe()
+    {
+        // E2E-07 (RF-10, RN-09): un socio con cuota vencida en la sede de la clase
+        // no puede inscribirse; no se crea inscripción ni se altera el cupo.
+        var clase = CrearClase(capacidad: 10);
+        var horario = CrearHorario(clase);
+        var socio = CrearSocio();
+
+        _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
+        _inscripcionRepo.Setup(r => r.GetActivaBySocioYHorarioAsync(socio.Id, horario.Id)).ReturnsAsync((InscripcionClase?)null);
+        _inscripcionRepo.Setup(r => r.GetInscripcionesActivasCountAsync(horario.Id)).ReturnsAsync(3);
+        _cuotaRepo.Setup(r => r.TieneCuotaVencidaAsync(socio.Id, clase.UnidadId, It.IsAny<DateTime>()))
+            .ReturnsAsync(true);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CrearCommand().ExecuteAsync(socio.Id, horario.Id, Guid.NewGuid(), "Admin"));
+
+        Assert.Equal("No podés inscribirte con cuota vencida en esta sede.", ex.Message);
+        _inscripcionRepo.Verify(r => r.AddAsync(It.IsAny<InscripcionClase>()), Times.Never);
+        _inscripcionRepo.Verify(r => r.SaveChangesAsync(), Times.Never);
+        _emailService.Verify(s => s.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _notificador.Verify(n => n.CrearAsync(It.IsAny<Guid>(), It.IsAny<TipoNotificacion>(),
+            It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SinCuotaVencida_ConsultaLaCuotaDeLaSedeDeLaClase()
+    {
+        // La validación consulta por la unidad de la clase (no otra) y con fecha actual.
+        var clase = CrearClase(capacidad: 10);
+        var horario = CrearHorario(clase);
+        var socio = CrearSocio();
+
+        _horarioRepo.Setup(r => r.GetByIdAsync(horario.Id)).ReturnsAsync(horario);
+        _inscripcionRepo.Setup(r => r.GetActivaBySocioYHorarioAsync(socio.Id, horario.Id)).ReturnsAsync((InscripcionClase?)null);
+        _inscripcionRepo.Setup(r => r.GetInscripcionesActivasCountAsync(horario.Id)).ReturnsAsync(3);
+        _socioRepo.Setup(r => r.GetByIdAsync(socio.Id)).ReturnsAsync(socio);
+        _emailService.Setup(s => s.EnviarAsync(socio.Correo, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new EmailResultado(Exitoso: true));
+
+        await CrearCommand().ExecuteAsync(socio.Id, horario.Id, Guid.NewGuid(), "Admin");
+
+        _cuotaRepo.Verify(r => r.TieneCuotaVencidaAsync(socio.Id, clase.UnidadId, It.IsAny<DateTime>()), Times.Once);
+        _inscripcionRepo.Verify(r => r.AddAsync(It.IsAny<InscripcionClase>()), Times.Once);
     }
 
     [Fact]

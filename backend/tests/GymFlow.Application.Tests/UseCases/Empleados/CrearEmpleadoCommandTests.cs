@@ -158,6 +158,41 @@ public class CrearEmpleadoCommandTests
     }
 
     [Fact]
+    public async Task CrearEmpleado_RolAdmin_PorNoAdmin_Lanza()
+    {
+        // E2E-21: solo un Admin puede asignar el rol Admin (misma regla que con Dueño).
+        var (emp, rol, hasher, audit, email) = Mocks();
+        emp.Setup(r => r.ExisteCorreoAsync(It.IsAny<string>(), null, default)).ReturnsAsync(false);
+        rol.Setup(r => r.GetByIdAsync(RolesSeed.AdminRolId, default))
+            .ReturnsAsync(new Rol(RolesSeed.AdminRolId, "Admin", true, DateTime.UtcNow));
+        var sut = Sut(emp, rol, hasher, audit, email);
+
+        var actuanteNoAdmin = Guid.NewGuid();
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            sut.ExecuteAsync(ValidRequest(RolesSeed.AdminRolId), Guid.NewGuid(), "Dueño", actuanteNoAdmin));
+
+        Assert.Equal("Solo el administrador puede asignar el rol Admin.", ex.Message);
+        emp.Verify(r => r.AddAsync(It.IsAny<Empleado>(), default), Times.Never);
+        emp.Verify(r => r.SaveChangesAsync(default), Times.Never);
+    }
+
+    [Fact]
+    public async Task CrearEmpleado_RolAdmin_PorAdmin_OK()
+    {
+        var (emp, rol, hasher, audit, email) = Mocks();
+        emp.Setup(r => r.ExisteCorreoAsync(It.IsAny<string>(), null, default)).ReturnsAsync(false);
+        rol.Setup(r => r.GetByIdAsync(RolesSeed.AdminRolId, default))
+            .ReturnsAsync(new Rol(RolesSeed.AdminRolId, "Admin", true, DateTime.UtcNow));
+        hasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("hashed_secret");
+        var sut = Sut(emp, rol, hasher, audit, email);
+
+        var dto = await sut.ExecuteAsync(ValidRequest(RolesSeed.AdminRolId), Guid.NewGuid(), "Admin", RolesSeed.AdminRolId);
+
+        Assert.Equal("Admin", dto.RolNombre);
+        emp.Verify(r => r.AddAsync(It.IsAny<Empleado>(), default), Times.Once);
+    }
+
+    [Fact]
     public async Task CrearEmpleado_RolDueno_SinUnidades_Lanza()
     {
         var (emp, rol, hasher, audit, email) = Mocks();

@@ -9,6 +9,11 @@ public interface ICuotaRepository
     Task<IEnumerable<Cuota>> GetBySocioIdAsync(Guid socioId);
     Task<IEnumerable<Cuota>> SearchAsync(Guid socioId, EstadoCuota? estado, int? mes, int? anio, Guid? unidadId, bool incluirAnuladas = false);
     Task<Cuota?> GetUltimaCuotaAsync(Guid socioId, Guid unidadId);
+    /// <summary>
+    /// E2E-07 (RN-09): indica si el socio tiene alguna cuota Pendiente ya vencida
+    /// (vencimiento anterior a <paramref name="hoy"/>) en la unidad indicada.
+    /// </summary>
+    Task<bool> TieneCuotaVencidaAsync(Guid socioId, Guid unidadId, DateTime hoy);
     Task<IEnumerable<Cuota>> GetCuotasParaRecordatorioAsync(DateTime hoy);
     /// <summary>
     /// Devuelve todas las cuotas pendientes (no anuladas) de TODOS los socios en una sola query.

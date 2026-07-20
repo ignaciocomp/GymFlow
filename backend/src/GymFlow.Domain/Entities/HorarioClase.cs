@@ -1,3 +1,4 @@
+using GymFlow.Domain.Constants;
 using GymFlow.Domain.Enums;
 
 namespace GymFlow.Domain.Entities;
@@ -20,8 +21,7 @@ public class HorarioClase
         ClaseId = claseId;
         DiaSemana = diaSemana;
 
-        if (horaFin <= horaInicio)
-            throw new ArgumentException("La hora de fin debe ser posterior a la hora de inicio.");
+        ValidarRango(horaInicio, horaFin);
 
         HoraInicio = horaInicio;
         HoraFin = horaFin;
@@ -32,12 +32,21 @@ public class HorarioClase
     {
         DiaSemana = diaSemana;
 
-        if (horaFin <= horaInicio)
-            throw new ArgumentException("La hora de fin debe ser posterior a la hora de inicio.");
+        ValidarRango(horaInicio, horaFin);
 
         HoraInicio = horaInicio;
         HoraFin = horaFin;
         Sala = string.IsNullOrWhiteSpace(sala) ? null : sala.Trim();
+    }
+
+    private static void ValidarRango(TimeOnly horaInicio, TimeOnly horaFin)
+    {
+        if (horaFin <= horaInicio)
+            throw new ArgumentException("La hora de fin debe ser posterior a la hora de inicio.");
+
+        // E2E-18 parte 2: los horarios deben caer dentro del horario de apertura del gimnasio.
+        if (horaInicio < HorarioApertura.Apertura || horaFin > HorarioApertura.Cierre)
+            throw new ArgumentException("El horario debe estar dentro del horario de apertura (07:00 a 22:00).");
     }
 
     /// <summary>

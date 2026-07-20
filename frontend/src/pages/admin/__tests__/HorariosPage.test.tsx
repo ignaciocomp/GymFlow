@@ -56,6 +56,21 @@ test('no pide clases hasta que hay una sede seleccionada', async () => {
   expect(clasesApi.getAll).not.toHaveBeenCalled()
 })
 
+// E2E-18 parte 2: el gym abre de 07:00 a 22:00; el formulario no debe ofrecer horas fuera de ese rango.
+test('los selectores de hora del alta limitan el rango a 07:00-22:00', async () => {
+  renderPage()
+
+  fireEvent.click(await screen.findByRole('button', { name: /nuevo horario/i }))
+
+  const inicio = await screen.findByDisplayValue('08:00')
+  const fin = screen.getByDisplayValue('09:00')
+
+  for (const input of [inicio, fin]) {
+    expect(input).toHaveAttribute('min', '07:00')
+    expect(input).toHaveAttribute('max', '22:00')
+  }
+})
+
 test('las clases se piden filtradas por la sede activa, no por todas', async () => {
   renderPage()
 

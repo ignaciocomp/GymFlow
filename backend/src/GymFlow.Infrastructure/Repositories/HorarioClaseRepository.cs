@@ -17,6 +17,9 @@ public class HorarioClaseRepository : IHorarioClaseRepository
         var query = _context.HorariosClase
             .Include(h => h.Clase)
                 .ThenInclude(c => c.Unidad)
+            // E2E-19: una clase cancelada no presenta horarios ni en el portal ni en la
+            // grilla admin (mismo criterio que GetByDiaAsync); reaparecen al reactivarla.
+            .Where(h => h.Clase.EstaActivo)
             .AsQueryable();
 
         if (unidadesPermitidas is not null)
