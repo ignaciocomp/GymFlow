@@ -25,6 +25,10 @@ const DIAS_LABEL: Record<DiaSemana, string> = {
   Domingo: 'Domingo',
 }
 
+// E2E-18 parte 2: el gimnasio abre de 07:00 a 22:00 (misma regla que valida el backend).
+const HORA_APERTURA = '07:00'
+const HORA_CIERRE = '22:00'
+
 const HORAS = Array.from({ length: 16 }, (_, i) => {
   const h = i + 7 // 07:00 a 22:00
   return `${h.toString().padStart(2, '0')}:00`
@@ -212,8 +216,10 @@ export default function HorariosPage() {
     }
   })
 
+  // Grilla alineada al horario de apertura (07:00–22:00) para que ningún bloque
+  // válido se dibuje corrido ni fuera del rango visible.
   const gridStartHour = 7
-  const gridEndHour = 23
+  const gridEndHour = 22
   const totalMinutes = (gridEndHour - gridStartHour) * 60
 
   return (
@@ -422,11 +428,11 @@ export default function HorariosPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Hora inicio</Label>
-                <Input type="time" value={formInicio} onChange={e => setFormInicio(e.target.value)} className="bg-card border-border" />
+                <Input type="time" min={HORA_APERTURA} max={HORA_CIERRE} value={formInicio} onChange={e => setFormInicio(e.target.value)} className="bg-card border-border" />
               </div>
               <div className="space-y-2">
                 <Label>Hora fin</Label>
-                <Input type="time" value={formFin} onChange={e => setFormFin(e.target.value)} className="bg-card border-border" />
+                <Input type="time" min={HORA_APERTURA} max={HORA_CIERRE} value={formFin} onChange={e => setFormFin(e.target.value)} className="bg-card border-border" />
               </div>
             </div>
 
@@ -490,11 +496,11 @@ export default function HorariosPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Hora inicio</Label>
-                <Input type="time" value={formInicio} onChange={e => setFormInicio(e.target.value)} className="bg-card border-border" />
+                <Input type="time" min={HORA_APERTURA} max={HORA_CIERRE} value={formInicio} onChange={e => setFormInicio(e.target.value)} className="bg-card border-border" />
               </div>
               <div className="space-y-2">
                 <Label>Hora fin</Label>
-                <Input type="time" value={formFin} onChange={e => setFormFin(e.target.value)} className="bg-card border-border" />
+                <Input type="time" min={HORA_APERTURA} max={HORA_CIERRE} value={formFin} onChange={e => setFormFin(e.target.value)} className="bg-card border-border" />
               </div>
             </div>
 
