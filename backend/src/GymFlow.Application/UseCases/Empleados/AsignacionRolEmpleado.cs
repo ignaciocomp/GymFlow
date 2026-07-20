@@ -27,6 +27,10 @@ internal static class AsignacionRolEmpleado
         if (rolAsignadoId == RolesSeed.DuenoRolId && actuanteRolId != RolesSeed.AdminRolId)
             throw new UnauthorizedAccessException("Solo el administrador puede asignar el rol Dueño.");
 
+        // E2E-21: guarda simétrica — solo el Admin puede asignar el rol Admin.
+        if (rolAsignadoId == RolesSeed.AdminRolId && actuanteRolId != RolesSeed.AdminRolId)
+            throw new UnauthorizedAccessException("Solo el administrador puede asignar el rol Admin.");
+
         // Un empleado Dueño debe tener al menos una unidad asignada.
         if (rolAsignadoId == RolesSeed.DuenoRolId && unidadesAsignadas.Count == 0)
             throw new ArgumentException("Un Dueño debe tener al menos una unidad asignada.");
@@ -41,12 +45,16 @@ internal static class AsignacionRolEmpleado
     }
 
     /// <summary>
-    /// Verifica que solo el Admin pueda asignar el rol Dueño. Se usa al reactivar (donde no se
-    /// reasignan unidades) para cubrir el bypass de la regla "solo el Admin crea Dueños".
+    /// Verifica que solo el Admin pueda asignar los roles privilegiados (Dueño y Admin).
+    /// Se usa al reactivar (donde no se reasignan unidades) para cubrir el bypass de la
+    /// regla "solo el Admin crea Dueños/Admins" también por esa vía (E2E-21).
     /// </summary>
     public static void ValidarSoloAdminAsignaDueno(Guid rolAsignadoId, Guid actuanteRolId)
     {
         if (rolAsignadoId == RolesSeed.DuenoRolId && actuanteRolId != RolesSeed.AdminRolId)
             throw new UnauthorizedAccessException("Solo el administrador puede asignar el rol Dueño.");
+
+        if (rolAsignadoId == RolesSeed.AdminRolId && actuanteRolId != RolesSeed.AdminRolId)
+            throw new UnauthorizedAccessException("Solo el administrador puede asignar el rol Admin.");
     }
 }
