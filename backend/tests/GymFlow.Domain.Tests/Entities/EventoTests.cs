@@ -18,6 +18,28 @@ public class EventoTests
     }
 
     [Fact]
+    public void Ctor_ConTituloVacio_ElMensajeNoFiltraElParametro()
+    {
+        // E2E-24 (barrido): las validaciones de negocio que ve el usuario no llevan
+        // paramName para que ArgumentException no agregue "(Parameter '...')".
+        var ex = Assert.Throws<ArgumentException>(() =>
+            new Evento("", "Desc", DateTime.UtcNow, Guid.NewGuid()));
+
+        Assert.Equal("El título es obligatorio.", ex.Message);
+    }
+
+    [Fact]
+    public void Actualizar_ConTituloVacio_ElMensajeNoFiltraElParametro()
+    {
+        var evento = CrearEventoValido();
+
+        var ex = Assert.Throws<ArgumentException>(() =>
+            evento.Actualizar("  ", "Desc", DateTime.UtcNow));
+
+        Assert.Equal("El título es obligatorio.", ex.Message);
+    }
+
+    [Fact]
     public void Ctor_SeteaCamposYActivo()
     {
         var unidadId = Guid.NewGuid();

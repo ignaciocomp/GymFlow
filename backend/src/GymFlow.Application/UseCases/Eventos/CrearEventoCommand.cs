@@ -38,8 +38,10 @@ public class CrearEventoCommand
         // Normalizar a UTC (Npgsql timestamptz exige Kind=Utc).
         var fechaUtc = DateTime.SpecifyKind(request.Fecha.ToUniversalTime(), DateTimeKind.Utc);
 
+        // E2E-24: sin paramName, para que el mensaje llegue al usuario sin el sufijo
+        // "(Parameter 'request')" que ArgumentException agrega automáticamente.
         if (fechaUtc < DateTime.UtcNow)
-            throw new ArgumentException("La fecha del evento no puede ser pasada.", nameof(request));
+            throw new ArgumentException("La fecha del evento no puede ser pasada.");
 
         // El ctor valida el título no vacío (ArgumentException).
         var evento = new Evento(request.Titulo, request.Descripcion ?? "", fechaUtc, request.UnidadId);
